@@ -12,6 +12,7 @@ from pydantic import BaseModel, ValidationError
 
 WEB_CHANNEL = "web"
 PHONE_CHANNEL = "phone"
+PUBLISHED_FLOW = "published"
 SET_VOICE_RPC_METHOD = "set_voice"
 VOICE_ON = "on"
 VOICE_OFF = "off"
@@ -24,6 +25,8 @@ class InvalidCallMetadataError(ValueError):
 class CallMetadata(BaseModel):
     agent_id: str
     channel: str = PHONE_CHANNEL
+    # Console test calls run the draft flow; every other call the published one.
+    flow: str = PUBLISHED_FLOW
 
     @property
     def is_web(self) -> bool:

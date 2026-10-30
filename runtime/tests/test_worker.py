@@ -24,7 +24,7 @@ def test_server_registers_the_call_handler_under_the_configured_agent_name():
 class UnreachableControlPlane:
     closed = False
 
-    async def get_agent_config(self, agent_id: str):
+    async def get_agent_config(self, agent_id: str, flow: str):
         raise httpx.ConnectError("api down")
 
     async def aclose(self) -> None:

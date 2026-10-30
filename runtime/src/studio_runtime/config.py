@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     api_timeout_seconds: float = 5.0
 
     stt_streaming: bool = True
+    # Flows read "tomorrow" and "Saturday" in this time zone.
+    timezone: str = "Asia/Kolkata"
+    tool_timeout_seconds: float = 10.0
     llm_max_retries: int = 2
     llm_retry_delay_seconds: float = 0.5
 

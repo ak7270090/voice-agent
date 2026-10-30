@@ -1,9 +1,12 @@
 """The runtime's view of the API: an agent's settings at call start, and the call record."""
 
+from typing import Any
+
 import httpx
 from pydantic import BaseModel
 
 from studio_runtime.config import Settings
+from studio_runtime.flows.schema import Flow
 
 
 class VoiceSettings(BaseModel):
@@ -21,6 +24,8 @@ class AgentConfig(BaseModel):
     languages: list[str]
     language_settings: dict[str, VoiceSettings]
     knowledge_base_ids: list[str] = []
+    flow: Flow | None = None
+    flow_version: int | None = None
 
     @property
     def starting_language(self) -> str:
@@ -30,6 +35,13 @@ class AgentConfig(BaseModel):
 class TranscriptTurn(BaseModel):
     role: str
     text: str
+
+
+class CallRecord(BaseModel):
+    transcript: list[TranscriptTurn]
+    outcome: str | None = None
+    fields: dict[str, Any] = {}
+    flow_path: list[str] = []
 
 
 class KnowledgeHit(BaseModel):
@@ -42,8 +54,8 @@ class ControlPlaneClient:
     def __init__(self, http: httpx.AsyncClient) -> None:
         self._http = http
 
-    async def get_agent_config(self, agent_id: str) -> AgentConfig:
-        response = await self._http.get(f"/runtime/agents/{agent_id}")
+    async def get_agent_config(self, agent_id: str, flow: str) -> AgentConfig:
+        response = await self._http.get(f"/runtime/agents/{agent_id}", params={"flow": flow})
         response.raise_for_status()
         return AgentConfig.model_validate(response.json())
 
@@ -55,10 +67,9 @@ class ControlPlaneClient:
         response.raise_for_status()
         return response.json()["id"]
 
-    async def end_call(self, call_id: str, transcript: list[TranscriptTurn]) -> None:
+    async def end_call(self, call_id: str, record: CallRecord) -> None:
         response = await self._http.post(
-            f"/runtime/calls/{call_id}/end",
-            json={"transcript": [turn.model_dump() for turn in transcript]},
+            f"/runtime/calls/{call_id}/end", json=record.model_dump(mode="json")
         )
         response.raise_for_status()
 

@@ -5,6 +5,7 @@ import pytest
 
 from studio_runtime.config import Settings
 from studio_runtime.control_plane import (
+    CallRecord,
     ControlPlaneClient,
     TranscriptTurn,
     create_control_plane_client,
@@ -41,9 +42,10 @@ def client_answering(handler) -> tuple[ControlPlaneClient, list[httpx.Request]]:
 async def test_agent_config_is_read_from_the_runtime_endpoint():
     client, requests = client_answering(lambda request: httpx.Response(200, json=AGENT))
 
-    config = await client.get_agent_config("agent-1")
+    config = await client.get_agent_config("agent-1", "draft")
 
     assert requests[0].url.path == "/runtime/agents/agent-1"
+    assert requests[0].url.params["flow"] == "draft"
     assert config.starting_language == "en"
     assert config.language_settings["en"].voice == "alloy"
 
@@ -52,14 +54,17 @@ async def test_missing_agent_raises():
     client, _ = client_answering(lambda request: httpx.Response(404))
 
     with pytest.raises(httpx.HTTPStatusError):
-        await client.get_agent_config("missing")
+        await client.get_agent_config("missing", "published")
 
 
 async def test_call_is_started_and_ended_with_its_transcript():
     client, requests = client_answering(lambda request: httpx.Response(201, json={"id": "call-1"}))
 
     call_id = await client.start_call("agent-1", "web-abc", "web")
-    await client.end_call(call_id, [TranscriptTurn(role="user", text="Hi")])
+    await client.end_call(
+        call_id,
+        CallRecord(transcript=[TranscriptTurn(role="user", text="Hi")], outcome="booked"),
+    )
     await client.aclose()
 
     assert call_id == "call-1"
@@ -69,7 +74,12 @@ async def test_call_is_started_and_ended_with_its_transcript():
         "channel": "web",
     }
     assert requests[1].url.path == "/runtime/calls/call-1/end"
-    assert json.loads(requests[1].content) == {"transcript": [{"role": "user", "text": "Hi"}]}
+    assert json.loads(requests[1].content) == {
+        "transcript": [{"role": "user", "text": "Hi"}],
+        "outcome": "booked",
+        "fields": {},
+        "flow_path": [],
+    }
 
 
 def test_client_sends_the_runtime_token_to_the_configured_api():
