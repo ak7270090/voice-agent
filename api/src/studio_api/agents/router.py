@@ -1,8 +1,11 @@
+from typing import Literal
+
 from fastapi import APIRouter, HTTPException, status
 from pydantic import ValidationError
 
 from studio_api.agents import service
 from studio_api.agents.browser_calls import build_browser_call
+from studio_api.agents.constants import FLOW_CHOICES, PUBLISHED_FLOW
 from studio_api.agents.schemas import (
     AgentCreate,
     AgentRead,
@@ -15,6 +18,7 @@ from studio_api.agents.schemas import (
 from studio_api.agents.templates import build_templates
 from studio_api.config import SettingsDep
 from studio_api.database import SessionDep
+from studio_api.flows.schemas import Flow
 from studio_api.knowledge.service import KnowledgeBaseNotFoundError
 from studio_api.security import RuntimeAuthDep
 
@@ -99,8 +103,16 @@ async def start_browser_call(
 
 
 @runtime_router.get("/agents/{agent_id}")
-async def read_runtime_agent_config(agent_id: str, session: SessionDep) -> RuntimeAgentConfig:
+async def read_runtime_agent_config(
+    agent_id: str, session: SessionDep, flow: Literal[FLOW_CHOICES] = PUBLISHED_FLOW
+) -> RuntimeAgentConfig:
+    """Console test calls ask for the draft flow; every other call runs the published one."""
     try:
-        return RuntimeAgentConfig.model_validate(await service.get_agent(session, agent_id))
+        agent = await service.get_agent(session, agent_id)
     except service.AgentNotFoundError as error:
         raise agent_not_found(agent_id) from error
+    config = RuntimeAgentConfig.model_validate(agent)
+    if flow == PUBLISHED_FLOW:
+        config.flow = Flow.model_validate(agent.published_flow) if agent.published_flow else None
+        config.flow_version = agent.published_flow_version
+    return config

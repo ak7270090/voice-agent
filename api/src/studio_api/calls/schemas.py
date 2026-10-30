@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict
 
@@ -19,6 +19,9 @@ class CallStart(BaseModel):
 
 class CallEnd(BaseModel):
     transcript: list[TranscriptTurn] = []
+    outcome: str | None = None
+    fields: dict[str, Any] = {}
+    flow_path: list[str] = []
 
 
 class CallRead(BaseModel):
@@ -32,3 +35,6 @@ class CallRead(BaseModel):
     started_at: UtcDateTime
     ended_at: UtcDateTime | None
     transcript: list[TranscriptTurn]
+    outcome: str | None
+    fields: dict[str, Any]
+    flow_path: list[str]

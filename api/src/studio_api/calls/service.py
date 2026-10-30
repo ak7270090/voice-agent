@@ -34,6 +34,9 @@ async def end_call(session: AsyncSession, call_id: str, end: CallEnd) -> Call:
         call.status = ENDED_STATUS
         call.ended_at = utc_now()
         call.transcript = [turn.model_dump() for turn in end.transcript]
+        call.outcome = end.outcome
+        call.fields = end.fields
+        call.flow_path = end.flow_path
         await session.commit()
     return call
 

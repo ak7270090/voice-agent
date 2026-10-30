@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from studio_api.agents.constants import AGENT_STATUSES
 from studio_api.database import UtcDateTime
+from studio_api.flows.schemas import Flow
 
 
 class VoiceSettings(BaseModel):
@@ -54,6 +55,8 @@ class AgentRead(AgentFields):
     template: str | None
     status: str
     knowledge_base_ids: list[str]
+    published_flow_version: int | None
+    has_flow: bool
     created_at: UtcDateTime
     updated_at: UtcDateTime
 
@@ -64,6 +67,7 @@ class AgentTemplate(BaseModel):
     summary: str
     channel_label: str
     fields: AgentFields
+    flow: Flow | None = None
 
 
 class FromTemplateRequest(BaseModel):
@@ -90,3 +94,6 @@ class RuntimeAgentConfig(BaseModel):
     languages: list[str]
     language_settings: dict[str, VoiceSettings]
     knowledge_base_ids: list[str]
+    # The draft for console test calls, the published flow otherwise; None for prompt-only.
+    flow: Flow | None = None
+    flow_version: int | None = None

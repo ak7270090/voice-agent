@@ -1,13 +1,17 @@
-"""Starting points for new agents. Phase 3 adds a flow to each; for now they are prompt-only."""
+"""Starting points for new agents: settings, plus a flow where the job has fixed steps."""
 
 from studio_api.agents.constants import ENGLISH
 from studio_api.agents.schemas import AgentFields, AgentTemplate, VoiceSettings
 from studio_api.config import Settings
+from studio_api.flows.templates import (
+    build_clinic_booking_flow,
+    build_lead_qualifier_flow,
+    build_reminder_flow,
+)
 
 CLINIC_BOOKING_INSTRUCTIONS = """You are the receptionist of City Hospital.
 Help callers book, move or cancel an appointment, and answer questions about the hospital.
-To book, collect the patient's name, age, the doctor or speciality, the day and the time.
-Read the details back and book only after the caller says yes."""
+Be warm and brief."""
 
 REMINDER_INSTRUCTIONS = """You call patients to remind them of tomorrow's appointment.
 Confirm they are coming, or offer to move the appointment. Keep the call short."""
@@ -47,6 +51,7 @@ def build_templates(settings: Settings) -> list[AgentTemplate]:
                 CLINIC_BOOKING_INSTRUCTIONS,
                 "Welcome to City Hospital. How can I help you today?",
             ),
+            flow=build_clinic_booking_flow(settings.demo_clinic_api_url),
         ),
         AgentTemplate(
             id="appointment-reminder",
@@ -58,6 +63,7 @@ def build_templates(settings: Settings) -> list[AgentTemplate]:
                 REMINDER_INSTRUCTIONS,
                 "Hello, this is City Hospital calling about your appointment tomorrow.",
             ),
+            flow=build_reminder_flow(),
         ),
         AgentTemplate(
             id="lead-qualifier",
@@ -69,6 +75,7 @@ def build_templates(settings: Settings) -> list[AgentTemplate]:
                 LEAD_QUALIFIER_INSTRUCTIONS,
                 "Hi, thanks for your interest. Do you have two minutes to talk about it?",
             ),
+            flow=build_lead_qualifier_flow(),
         ),
         AgentTemplate(
             id="delivery-follow-up",

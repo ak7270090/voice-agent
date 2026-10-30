@@ -1,5 +1,6 @@
 """Tokens for test calls from the console: each one joins a new room and dispatches the runtime
-into it with {"agent_id": ..., "channel": "web"}, so the call starts as a text chat."""
+into it with {"agent_id": ..., "channel": "web", "flow": "draft"}: the call starts as a text chat
+and runs the flow being edited, not the published one."""
 
 import json
 from datetime import timedelta
@@ -11,6 +12,7 @@ from studio_api.agents.constants import (
     BROWSER_CALL_IDENTITY_PREFIX,
     BROWSER_CALL_PARTICIPANT_NAME,
     BROWSER_CALL_ROOM_PREFIX,
+    DRAFT_FLOW,
     WEB_CHANNEL,
 )
 from studio_api.agents.schemas import BrowserCall
@@ -21,7 +23,7 @@ def build_browser_call(settings: Settings, agent_id: str) -> BrowserCall:
     room_name = f"{BROWSER_CALL_ROOM_PREFIX}{uuid4().hex[:10]}"
     dispatch = api.RoomAgentDispatch(
         agent_name=settings.runtime_agent_name,
-        metadata=json.dumps({"agent_id": agent_id, "channel": WEB_CHANNEL}),
+        metadata=json.dumps({"agent_id": agent_id, "channel": WEB_CHANNEL, "flow": DRAFT_FLOW}),
     )
     token = (
         api.AccessToken(settings.livekit_api_key, settings.livekit_api_secret)

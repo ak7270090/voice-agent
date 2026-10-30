@@ -14,6 +14,8 @@ from studio_api.agents import models as agent_models  # noqa: F401 - registers t
 from studio_api.calls import models as call_models  # noqa: F401 - registers the tables
 from studio_api.config import get_settings
 from studio_api.database import Base, create_session_factory
+from studio_api.demo_clinic import models as demo_clinic_models  # noqa: F401
+from studio_api.flows import models as flow_models  # noqa: F401
 from studio_api.knowledge.constants import EMBEDDING_DIMENSIONS
 from studio_api.main import create_app
 

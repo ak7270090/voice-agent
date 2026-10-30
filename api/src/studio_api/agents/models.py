@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import JSON, Column, DateTime, ForeignKey, String, Table, Text
+from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, String, Table, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from studio_api.agents.constants import DRAFT_STATUS
@@ -31,6 +31,10 @@ class Agent(Base):
     # Per language: {"stt_model": ..., "tts_model": ..., "voice": ...}
     language_settings: Mapped[dict] = mapped_column(JSON)
     status: Mapped[str] = mapped_column(String(20), default=DRAFT_STATUS)
+    # The flow being edited, and the one phone calls run (None: a prompt-only agent).
+    flow: Mapped[dict | None] = mapped_column(JSON)
+    published_flow: Mapped[dict | None] = mapped_column(JSON)
+    published_flow_version: Mapped[int | None] = mapped_column(Integer)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utc_now, onupdate=utc_now
@@ -39,6 +43,10 @@ class Agent(Base):
     knowledge_bases: Mapped[list[KnowledgeBase]] = relationship(
         secondary=agent_knowledge_bases, lazy="selectin"
     )
+
+    @property
+    def has_flow(self) -> bool:
+        return self.flow is not None
 
     @property
     def knowledge_base_ids(self) -> list[str]:

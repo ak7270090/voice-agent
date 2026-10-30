@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from studio_api.agents.models import Agent
 from studio_api.agents.schemas import AgentFields, AgentTemplate, AgentUpdate
+from studio_api.flows.schemas import Flow
 from studio_api.knowledge.models import KnowledgeBase
 from studio_api.knowledge.service import KnowledgeBaseNotFoundError
 
@@ -28,10 +29,18 @@ async def get_agent(session: AsyncSession, agent_id: str) -> Agent:
 
 
 async def create_agent(
-    session: AsyncSession, fields: AgentFields, template: str | None = None
+    session: AsyncSession,
+    fields: AgentFields,
+    template: str | None = None,
+    flow: Flow | None = None,
 ) -> Agent:
-    # An explicit empty list, so reading it later never needs a lazy load.
-    agent = Agent(**fields.model_dump(), template=template, knowledge_bases=[])
+    agent = Agent(
+        **fields.model_dump(),
+        template=template,
+        flow=flow.model_dump(mode="json") if flow else None,
+        # An explicit empty list, so reading it later never needs a lazy load.
+        knowledge_bases=[],
+    )
     session.add(agent)
     await session.commit()
     return agent
@@ -44,7 +53,7 @@ async def create_agent_from_template(
     if template is None:
         raise TemplateNotFoundError(template_id)
     fields = template.fields.model_copy(update={"name": name} if name else {})
-    return await create_agent(session, fields, template=template.id)
+    return await create_agent(session, fields, template=template.id, flow=template.flow)
 
 
 async def update_agent(session: AsyncSession, agent_id: str, changes: AgentUpdate) -> Agent:

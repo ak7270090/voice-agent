@@ -36,6 +36,8 @@ class Settings(BaseSettings):
     default_stt_model: str = "openai/gpt-4o-mini-transcribe"
     default_tts_model: str = "openai/tts-1"
     default_voice: str = "alloy"
+    # Where the runtime reaches the demo clinic API used by the clinic template's tools.
+    demo_clinic_api_url: str = "http://api:8000"
 
     # Knowledge bases. Changing the embedding model's size needs a migration (chunks.embedding).
     embedding_model: str = "openai:text-embedding-3-small"

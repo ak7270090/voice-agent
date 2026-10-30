@@ -19,3 +19,7 @@ class Call(Base):
     ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     # [{"role": "user" | "assistant", "text": ...}]
     transcript: Mapped[list[dict]] = mapped_column(JSON, default=list)
+    # Flow calls: how it ended, what was collected, and the node ids passed through.
+    outcome: Mapped[str | None] = mapped_column(String(60))
+    fields: Mapped[dict] = mapped_column(JSON, default=dict)
+    flow_path: Mapped[list[str]] = mapped_column(JSON, default=list)

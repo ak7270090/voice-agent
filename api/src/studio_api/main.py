@@ -17,7 +17,9 @@ from studio_api.calls.router import router as calls_router
 from studio_api.calls.router import runtime_router as calls_runtime_router
 from studio_api.config import export_provider_keys, get_settings
 from studio_api.database import create_session_factory
+from studio_api.demo_clinic.router import router as demo_clinic_router
 from studio_api.embeddings import create_embeddings
+from studio_api.flows.router import router as flows_router
 from studio_api.health import build_dependency_checks
 from studio_api.health import router as health_router
 from studio_api.jobs import create_job_queue
@@ -69,6 +71,8 @@ def create_app() -> FastAPI:
         calls_runtime_router,
         knowledge_router,
         knowledge_runtime_router,
+        flows_router,
+        demo_clinic_router,
     ):
         app.include_router(router)
     return app
