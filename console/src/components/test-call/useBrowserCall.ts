@@ -22,6 +22,9 @@ const SEGMENT_ID_ATTRIBUTE = "lk.segment_id";
 const FINAL_ATTRIBUTE = "lk.transcription_final";
 const AGENT_STATE_ATTRIBUTE = "lk.agent.state";
 const SET_VOICE_METHOD = "set_voice";
+// Set by the runtime for flow agents: the node the call is on and the fields collected so far.
+const FLOW_NODE_ATTRIBUTE = "studio.flow_node";
+const FLOW_FIELDS_ATTRIBUTE = "studio.fields";
 
 export type CallStatus = "idle" | "connecting" | "connected";
 export type AgentState = "initializing" | "listening" | "thinking" | "speaking" | string;
@@ -42,6 +45,8 @@ export function useBrowserCall(agentId: string) {
   const [voiceOn, setVoiceOn] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [flowNode, setFlowNode] = useState<string | null>(null);
+  const [flowFields, setFlowFields] = useState<Record<string, unknown>>({});
 
   const upsertMessage = useCallback((message: ChatMessage) => {
     setMessages((current) => {
@@ -88,6 +93,8 @@ export function useBrowserCall(agentId: string) {
   const start = useCallback(async () => {
     setError(null);
     setMessages([]);
+    setFlowNode(null);
+    setFlowFields({});
     setStatus("connecting");
     try {
       const { url, token } = await startBrowserCall(agentId);
@@ -103,8 +110,11 @@ export function useBrowserCall(agentId: string) {
       room.on(
         RoomEvent.ParticipantAttributesChanged,
         (changed: Record<string, string>, participant: Participant) => {
-          if (participant.isAgent && AGENT_STATE_ATTRIBUTE in changed) {
-            setAgentState(changed[AGENT_STATE_ATTRIBUTE]);
+          if (!participant.isAgent) return;
+          if (AGENT_STATE_ATTRIBUTE in changed) setAgentState(changed[AGENT_STATE_ATTRIBUTE]);
+          if (FLOW_NODE_ATTRIBUTE in changed) setFlowNode(changed[FLOW_NODE_ATTRIBUTE] || null);
+          if (FLOW_FIELDS_ATTRIBUTE in changed) {
+            setFlowFields(JSON.parse(changed[FLOW_FIELDS_ATTRIBUTE] || "{}"));
           }
         },
       );
@@ -161,5 +171,17 @@ export function useBrowserCall(agentId: string) {
 
   useEffect(() => () => void roomRef.current?.disconnect(), []);
 
-  return { status, agentState, voiceOn, messages, error, start, end, send, toggleVoice };
+  return {
+    status,
+    agentState,
+    voiceOn,
+    messages,
+    error,
+    flowNode,
+    flowFields,
+    start,
+    end,
+    send,
+    toggleVoice,
+  };
 }

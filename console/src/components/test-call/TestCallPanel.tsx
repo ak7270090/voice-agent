@@ -18,11 +18,17 @@ const AGENT_STATE_LABELS: Record<string, string> = {
 export function TestCallPanel({
   agentId,
   onCallEnded,
+  onFlowNode,
 }: {
   agentId: string;
   onCallEnded: () => void;
+  onFlowNode?: (nodeId: string | null, fields: Record<string, unknown>) => void;
 }) {
   const call = useBrowserCall(agentId);
+
+  useEffect(() => {
+    onFlowNode?.(call.flowNode, call.flowFields);
+  }, [call.flowNode, call.flowFields, onFlowNode]);
   const [draft, setDraft] = useState("");
   const messagesEnd = useRef<HTMLDivElement>(null);
   const previousStatus = useRef(call.status);
@@ -98,6 +104,22 @@ export function TestCallPanel({
         ))}
         <div ref={messagesEnd} />
       </div>
+
+      {Object.keys(call.flowFields).length > 0 && (
+        <div className="border-t border-slate-100 px-4 py-2.5">
+          <h4 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+            Collected fields
+          </h4>
+          <dl className="grid grid-cols-[100px_1fr] gap-y-1 text-xs">
+            {Object.entries(call.flowFields).map(([name, value]) => (
+              <div key={name} className="contents">
+                <dt className="text-slate-500">{name}</dt>
+                <dd className="text-slate-800">{String(value)}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )}
 
       {call.error && (
         <p className="mx-4 mb-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">

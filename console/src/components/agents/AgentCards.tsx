@@ -72,6 +72,11 @@ export function AgentCard({ agent }: { agent: Agent }) {
         {agent.languages.map((code) => (
           <Chip key={code}>{LANGUAGE_LABELS[code] ?? code}</Chip>
         ))}
+        {agent.has_flow && (
+          <Chip tone="brand">
+            {agent.published_flow_version ? `Flow v${agent.published_flow_version}` : "Flow draft"}
+          </Chip>
+        )}
       </div>
       <p className="line-clamp-2 text-[13px] text-slate-600">{agent.greeting}</p>
       <div className="flex items-center gap-2 border-t border-slate-100 pt-3">

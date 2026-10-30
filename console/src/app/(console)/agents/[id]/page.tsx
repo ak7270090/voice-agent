@@ -1,5 +1,6 @@
 "use client";
 
+import { Workflow } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
@@ -81,7 +82,13 @@ export default function AgentPage({ params }: { params: { id: string } }) {
             <Chip tone="amber">Draft</Chip>
           ))}
         {agent && (
-          <span className="ml-auto">
+          <span className="ml-auto flex items-center gap-2">
+            <Link
+              href={`/agents/${agent.id}/flow`}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-brand-600 bg-brand-600 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-brand-700"
+            >
+              <Workflow size={14} /> {agent.has_flow ? "Open flow builder" : "Create a flow"}
+            </Link>
             <Button onClick={toggleLive} disabled={saving}>
               {agent.status === "live" ? "Move to draft" : "Mark as live"}
             </Button>

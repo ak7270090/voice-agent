@@ -28,6 +28,8 @@ export type Agent = AgentFields & {
   template: string | null;
   status: AgentStatus;
   knowledge_base_ids: string[];
+  has_flow: boolean;
+  published_flow_version: number | null;
   created_at: string;
   updated_at: string;
 };
@@ -58,6 +60,9 @@ export type Call = {
   started_at: string;
   ended_at: string | null;
   transcript: TranscriptTurn[];
+  outcome: string | null;
+  fields: Record<string, unknown>;
+  flow_path: string[];
 };
 
 export class ApiError extends Error {
@@ -149,6 +154,77 @@ export type SearchHit = {
   similarity: number;
   keyword_overlap: number;
 };
+
+export type FlowNodeType = "start" | "step" | "tool" | "end" | "transfer" | "global";
+export type FlowEdgeKind = "condition" | "fields_complete" | "success" | "failure" | "always";
+export type FieldType = "text" | "name" | "number" | "date" | "time" | "yes_no" | "phone";
+
+export type FieldSpec = {
+  name: string;
+  type: FieldType;
+  description: string;
+  required: boolean;
+};
+
+export type StepData = {
+  name: string;
+  instructions: string;
+  fields: FieldSpec[];
+  tools: string[];
+  use_knowledge: boolean;
+};
+
+export type ToolData = {
+  name: string;
+  description: string;
+  method: "GET" | "POST";
+  url: string;
+  body: Record<string, string>;
+};
+
+export type EndData = { outcome: string; message: string };
+export type TransferData = { message: string; destination: string };
+export type GlobalData = { name: string; condition: string };
+
+export type FlowNodeData = Partial<StepData & ToolData & EndData & TransferData & GlobalData>;
+
+export type ApiFlowNode = {
+  id: string;
+  type: FlowNodeType;
+  position: { x: number; y: number };
+  data: FlowNodeData;
+};
+
+export type ApiFlowEdge = {
+  id: string;
+  source: string;
+  target: string;
+  kind: FlowEdgeKind;
+  condition: string;
+};
+
+export type Flow = { nodes: ApiFlowNode[]; edges: ApiFlowEdge[] };
+
+export type FlowIssue = { message: string; node_id: string | null; edge_id: string | null };
+
+export type FlowDraft = {
+  flow: Flow | null;
+  issues: FlowIssue[];
+  published_version: number | null;
+};
+
+export type FlowVersion = { version: number; published_at: string; node_count: number };
+
+export const getFlow = (agentId: string) => request<FlowDraft>(`/agents/${agentId}/flow`);
+
+export const saveFlow = (agentId: string, flow: Flow) =>
+  request<FlowDraft>(`/agents/${agentId}/flow`, { method: "PUT", body: JSON.stringify(flow) });
+
+export const publishFlow = (agentId: string) =>
+  request<FlowDraft>(`/agents/${agentId}/flow/publish`, { method: "POST" });
+
+export const listFlowVersions = (agentId: string) =>
+  request<FlowVersion[]>(`/agents/${agentId}/flow/versions`);
 
 export const listKnowledgeBases = () => request<KnowledgeBase[]>("/knowledge-bases");
 
