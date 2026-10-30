@@ -25,6 +25,7 @@ export function RecentCalls({ calls }: { calls: Call[] }) {
               <th className="px-4 py-2 font-medium">Started</th>
               <th className="px-4 py-2 font-medium">Channel</th>
               <th className="px-4 py-2 font-medium">Status</th>
+              <th className="px-4 py-2 font-medium">Outcome</th>
               <th className="px-4 py-2 text-right font-medium">Turns</th>
               <th className="px-4 py-2 text-right font-medium">Duration</th>
             </tr>
@@ -36,6 +37,9 @@ export function RecentCalls({ calls }: { calls: Call[] }) {
                 <td className="px-4 py-2">{call.channel}</td>
                 <td className="px-4 py-2">
                   <Chip tone={call.status === "active" ? "green" : "neutral"}>{call.status}</Chip>
+                </td>
+                <td className="px-4 py-2">
+                  {call.outcome ? <Chip tone="brand">{call.outcome}</Chip> : "—"}
                 </td>
                 <td className="px-4 py-2 text-right tabular-nums">{call.transcript.length}</td>
                 <td className="px-4 py-2 text-right tabular-nums">{duration(call)}</td>

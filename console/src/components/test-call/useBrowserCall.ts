@@ -45,6 +45,7 @@ export function useBrowserCall(agentId: string) {
   const [voiceOn, setVoiceOn] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [endNote, setEndNote] = useState<string | null>(null);
   const [flowNode, setFlowNode] = useState<string | null>(null);
   const [flowFields, setFlowFields] = useState<Record<string, unknown>>({});
 
@@ -92,6 +93,7 @@ export function useBrowserCall(agentId: string) {
 
   const start = useCallback(async () => {
     setError(null);
+    setEndNote(null);
     setMessages([]);
     setFlowNode(null);
     setFlowFields({});
@@ -119,7 +121,10 @@ export function useBrowserCall(agentId: string) {
         },
       );
       room.on(RoomEvent.Disconnected, (reason?: DisconnectReason) => {
-        if (reason !== DisconnectReason.CLIENT_INITIATED) {
+        // A flow's End node hangs up by deleting the room; that is a normal end, not an error.
+        if (reason === DisconnectReason.ROOM_DELETED) {
+          setEndNote("The agent ended the call.");
+        } else if (reason !== DisconnectReason.CLIENT_INITIATED) {
           setError("The connection dropped, so the call ended. Start it again.");
         }
         cleanUp();
@@ -177,6 +182,7 @@ export function useBrowserCall(agentId: string) {
     voiceOn,
     messages,
     error,
+    endNote,
     flowNode,
     flowFields,
     start,

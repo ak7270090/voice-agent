@@ -102,6 +102,7 @@ export function TestCallPanel({
             {message.text}
           </div>
         ))}
+        {call.endNote && <p className="self-center text-xs text-slate-400">{call.endNote}</p>}
         <div ref={messagesEnd} />
       </div>
 
