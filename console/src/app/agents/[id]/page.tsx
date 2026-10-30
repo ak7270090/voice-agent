@@ -12,7 +12,9 @@ import {
   type AgentUpdate,
   type Call,
   getAgent,
+  type KnowledgeBase,
   listCalls,
+  listKnowledgeBases,
   updateAgent,
 } from "@/lib/api";
 
@@ -22,6 +24,7 @@ const CALL_RECORD_DELAY_MS = 1500;
 export default function AgentPage({ params }: { params: { id: string } }) {
   const [agent, setAgent] = useState<Agent | null>(null);
   const [calls, setCalls] = useState<Call[]>([]);
+  const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBase[]>([]);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<{ tone: "green" | "red"; text: string } | null>(null);
 
@@ -35,6 +38,9 @@ export default function AgentPage({ params }: { params: { id: string } }) {
     getAgent(params.id)
       .then(setAgent)
       .catch((cause: Error) => setNotice({ tone: "red", text: cause.message }));
+    listKnowledgeBases()
+      .then(setKnowledgeBases)
+      .catch(() => undefined);
     refreshCalls();
   }, [params.id, refreshCalls]);
 
@@ -93,7 +99,13 @@ export default function AgentPage({ params }: { params: { id: string } }) {
         {agent && (
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_380px]">
             <div className="flex flex-col gap-4">
-              <AgentEditor key={agent.updated_at} agent={agent} saving={saving} onSave={save} />
+              <AgentEditor
+                key={agent.updated_at}
+                agent={agent}
+                knowledgeBases={knowledgeBases}
+                saving={saving}
+                onSave={save}
+              />
               <RecentCalls calls={calls} />
             </div>
             <TestCallPanel agentId={agent.id} onCallEnded={onCallEnded} />

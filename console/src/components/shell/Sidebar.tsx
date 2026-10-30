@@ -23,7 +23,7 @@ export function Sidebar() {
             {section.title}
           </div>
           {section.items.map(({ label, href, icon: Icon, available }) => {
-            const active = pathname === href;
+            const active = pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
             const className = clsx(
               "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px]",
               active && "bg-brand-50 font-semibold text-brand-700",

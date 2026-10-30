@@ -27,11 +27,15 @@ export type Agent = AgentFields & {
   id: string;
   template: string | null;
   status: AgentStatus;
+  knowledge_base_ids: string[];
   created_at: string;
   updated_at: string;
 };
 
-export type AgentUpdate = Partial<AgentFields> & { status?: AgentStatus };
+export type AgentUpdate = Partial<AgentFields> & {
+  status?: AgentStatus;
+  knowledge_base_ids?: string[];
+};
 
 export type AgentTemplate = {
   id: string;
@@ -110,3 +114,81 @@ export const startBrowserCall = (agentId: string) =>
 
 export const listCalls = (agentId: string) =>
   request<Call[]>(`/calls?agent_id=${encodeURIComponent(agentId)}`);
+
+export type KnowledgeBase = {
+  id: string;
+  name: string;
+  description: string;
+  created_at: string;
+  document_count: number;
+  chunk_count: number;
+};
+
+export type DocumentStatus = "queued" | "processing" | "ready" | "failed";
+
+export type KnowledgeDocument = {
+  id: string;
+  knowledge_base_id: string;
+  name: string;
+  source: "upload" | "url";
+  content_type: string;
+  size_bytes: number;
+  source_url: string | null;
+  status: DocumentStatus;
+  error: string | null;
+  chunk_count: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type SearchHit = {
+  document_id: string;
+  document_name: string;
+  text: string;
+  score: number;
+  similarity: number;
+  keyword_overlap: number;
+};
+
+export const listKnowledgeBases = () => request<KnowledgeBase[]>("/knowledge-bases");
+
+export const createKnowledgeBase = (name: string) =>
+  request<KnowledgeBase>("/knowledge-bases", { method: "POST", body: JSON.stringify({ name }) });
+
+export const deleteKnowledgeBase = (knowledgeBaseId: string) =>
+  request<void>(`/knowledge-bases/${knowledgeBaseId}`, { method: "DELETE" });
+
+export const listDocuments = (knowledgeBaseId: string) =>
+  request<KnowledgeDocument[]>(`/knowledge-bases/${knowledgeBaseId}/documents`);
+
+export async function uploadDocument(knowledgeBaseId: string, file: File) {
+  const form = new FormData();
+  form.append("file", file);
+  // No JSON content type: the browser sets the multipart boundary itself.
+  const response = await fetch(`${API_URL}/knowledge-bases/${knowledgeBaseId}/documents`, {
+    method: "POST",
+    body: form,
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new ApiError(response.status, body.detail ?? response.statusText);
+  }
+  return (await response.json()) as KnowledgeDocument;
+}
+
+export const addUrlDocument = (knowledgeBaseId: string, url: string) =>
+  request<KnowledgeDocument>(`/knowledge-bases/${knowledgeBaseId}/documents/from-url`, {
+    method: "POST",
+    body: JSON.stringify({ url }),
+  });
+
+export const deleteDocument = (knowledgeBaseId: string, documentId: string) =>
+  request<void>(`/knowledge-bases/${knowledgeBaseId}/documents/${documentId}`, {
+    method: "DELETE",
+  });
+
+export const searchKnowledgeBase = (knowledgeBaseId: string, query: string) =>
+  request<SearchHit[]>(`/knowledge-bases/${knowledgeBaseId}/search`, {
+    method: "POST",
+    body: JSON.stringify({ query }),
+  });

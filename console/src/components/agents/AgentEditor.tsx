@@ -3,7 +3,7 @@
 import { type FormEvent, type ReactNode, useState } from "react";
 
 import { Button, Card } from "@/components/ui/primitives";
-import type { Agent, AgentUpdate } from "@/lib/api";
+import type { Agent, AgentUpdate, KnowledgeBase } from "@/lib/api";
 import { VOICE_OPTIONS } from "@/lib/constants";
 
 const INPUT_CLASS =
@@ -21,14 +21,17 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 
 export function AgentEditor({
   agent,
+  knowledgeBases,
   saving,
   onSave,
 }: {
   agent: Agent;
+  knowledgeBases: KnowledgeBase[];
   saving: boolean;
   onSave: (changes: AgentUpdate) => void;
 }) {
   const language = agent.languages[0];
+  const [linkedBases, setLinkedBases] = useState<string[]>(agent.knowledge_base_ids);
   const [name, setName] = useState(agent.name);
   const [greeting, setGreeting] = useState(agent.greeting);
   const [instructions, setInstructions] = useState(agent.instructions);
@@ -42,6 +45,7 @@ export function AgentEditor({
       greeting,
       instructions,
       llm_model: llmModel,
+      knowledge_base_ids: linkedBases,
       language_settings: {
         ...agent.language_settings,
         [language]: { ...agent.language_settings[language], voice },
@@ -98,6 +102,38 @@ export function AgentEditor({
             />
           </Field>
         </div>
+        <Field
+          label="Knowledge bases"
+          hint="The agent searches these before answering questions about the business"
+        >
+          <div className="flex flex-wrap gap-2">
+            {knowledgeBases.length === 0 && (
+              <span className="text-[13px] text-slate-400">
+                None yet. Create one on the Knowledge page.
+              </span>
+            )}
+            {knowledgeBases.map((knowledgeBase) => (
+              <label
+                key={knowledgeBase.id}
+                className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-1.5 text-[13px]"
+              >
+                <input
+                  type="checkbox"
+                  checked={linkedBases.includes(knowledgeBase.id)}
+                  onChange={(event) =>
+                    setLinkedBases((current) =>
+                      event.target.checked
+                        ? [...current, knowledgeBase.id]
+                        : current.filter((id) => id !== knowledgeBase.id),
+                    )
+                  }
+                />
+                {knowledgeBase.name}
+                <span className="text-xs text-slate-400">{knowledgeBase.chunk_count} chunks</span>
+              </label>
+            ))}
+          </div>
+        </Field>
         <div className="flex justify-end">
           <Button type="submit" variant="primary" disabled={saving}>
             {saving ? "Saving…" : "Save changes"}

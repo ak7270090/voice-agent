@@ -29,7 +29,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: "Overview", href: "/", icon: LayoutDashboard, available: true },
       { label: "Agents", href: "/agents", icon: Bot, available: true },
-      { label: "Knowledge", href: "/knowledge", icon: BookOpen, available: false },
+      { label: "Knowledge", href: "/knowledge", icon: BookOpen, available: true },
     ],
   },
   {
