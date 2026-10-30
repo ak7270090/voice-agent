@@ -1,4 +1,7 @@
-"""Runtime settings, read from the environment and `.env.local` (repository root or `runtime/`)."""
+"""Runtime settings, read from the environment and `.env.local` (repository root or `runtime/`).
+
+LiveKit and model-provider keys (LIVEKIT_*, OPENAI_API_KEY) are read by their SDKs directly.
+"""
 
 from functools import lru_cache
 
@@ -11,6 +14,14 @@ class Settings(BaseSettings):
     agent_name: str = "studio-agent"
     health_port: int = 8081
     worker_load_threshold: float = 0.7
+
+    api_url: str = "http://localhost:8000"
+    runtime_api_token: str = ""
+    api_timeout_seconds: float = 5.0
+
+    stt_streaming: bool = True
+    llm_max_retries: int = 2
+    llm_retry_delay_seconds: float = 0.5
 
 
 @lru_cache

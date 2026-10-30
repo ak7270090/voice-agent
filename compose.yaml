@@ -62,6 +62,8 @@ services:
   runtime:
     build: ./runtime
     env_file: .env.local
+    environment:
+      API_URL: http://api:8000
     ports:
       - "8081:8081"
 

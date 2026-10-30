@@ -3,5 +3,7 @@ WORKDIR /app
 COPY pyproject.toml .
 COPY src ./src
 RUN pip install --no-cache-dir .
+# Bake the VAD model into the image so calls do not wait for a download.
+RUN python -m studio_runtime.worker download-files
 EXPOSE 8081
 CMD ["python", "-m", "studio_runtime.worker", "start"]

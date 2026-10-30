@@ -9,7 +9,11 @@ description = "LiveKit agent runtime for Voice Agent Studio: loads an agent's se
 requires-python = ">=3.11"
 license = "MIT"
 dependencies = [
-    "livekit-agents~=1.8",
+    "livekit-agents[openai,silero,langchain]~=1.8",
+    "langchain~=1.4",
+    "langchain-openai~=1.7",
+    "langgraph~=1.2",
+    "httpx~=0.28",
     "pydantic-settings~=2.16",
 ]
 
@@ -23,6 +27,9 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+studio_runtime = ["locales/*/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
