@@ -44,6 +44,7 @@ class AgentUpdate(BaseModel):
     languages: list[str] | None = Field(default=None, min_length=1)
     language_settings: dict[str, VoiceSettings] | None = None
     status: Literal[AGENT_STATUSES] | None = None
+    knowledge_base_ids: list[str] | None = None
 
 
 class AgentRead(AgentFields):
@@ -52,6 +53,7 @@ class AgentRead(AgentFields):
     id: str
     template: str | None
     status: str
+    knowledge_base_ids: list[str]
     created_at: UtcDateTime
     updated_at: UtcDateTime
 
@@ -87,3 +89,4 @@ class RuntimeAgentConfig(BaseModel):
     llm_model: str
     languages: list[str]
     language_settings: dict[str, VoiceSettings]
+    knowledge_base_ids: list[str]

@@ -1,10 +1,20 @@
 from datetime import datetime
 
-from sqlalchemy import JSON, DateTime, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import JSON, Column, DateTime, ForeignKey, String, Table, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from studio_api.agents.constants import DRAFT_STATUS
 from studio_api.database import Base, new_id, utc_now
+from studio_api.knowledge.models import KnowledgeBase
+
+agent_knowledge_bases = Table(
+    "agent_knowledge_bases",
+    Base.metadata,
+    Column("agent_id", ForeignKey("agents.id", ondelete="CASCADE"), primary_key=True),
+    Column(
+        "knowledge_base_id", ForeignKey("knowledge_bases.id", ondelete="CASCADE"), primary_key=True
+    ),
+)
 
 
 class Agent(Base):
@@ -25,3 +35,11 @@ class Agent(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utc_now, onupdate=utc_now
     )
+    # selectin: loaded with the agent, since async sessions cannot lazy-load later.
+    knowledge_bases: Mapped[list[KnowledgeBase]] = relationship(
+        secondary=agent_knowledge_bases, lazy="selectin"
+    )
+
+    @property
+    def knowledge_base_ids(self) -> list[str]:
+        return [knowledge_base.id for knowledge_base in self.knowledge_bases]

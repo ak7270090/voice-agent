@@ -15,6 +15,7 @@ from studio_api.agents.schemas import (
 from studio_api.agents.templates import build_templates
 from studio_api.config import SettingsDep
 from studio_api.database import SessionDep
+from studio_api.knowledge.service import KnowledgeBaseNotFoundError
 from studio_api.security import RuntimeAuthDep
 
 router = APIRouter(tags=["agents"])
@@ -67,6 +68,10 @@ async def update_agent(agent_id: str, body: AgentUpdate, session: SessionDep) ->
         return AgentRead.model_validate(await service.update_agent(session, agent_id, body))
     except service.AgentNotFoundError as error:
         raise agent_not_found(agent_id) from error
+    except KnowledgeBaseNotFoundError as error:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY, f"knowledge base {error} not found"
+        ) from error
     except ValidationError as error:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY,

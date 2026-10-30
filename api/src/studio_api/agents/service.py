@@ -3,6 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from studio_api.agents.models import Agent
 from studio_api.agents.schemas import AgentFields, AgentTemplate, AgentUpdate
+from studio_api.knowledge.models import KnowledgeBase
+from studio_api.knowledge.service import KnowledgeBaseNotFoundError
 
 
 class AgentNotFoundError(LookupError):
@@ -28,7 +30,8 @@ async def get_agent(session: AsyncSession, agent_id: str) -> Agent:
 async def create_agent(
     session: AsyncSession, fields: AgentFields, template: str | None = None
 ) -> Agent:
-    agent = Agent(**fields.model_dump(), template=template)
+    # An explicit empty list, so reading it later never needs a lazy load.
+    agent = Agent(**fields.model_dump(), template=template, knowledge_bases=[])
     session.add(agent)
     await session.commit()
     return agent
@@ -49,12 +52,23 @@ async def update_agent(session: AsyncSession, agent_id: str, changes: AgentUpdat
     language without voice settings is rejected). Raises pydantic's ValidationError."""
     agent = await get_agent(session, agent_id)
     changed = changes.model_dump(exclude_unset=True)
+    knowledge_base_ids = changed.pop("knowledge_base_ids", None)
     current = AgentFields.model_validate(agent, from_attributes=True).model_dump()
     checked = AgentFields.model_validate({**current, **changed}).model_dump()
     for field, value in changed.items():
         setattr(agent, field, checked.get(field, value))
+    if knowledge_base_ids is not None:
+        agent.knowledge_bases = await _knowledge_bases(session, knowledge_base_ids)
     await session.commit()
     return agent
+
+
+async def _knowledge_bases(session: AsyncSession, ids: list[str]) -> list[KnowledgeBase]:
+    found = list(await session.scalars(select(KnowledgeBase).where(KnowledgeBase.id.in_(ids))))
+    missing = set(ids) - {knowledge_base.id for knowledge_base in found}
+    if missing:
+        raise KnowledgeBaseNotFoundError(", ".join(sorted(missing)))
+    return found
 
 
 async def delete_agent(session: AsyncSession, agent_id: str) -> None:
