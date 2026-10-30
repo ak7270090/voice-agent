@@ -28,7 +28,7 @@ export const NAV_SECTIONS: NavSection[] = [
     title: "Build",
     items: [
       { label: "Overview", href: "/", icon: LayoutDashboard, available: true },
-      { label: "Agents", href: "/agents", icon: Bot, available: false },
+      { label: "Agents", href: "/agents", icon: Bot, available: true },
       { label: "Knowledge", href: "/knowledge", icon: BookOpen, available: false },
     ],
   },
