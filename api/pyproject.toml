@@ -14,12 +14,16 @@ dependencies = [
     "pydantic-settings~=2.16",
     "sqlalchemy[asyncio]~=2.0",
     "asyncpg~=0.30",
+    "alembic~=1.16",
     "redis~=5.2",
     "httpx~=0.28",
+    "livekit-api~=1.2",
 ]
 
 [project.optional-dependencies]
 dev = [
+    "aiosqlite~=0.21",
+    "pyjwt>=2.8",
     "pytest>=9.0",
     "pytest-asyncio>=1.0",
     "pytest-cov>=7.0",
@@ -33,3 +37,7 @@ where = ["src"]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 addopts = "-p no:cacheprovider --cov=studio_api --cov-report=term-missing --cov-fail-under=80"
+
+[tool.coverage.run]
+# SQLAlchemy async runs queries in greenlets; without this, lines after an await look unrun.
+concurrency = ["greenlet", "thread"]

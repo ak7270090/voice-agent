@@ -17,6 +17,19 @@ class Settings(BaseSettings):
     cors_origins: list[str] = ["http://localhost:3000"]
     health_check_timeout_seconds: float = 2.0
 
+    livekit_url: str = ""
+    livekit_api_key: str = ""
+    livekit_api_secret: str = ""
+    runtime_agent_name: str = "studio-agent"
+    runtime_api_token: str = ""
+    browser_call_token_ttl_minutes: int = 30
+
+    # Starting values for new agents; each agent keeps its own copy.
+    default_llm_model: str = "openai:gpt-4.1-mini"
+    default_stt_model: str = "openai/gpt-4o-mini-transcribe"
+    default_tts_model: str = "openai/tts-1"
+    default_voice: str = "alloy"
+
 
 @lru_cache
 def get_settings() -> Settings:
