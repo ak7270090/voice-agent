@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Agents</title>
+<link rel="stylesheet" href="console.css">
+<style>
+  .template { padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .template .art { height: 74px; border-radius: 8px; display: grid; place-items: center; font-size: 26px; }
+  .template p { color: var(--muted); line-height: 1.45; }
+  .agent { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .agent .top { display: flex; align-items: center; gap: 10px; }
+  .agent .ava { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; font-size: 17px; }
+  .agent .meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; border-top: 1px solid var(--line-2); padding-top: 12px; }
+  .agent .meta div span { display: block; color: var(--muted); font-size: 11px; }
+  .agent .meta div b { font-size: 15px; }
+  .agent .foot { display: flex; gap: 6px; align-items: center; }
+  .spark { margin-left: auto; }
+</style>
+</head>
+<body data-active="Agents">
+<div class="main">
+  <div class="topbar"><div class="crumbs"><b>Agents</b></div><div class="search">Search agents…</div></div>
+  <div class="content">
+    <div class="page-head">
+      <div><h1>Agents</h1><p>Each agent has its own flow, voice, languages, knowledge and phone numbers.</p></div>
+      <div class="actions"><button class="btn">⇪ Import JSON</button><button class="btn primary">＋ Blank agent</button></div>
+    </div>
+
+    <div>
+      <div style="font-weight:600; margin-bottom:10px">Start from a template</div>
+      <div class="grid" style="grid-template-columns: repeat(4, 1fr)">
+        <div class="card template"><div class="art t" style="background:var(--brand-50); color:var(--brand-600)">✚</div><b>Clinic booking</b><p>Books, moves and cancels appointments; answers from hospital documents.</p><span class="chip brand" style="align-self:flex-start">Inbound · EN, HI</span></div>
+        <div class="card template"><div class="art" style="background:var(--sky-bg); color:var(--sky)">⏰</div><b>Appointment reminder</b><p>Calls tomorrow's patients, confirms or reschedules, leaves voicemail.</p><span class="chip sky" style="align-self:flex-start">Outbound campaign</span></div>
+        <div class="card template"><div class="art" style="background:var(--violet-bg); color:var(--violet)">★</div><b>Lead qualifier</b><p>Asks budget, need and timeline, books a meeting in the calendar.</p><span class="chip violet" style="align-self:flex-start">Outbound · CRM</span></div>
+        <div class="card template"><div class="art" style="background:var(--amber-bg); color:var(--amber)">⛟</div><b>Delivery follow-up</b><p>Confirms address and delivery slot in the customer's language.</p><span class="chip amber" style="align-self:flex-start">Outbound · Hindi</span></div>
+      </div>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:10px">
+      <div style="font-weight:600">Your agents</div><span class="chip">4</span>
+      <div style="margin-left:auto; display:flex; gap:6px"><span class="chip brand">All</span><span class="chip">Live</span><span class="chip">Draft</span></div>
+    </div>
+    <div class="grid" style="grid-template-columns: repeat(2, 1fr)">
+      <div class="card agent">
+        <div class="top"><div class="ava t-step" style="background:var(--brand-50); color:var(--brand-600)">✚</div><div><b style="font-size:14px">Clinic receptionist</b><div class="muted">City Hospital · +91 80 4718 2200</div></div><span class="chip green" style="margin-left:auto"><span class="dot"></span>Live · v3</span></div>
+        <div class="foot"><span class="chip">English</span><span class="chip">Hinglish</span><span class="chip">11 nodes</span><span class="chip violet">City Hospital KB</span>
+          <svg class="spark" width="110" height="28"><polyline points="0,22 15,18 30,20 45,12 60,15 75,8 90,10 110,4" fill="none" stroke="#6366f1" stroke-width="2"/></svg></div>
+        <div class="meta"><div><span>Calls today</span><b>142</b></div><div><span>Goal reached</span><b>68%</b></div><div><span>Cost per call</span><b>$0.034</b></div></div>
+        <div class="foot"><button class="btn small">Open flow</button><button class="btn small">▶ Test</button><button class="btn small">Calls</button><span class="muted" style="margin-left:auto">Draft v4 not published</span></div>
+      </div>
+      <div class="card agent">
+        <div class="top"><div class="ava" style="background:var(--sky-bg); color:var(--sky)">⏰</div><div><b style="font-size:14px">Appointment reminder</b><div class="muted">Campaign agent · outbound trunk</div></div><span class="chip green" style="margin-left:auto"><span class="dot"></span>Live · v2</span></div>
+        <div class="foot"><span class="chip">Hinglish</span><span class="chip">6 nodes</span><span class="chip sky">Voicemail message</span>
+          <svg class="spark" width="110" height="28"><polyline points="0,20 15,22 30,14 45,16 60,10 75,12 90,6 110,8" fill="none" stroke="#0284c7" stroke-width="2"/></svg></div>
+        <div class="meta"><div><span>Calls today</span><b>88</b></div><div><span>Confirmed</span><b>74%</b></div><div><span>Cost per call</span><b>$0.014</b></div></div>
+        <div class="foot"><button class="btn small">Open flow</button><button class="btn small">▶ Test</button><button class="btn small">Campaigns</button></div>
+      </div>
+      <div class="card agent">
+        <div class="top"><div class="ava" style="background:var(--violet-bg); color:var(--violet)">★</div><div><b style="font-size:14px">Lead qualifier</b><div class="muted">Outbound · HubSpot + Google Calendar</div></div><span class="chip green" style="margin-left:auto"><span class="dot"></span>Live · v1</span></div>
+        <div class="foot"><span class="chip">English</span><span class="chip">8 nodes</span><span class="chip sky">HTTP tool · CRM</span>
+          <svg class="spark" width="110" height="28"><polyline points="0,24 15,20 30,22 45,18 60,19 75,14 90,16 110,12" fill="none" stroke="#7c3aed" stroke-width="2"/></svg></div>
+        <div class="meta"><div><span>Calls today</span><b>18</b></div><div><span>Meetings booked</span><b>22%</b></div><div><span>Cost per call</span><b>$0.031</b></div></div>
+        <div class="foot"><button class="btn small">Open flow</button><button class="btn small">▶ Test</button><button class="btn small">Calls</button></div>
+      </div>
+      <div class="card agent" style="border-style:dashed">
+        <div class="top"><div class="ava" style="background:var(--amber-bg); color:var(--amber)">⛟</div><div><b style="font-size:14px">Delivery follow-up</b><div class="muted">No phone number yet</div></div><span class="chip" style="margin-left:auto">Draft</span></div>
+        <div class="foot"><span class="chip">Hindi</span><span class="chip">Tamil</span><span class="chip">5 nodes</span></div>
+        <div class="meta"><div><span>Test calls</span><b>6</b></div><div><span>Eval score</span><b>8 / 10</b></div><div><span>Est. cost per call</span><b>$0.020</b></div></div>
+        <div class="foot"><button class="btn small">Open flow</button><button class="btn small">▶ Test</button><button class="btn small primary">Assign number</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="sidebar.js"></script>
+</body>
+</html>

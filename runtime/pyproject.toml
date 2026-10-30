@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "studio-runtime"
+version = "0.1.0"
+description = "LiveKit agent runtime for Voice Agent Studio: loads an agent's settings and runs its calls"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = [
+    "livekit-agents~=1.8",
+    "pydantic-settings~=2.16",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0",
+    "pytest-asyncio>=1.0",
+    "pytest-cov>=7.0",
+    "ruff>=0.15",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-p no:cacheprovider --cov=studio_runtime --cov-report=term-missing --cov-fail-under=80"

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Overview</title>
+<link rel="stylesheet" href="console.css">
+</head>
+<body data-active="Overview">
+<div class="main">
+  <div class="topbar">
+    <div class="crumbs"><b>Overview</b></div>
+    <span class="chip green"><span class="dot"></span>3 agents live</span>
+    <div class="search">Search agents, calls, contacts…  ⌘K</div>
+    <button class="btn">Last 14 days ▾</button>
+  </div>
+  <div class="content">
+    <div class="page-head">
+      <div><h1>Good evening, Aman</h1><p>Your agents handled 1,184 calls in the last 14 days.</p></div>
+      <div class="actions"><button class="btn">⇩ Export</button><button class="btn primary">＋ New agent</button></div>
+    </div>
+
+    <div class="grid" style="grid-template-columns: repeat(5, 1fr)">
+      <div class="card kpi"><div class="label">Calls</div><div class="value">1,184</div><div class="delta">▲ 18% vs previous</div></div>
+      <div class="card kpi"><div class="label">Connected</div><div class="value">71.4%</div><div class="delta">▲ 3.2 pts</div></div>
+      <div class="card kpi"><div class="label">Goal reached</div><div class="value">58.9%</div><div class="delta">▲ 4.1 pts</div></div>
+      <div class="card kpi"><div class="label">Avg. duration</div><div class="value">2m 41s</div><div class="delta down">▲ 12s</div></div>
+      <div class="card kpi"><div class="label">Cost per call</div><div class="value">$0.032</div><div class="delta">▼ $0.004</div></div>
+    </div>
+
+    <div class="grid" style="grid-template-columns: 2fr 1fr">
+      <div class="card">
+        <div class="card-head"><h3>Calls per day</h3><span class="sub">inbound and outbound</span>
+          <div class="right"><span class="chip brand"><span class="dot"></span>Inbound</span><span class="chip sky"><span class="dot"></span>Outbound</span></div>
+        </div>
+        <div class="card-body" style="padding: 8px 16px 12px">
+          <svg width="100%" height="210" viewBox="0 0 760 210" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="g1" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#6366f1" stop-opacity=".22"/><stop offset="1" stop-color="#6366f1" stop-opacity="0"/></linearGradient>
+              <linearGradient id="g2" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#0284c7" stop-opacity=".16"/><stop offset="1" stop-color="#0284c7" stop-opacity="0"/></linearGradient>
+            </defs>
+            <g stroke="#f1f5f9"><line x1="30" x2="760" y1="20" y2="20"/><line x1="30" x2="760" y1="70" y2="70"/><line x1="30" x2="760" y1="120" y2="120"/><line x1="30" x2="760" y1="170" y2="170"/></g>
+            <g fill="#94a3b8" font-size="10"><text x="0" y="24">120</text><text x="6" y="74">80</text><text x="6" y="124">40</text><text x="12" y="174">0</text></g>
+            <path d="M30,120 L86,112 L142,104 L198,108 L254,92 L310,86 L366,98 L422,80 L478,72 L534,76 L590,62 L646,58 L702,66 L760,50 L760,170 L30,170 Z" fill="url(#g1)"/>
+            <path d="M30,120 L86,112 L142,104 L198,108 L254,92 L310,86 L366,98 L422,80 L478,72 L534,76 L590,62 L646,58 L702,66 L760,50" fill="none" stroke="#6366f1" stroke-width="2"/>
+            <path d="M30,160 L86,158 L142,150 L198,154 L254,140 L310,128 L366,150 L422,132 L478,118 L534,126 L590,110 L646,104 L702,118 L760,96 L760,170 L30,170 Z" fill="url(#g2)"/>
+            <path d="M30,160 L86,158 L142,150 L198,154 L254,140 L310,128 L366,150 L422,132 L478,118 L534,126 L590,110 L646,104 L702,118 L760,96" fill="none" stroke="#0284c7" stroke-width="2"/>
+            <g fill="#94a3b8" font-size="10"><text x="30" y="192">17 Oct</text><text x="250" y="192">21 Oct</text><text x="470" y="192">25 Oct</text><text x="720" y="192">30 Oct</text></g>
+            <circle cx="760" cy="50" r="4" fill="#6366f1"/>
+          </svg>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Call outcomes</h3><span class="sub">post-call analysis</span></div>
+        <div class="card-body" style="display:flex; flex-direction:column; gap:13px">
+          <div><div style="display:flex"><span>Appointment booked</span><b style="margin-left:auto">412</b></div><div class="bar" style="margin-top:6px"><span style="width:82%"></span></div></div>
+          <div><div style="display:flex"><span>Question answered</span><b style="margin-left:auto">286</b></div><div class="bar" style="margin-top:6px"><span style="width:57%; background:#0284c7"></span></div></div>
+          <div><div style="display:flex"><span>Call back later</span><b style="margin-left:auto">131</b></div><div class="bar" style="margin-top:6px"><span style="width:26%; background:#7c3aed"></span></div></div>
+          <div><div style="display:flex"><span>Transferred to staff</span><b style="margin-left:auto">57</b></div><div class="bar" style="margin-top:6px"><span style="width:11%; background:#b45309"></span></div></div>
+          <div><div style="display:flex"><span>Voicemail / no answer</span><b style="margin-left:auto">298</b></div><div class="bar" style="margin-top:6px"><span style="width:60%; background:#cbd5e1"></span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns: 2fr 1fr; flex:1; min-height:0">
+      <div class="card" style="overflow:hidden">
+        <div class="card-head"><h3>Recent calls</h3><div class="right"><button class="btn small">View all</button></div></div>
+        <table>
+          <tr><th>Caller</th><th>Agent</th><th>Direction</th><th>Outcome</th><th class="num">Duration</th><th class="num">Cost</th><th>Time</th></tr>
+          <tr><td class="strong">+91 98•••• 4410</td><td>Clinic receptionist</td><td>↙ Inbound</td><td><span class="chip green">Booked · A-1031</span></td><td class="num">3:12</td><td class="num">$0.041</td><td class="muted">2 min ago</td></tr>
+          <tr><td class="strong">Priya Sharma</td><td>Appointment reminder</td><td>↗ Outbound</td><td><span class="chip sky">Confirmed</span></td><td class="num">0:48</td><td class="num">$0.012</td><td class="muted">9 min ago</td></tr>
+          <tr><td class="strong">+91 70•••• 1187</td><td>Clinic receptionist</td><td>↙ Inbound</td><td><span class="chip amber">Transferred</span></td><td class="num">1:56</td><td class="num">$0.027</td><td class="muted">14 min ago</td></tr>
+          <tr><td class="strong">Rahul Verma</td><td>Lead qualifier</td><td>↗ Outbound</td><td><span class="chip violet">Call back Fri</span></td><td class="num">2:20</td><td class="num">$0.033</td><td class="muted">21 min ago</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Agents</h3><span class="sub">today</span></div>
+        <div class="card-body" style="display:flex; flex-direction:column; gap:14px">
+          <div style="display:flex; align-items:center; gap:10px"><span class="chip green"><span class="dot"></span>Live</span><b>Clinic receptionist</b><span class="muted" style="margin-left:auto">142 calls</span></div>
+          <div style="display:flex; align-items:center; gap:10px"><span class="chip green"><span class="dot"></span>Live</span><b>Appointment reminder</b><span class="muted" style="margin-left:auto">88 calls</span></div>
+          <div style="display:flex; align-items:center; gap:10px"><span class="chip green"><span class="dot"></span>Live</span><b>Lead qualifier</b><span class="muted" style="margin-left:auto">18 calls</span></div>
+          <div style="display:flex; align-items:center; gap:10px"><span class="chip">Draft</span><b>Delivery follow-up</b><span class="muted" style="margin-left:auto">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="sidebar.js"></script>
+</body>
+</html>
