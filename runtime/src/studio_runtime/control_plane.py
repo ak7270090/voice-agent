@@ -20,6 +20,7 @@ class AgentConfig(BaseModel):
     llm_model: str
     languages: list[str]
     language_settings: dict[str, VoiceSettings]
+    knowledge_base_ids: list[str] = []
 
     @property
     def starting_language(self) -> str:
@@ -29,6 +30,12 @@ class AgentConfig(BaseModel):
 class TranscriptTurn(BaseModel):
     role: str
     text: str
+
+
+class KnowledgeHit(BaseModel):
+    document_name: str
+    text: str
+    score: float
 
 
 class ControlPlaneClient:
@@ -54,6 +61,13 @@ class ControlPlaneClient:
             json={"transcript": [turn.model_dump() for turn in transcript]},
         )
         response.raise_for_status()
+
+    async def search_knowledge(self, agent_id: str, query: str) -> list[KnowledgeHit]:
+        response = await self._http.post(
+            f"/runtime/agents/{agent_id}/knowledge-search", json={"query": query}
+        )
+        response.raise_for_status()
+        return [KnowledgeHit.model_validate(hit) for hit in response.json()]
 
     async def aclose(self) -> None:
         await self._http.aclose()

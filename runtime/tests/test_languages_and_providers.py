@@ -19,9 +19,16 @@ def test_english_locale_has_prompt_rules_and_messages():
 
 
 def test_instructions_are_the_agents_own_followed_by_the_language_rules():
-    instructions = build_instructions("  Be the front desk.\n", load_locale("en"))
+    instructions = build_instructions("  Be the front desk.\n", load_locale("en"), False)
 
     assert instructions.startswith("Be the front desk.\n\nReply in English.")
+    assert "search_knowledge" not in instructions
+
+
+def test_agents_with_documents_are_told_to_search_them_first():
+    instructions = build_instructions("Be the front desk.", load_locale("en"), True)
+
+    assert instructions.endswith(load_locale("en").messages["knowledge_rule"])
 
 
 def test_language_without_a_locale_folder_is_unsupported():

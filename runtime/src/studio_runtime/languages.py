@@ -38,5 +38,8 @@ def load_locale(code: str) -> Locale:
     )
 
 
-def build_instructions(agent_instructions: str, locale: Locale) -> str:
-    return f"{agent_instructions.strip()}\n\n{locale.prompt_rules}"
+def build_instructions(agent_instructions: str, locale: Locale, has_knowledge: bool) -> str:
+    rules = [locale.prompt_rules]
+    if has_knowledge:
+        rules.append(locale.messages["knowledge_rule"])
+    return "\n\n".join([agent_instructions.strip(), *rules])

@@ -6,6 +6,7 @@ the API when the call starts. LiveKit serves the health check at `/` on `health_
 
 import logging
 
+from langchain_core.tools import BaseTool
 from livekit.agents import (
     Agent,
     AgentServer,
@@ -22,6 +23,7 @@ from studio_runtime.channels import parse_call_metadata, register_voice_toggle, 
 from studio_runtime.config import Settings, get_settings
 from studio_runtime.control_plane import AgentConfig, create_control_plane_client
 from studio_runtime.conversation import build_transcript, create_llm
+from studio_runtime.knowledge import build_knowledge_tool
 from studio_runtime.languages import FALLBACK_LANGUAGE, build_instructions, load_locale
 from studio_runtime.providers import create_stt, create_tts
 
@@ -36,13 +38,17 @@ def prewarm_process(process: JobProcess) -> None:
 
 
 def build_agent_session(
-    config: AgentConfig, language: str, vad_model: vad.VAD, settings: Settings
+    config: AgentConfig,
+    language: str,
+    vad_model: vad.VAD,
+    tools: list[BaseTool],
+    settings: Settings,
 ) -> AgentSession:
     voice = config.language_settings[language]
     return AgentSession(
         vad=vad_model,
         stt=create_stt(voice, language, settings),
-        llm=create_llm(config.llm_model, [], settings),
+        llm=create_llm(config.llm_model, tools, settings),
         tts=create_tts(voice),
     )
 
@@ -64,8 +70,13 @@ async def run_call(ctx: JobContext) -> None:
         return
 
     language = config.starting_language
+    locale = load_locale(language)
+    has_knowledge = bool(config.knowledge_base_ids)
+    tools = [build_knowledge_tool(control_plane, config.id, locale)] if has_knowledge else []
     call_id = await control_plane.start_call(config.id, ctx.room.name, metadata.channel)
-    session = build_agent_session(config, language, ctx.proc.userdata[VAD_USERDATA_KEY], settings)
+    session = build_agent_session(
+        config, language, ctx.proc.userdata[VAD_USERDATA_KEY], tools, settings
+    )
 
     async def close_call_record() -> None:
         try:
@@ -74,7 +85,7 @@ async def run_call(ctx: JobContext) -> None:
             await control_plane.aclose()
 
     ctx.add_shutdown_callback(close_call_record)
-    instructions = build_instructions(config.instructions, load_locale(language))
+    instructions = build_instructions(config.instructions, locale, has_knowledge)
     # The tester or caller leaving closes the session; deleting the room then ends the job.
     await session.start(
         agent=Agent(instructions=instructions),
