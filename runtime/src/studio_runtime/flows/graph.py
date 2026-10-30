@@ -2,13 +2,19 @@
 
 Each pass gives the LLM the current step's prompt and only that step's tools. When a tool moves
 the flow, the next pass answers from the new step, so the reply always comes from where the
-conversation now is.
+conversation now is. To keep the caller from waiting in silence:
+- a reply written alongside `save_fields` (nothing moved) is the turn's answer: no second call;
+- a step's "say on entering" line is spoken as soon as the flow arrives there;
+- a slow tool's "say while it runs" line is spoken inside the same reply (a separate
+  `session.say()` dropped replies in clinic-voice-agent).
 """
 
+import asyncio
 import logging
 from collections.abc import AsyncIterator
 from typing import Any
 
+from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import (
     AIMessage,
@@ -20,7 +26,7 @@ from langchain_core.messages import (
 )
 
 from studio_runtime.flows import prompts
-from studio_runtime.flows.runner import FlowRunner
+from studio_runtime.flows.runner import SAVE_FIELDS_TOOL, FlowRunner
 
 logger = logging.getLogger(__name__)
 
@@ -40,11 +46,15 @@ class FlowGraph:
         model: BaseChatModel,
         base_instructions: str,
         max_retries: int,
+        filler_delay_seconds: float = 0.7,
+        callbacks: list[BaseCallbackHandler] | None = None,
     ) -> None:
         self._runner = runner
         self._model = model
         self._base_instructions = base_instructions
         self._max_retries = max_retries
+        self._filler_delay_seconds = filler_delay_seconds
+        self._callbacks = callbacks or []
 
     async def astream(self, state: dict, *args: Any, **kwargs: Any) -> AsyncIterator[Any]:
         runner = self._runner
@@ -53,13 +63,19 @@ class FlowGraph:
         history = [m for m in state.get("messages", []) if not isinstance(m, SystemMessage)]
         users = [m for m in history if isinstance(m, HumanMessage)]
         if users:
+            runner.entry_line = ""
             await runner.take_answer(users[-1].text)
         scratch: list[BaseMessage] = []
+        filler_said = False
         for _ in range(MAX_PASSES):
             if runner.ended:
                 if runner.final_message:
                     yield spoken(runner.final_message)
                 return
+            if runner.entry_line:
+                yield spoken(f"{runner.entry_line} ")
+                history = [*history, AIMessage(content=runner.entry_line)]
+                runner.entry_line = ""
             tools = runner.tools()
             model = self._model.bind_tools(tools) if tools else self._model
             messages = [SystemMessage(runner.system_prompt(self._base_instructions))]
@@ -78,20 +94,32 @@ class FlowGraph:
                 if tool is None:
                     result = prompts.UNKNOWN_TOOL.format(name=call["name"])
                 else:
-                    result = await tool.ainvoke(call["args"])
+                    filler = "" if filler_said else runner.filler_for(call["name"])
+                    task = asyncio.ensure_future(tool.ainvoke(call["args"]))
+                    if filler and not await self._finishes_quickly(task):
+                        yield spoken(f"{filler} ")
+                        filler_said = True
+                    result = await task
                 scratch.append(ToolMessage(content=str(result), tool_call_id=call["id"]))
                 if runner.moved:
                     break
             if runner.moved:
                 # The new step starts clean; what it needs is in its prompt.
                 scratch = []
+            elif reply.text and only_saved_fields(reply.tool_calls):
+                return
+
+    async def _finishes_quickly(self, task: asyncio.Future) -> bool:
+        done, _ = await asyncio.wait({task}, timeout=self._filler_delay_seconds)
+        return bool(done)
 
     async def _stream(self, model, messages: list[BaseMessage]) -> AsyncIterator[AIMessageChunk]:
         """Retries a model call that fails before saying anything (a dropped connection)."""
+        config = {"callbacks": self._callbacks}
         for attempt in range(self._max_retries + 1):
             started = False
             try:
-                async for chunk in model.astream(messages):
+                async for chunk in model.astream(messages, config=config):
                     started = True
                     yield chunk
                 return
@@ -99,3 +127,7 @@ class FlowGraph:
                 if started or attempt == self._max_retries:
                     raise
                 logger.warning("model call failed; retrying", exc_info=True)
+
+
+def only_saved_fields(tool_calls: list[dict]) -> bool:
+    return all(call["name"] == SAVE_FIELDS_TOOL for call in tool_calls)

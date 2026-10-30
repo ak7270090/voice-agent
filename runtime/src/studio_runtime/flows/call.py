@@ -7,6 +7,7 @@ from zoneinfo import ZoneInfo
 
 import httpx
 from langchain.chat_models import init_chat_model
+from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.tools import BaseTool
 from livekit import rtc
 from livekit.plugins.langchain import LLMAdapter
@@ -50,7 +51,18 @@ def create_flow_runner(
 
 
 def create_flow_llm(
-    runner: FlowRunner, config: AgentConfig, base_instructions: str, settings: Settings
+    runner: FlowRunner,
+    config: AgentConfig,
+    base_instructions: str,
+    settings: Settings,
+    callbacks: list[BaseCallbackHandler],
 ) -> LLMAdapter:
-    model = init_chat_model(config.llm_model)
-    return LLMAdapter(FlowGraph(runner, model, base_instructions, settings.llm_max_retries))
+    graph = FlowGraph(
+        runner,
+        init_chat_model(config.llm_model),
+        base_instructions,
+        settings.llm_max_retries,
+        filler_delay_seconds=settings.filler_delay_seconds,
+        callbacks=callbacks,
+    )
+    return LLMAdapter(graph)

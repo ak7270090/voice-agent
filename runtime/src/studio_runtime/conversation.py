@@ -10,6 +10,7 @@ from typing import Any
 from langchain.agents import create_agent
 from langchain.agents.middleware import ModelRetryMiddleware
 from langchain.chat_models import init_chat_model
+from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.messages import AIMessageChunk
 from langchain_core.tools import BaseTool
 from langgraph.graph.state import CompiledStateGraph
@@ -57,8 +58,16 @@ def is_spoken_model_text(item: Any) -> bool:
     return isinstance(token, AIMessageChunk) and bool(token.text)
 
 
-def create_llm(llm_model: str, tools: list[BaseTool], settings: Settings) -> LLMAdapter:
-    return LLMAdapter(SpokenReplyGraph(build_conversation_graph(llm_model, tools, settings)))
+def create_llm(
+    llm_model: str,
+    tools: list[BaseTool],
+    settings: Settings,
+    callbacks: list[BaseCallbackHandler] | None = None,
+) -> LLMAdapter:
+    return LLMAdapter(
+        SpokenReplyGraph(build_conversation_graph(llm_model, tools, settings)),
+        config={"callbacks": callbacks or []},
+    )
 
 
 def build_transcript(history: ChatContext) -> list[TranscriptTurn]:

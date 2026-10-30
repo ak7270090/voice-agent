@@ -14,12 +14,33 @@ class Settings(BaseSettings):
     agent_name: str = "studio-agent"
     health_port: int = 8081
     worker_load_threshold: float = 0.7
+    # Processes kept warm for the next calls (one call per process); LiveKit's default is 8.
+    num_idle_processes: int = 2
 
     api_url: str = "http://localhost:8000"
     runtime_api_token: str = ""
     api_timeout_seconds: float = 5.0
 
+    langfuse_public_key: str = ""
+    langfuse_secret_key: str = ""
+    langfuse_base_url: str = "https://cloud.langfuse.com"
+
     stt_streaming: bool = True
+
+    # Turn-taking. LiveKit's turn detector listens to the audio to tell a finished sentence from
+    # a pause; "" lets LiveKit choose (v1 on LiveKit Cloud, else the local v1-mini).
+    turn_detector_version: str = ""
+    # "dynamic" adapts the wait to each caller's pauses (LiveKit's turn-tuning guide).
+    endpointing_mode: str = "dynamic"
+    min_endpointing_delay: float = 0.4
+    max_endpointing_delay: float = 2.0
+    interruption_mode: str = "adaptive"
+    min_interruption_duration: float = 0.5
+    # Off: a reply drafted before the turn ends is thrown away if the caller goes on, but its
+    # tools may already have moved the flow or booked a slot (clinic-voice-agent found the same).
+    preemptive_generation: bool = False
+    # A tool's "say while it runs" line plays only if the tool is still running after this.
+    filler_delay_seconds: float = 0.7
     # Flows read "tomorrow" and "Saturday" in this time zone.
     timezone: str = "Asia/Kolkata"
     tool_timeout_seconds: float = 10.0

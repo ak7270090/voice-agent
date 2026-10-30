@@ -60,6 +60,17 @@ export function NodePanel({ node, toolNodes, onChange, onDelete, onClose }: Prop
               onChange={(e) => set({ instructions: e.target.value })}
             />
           </Labelled>
+          <Labelled
+            label="Say on entering (optional)"
+            hint="Spoken the moment the call arrives here, while the reply is being written"
+          >
+            <input
+              className={INPUT}
+              value={data.say_on_enter ?? ""}
+              placeholder="e.g. Sure, I can help with that."
+              onChange={(e) => set({ say_on_enter: e.target.value })}
+            />
+          </Labelled>
           <FieldsEditor fields={data.fields ?? []} onChange={(fields) => set({ fields })} />
           <div className="flex flex-col gap-1.5">
             <span className="text-xs font-medium text-slate-600">Tools this step may call</span>
@@ -130,8 +141,28 @@ export function NodePanel({ node, toolNodes, onChange, onDelete, onClose }: Prop
             </Labelled>
           </div>
           {data.method === "POST" && (
-            <BodyEditor body={data.body ?? {}} onChange={(body) => set({ body })} />
+            <KeyValueEditor
+              label="JSON body"
+              rows={data.body ?? {}}
+              onChange={(body) => set({ body })}
+            />
           )}
+          <Labelled
+            label="Say while it runs (optional)"
+            hint="Spoken only if the call takes more than a moment"
+          >
+            <input
+              className={INPUT}
+              value={data.say_while_running ?? ""}
+              placeholder="e.g. One moment, let me check."
+              onChange={(e) => set({ say_while_running: e.target.value })}
+            />
+          </Labelled>
+          <KeyValueEditor
+            label="Save to fields (field ← path in the JSON result)"
+            rows={data.save_to_fields ?? {}}
+            onChange={(save_to_fields) => set({ save_to_fields })}
+          />
         </>
       )}
 
@@ -262,18 +293,20 @@ function FieldsEditor({
   );
 }
 
-function BodyEditor({
-  body,
+function KeyValueEditor({
+  label,
+  rows,
   onChange,
 }: {
-  body: Record<string, string>;
+  label: string;
+  rows: Record<string, string>;
   onChange: (b: Record<string, string>) => void;
 }) {
-  const entries = Object.entries(body);
+  const entries = Object.entries(rows);
   const rebuild = (rows: [string, string][]) => onChange(Object.fromEntries(rows));
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-xs font-medium text-slate-600">JSON body</span>
+      <span className="text-xs font-medium text-slate-600">{label}</span>
       {entries.map(([key, value], index) => (
         <div key={index} className="flex gap-1.5">
           <input

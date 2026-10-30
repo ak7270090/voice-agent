@@ -67,6 +67,7 @@ def build_clinic_booking_flow(clinic_api_url: str) -> Flow:
                     FieldSpec(name="time", type="time", description="A free time on that day"),
                 ],
                 tools=["check_availability"],
+                say_on_enter="Sure, I can help with that.",
             ),
         ),
         StepNode(
@@ -99,6 +100,8 @@ def build_clinic_booking_flow(clinic_api_url: str) -> Flow:
                 name="check_availability",
                 description="Free times for a doctor (name or speciality) on a day (YYYY-MM-DD).",
                 url=f"{clinic_api_url}/demo-clinic/availability?doctor={{doctor}}&day={{day}}",
+                say_while_running="One moment, let me check.",
+                save_to_fields={"doctor": "doctor"},
             ),
         ),
         ToolNode(

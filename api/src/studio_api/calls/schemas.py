@@ -22,6 +22,7 @@ class CallEnd(BaseModel):
     outcome: str | None = None
     fields: dict[str, Any] = {}
     flow_path: list[str] = []
+    turn_latency_ms: list[dict[str, float]] = []
 
 
 class CallRead(BaseModel):
@@ -38,3 +39,4 @@ class CallRead(BaseModel):
     outcome: str | None
     fields: dict[str, Any]
     flow_path: list[str]
+    turn_latency_ms: list[dict[str, float]]

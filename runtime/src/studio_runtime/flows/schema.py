@@ -19,6 +19,7 @@ class StepData(BaseModel):
     fields: list[FieldSpec] = []
     tools: list[str] = []
     use_knowledge: bool = False
+    say_on_enter: str = ""
 
 
 class ToolData(BaseModel):
@@ -27,6 +28,8 @@ class ToolData(BaseModel):
     method: str = "GET"
     url: str
     body: dict[str, str] = {}
+    say_while_running: str = ""
+    save_to_fields: dict[str, str] = {}
 
 
 class EndData(BaseModel):

@@ -96,9 +96,24 @@ export const ALLOWED_EDGE_KINDS: Record<FlowNodeType, FlowEdgeKind[]> = {
 export function defaultData(type: FlowNodeType): FlowNodeData {
   switch (type) {
     case "step":
-      return { name: "New step", instructions: "", fields: [], tools: [], use_knowledge: false };
+      return {
+        name: "New step",
+        instructions: "",
+        fields: [],
+        tools: [],
+        use_knowledge: false,
+        say_on_enter: "",
+      };
     case "tool":
-      return { name: "call_api", description: "", method: "GET", url: "https://", body: {} };
+      return {
+        name: "call_api",
+        description: "",
+        method: "GET",
+        url: "https://",
+        body: {},
+        say_while_running: "",
+        save_to_fields: {},
+      };
     case "end":
       return { outcome: "completed", message: "" };
     case "transfer":

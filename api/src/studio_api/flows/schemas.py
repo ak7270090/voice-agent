@@ -29,6 +29,8 @@ class StepData(BaseModel):
     # Ids of tool nodes the LLM may call while in this step; no others.
     tools: list[str] = []
     use_knowledge: bool = False
+    # Spoken as soon as the flow arrives here, while the LLM writes the step's first reply.
+    say_on_enter: str = ""
 
 
 class ToolData(BaseModel):
@@ -38,6 +40,10 @@ class ToolData(BaseModel):
     # {field} placeholders are filled from collected fields (or the LLM's arguments).
     url: str = ""
     body: dict[str, str] = {}
+    # Spoken if the call is still running after a moment (empty: silent).
+    say_while_running: str = ""
+    # field name -> dot path in the JSON result, e.g. {"doctor": "doctor"}; copied on success.
+    save_to_fields: dict[Identifier, str] = {}
 
 
 class EndData(BaseModel):

@@ -19,13 +19,18 @@ class FakeAudioSwitch:
 
 
 class FakeSession:
-    def __init__(self) -> None:
+    def __init__(self, roles: tuple[str, ...] = ("assistant",)) -> None:
         self.input = FakeAudioSwitch()
         self.output = FakeAudioSwitch()
         self.interrupted = False
+        self.history = SimpleNamespace(items=[SimpleNamespace(role=role) for role in roles])
+        self.said: list[str] = []
 
     def interrupt(self) -> None:
         self.interrupted = True
+
+    def say(self, text: str, add_to_chat_ctx: bool = True) -> None:
+        self.said.append(text)
 
 
 def test_browser_metadata_names_the_agent_and_the_web_channel():
@@ -55,14 +60,27 @@ def test_turning_voice_off_interrupts_and_mutes_both_directions():
     assert session.output.enabled is False
 
 
-async def test_mic_button_rpc_turns_voice_on():
-    session = FakeSession()
+def toggle_for(session: FakeSession):
     handlers = {}
     participant = SimpleNamespace(register_rpc_method=lambda name, fn: handlers.update({name: fn}))
-    register_voice_toggle(SimpleNamespace(local_participant=participant), session)
+    register_voice_toggle(SimpleNamespace(local_participant=participant), session, "Welcome!")
+    return handlers["set_voice"]
 
-    answer = await handlers["set_voice"](SimpleNamespace(payload="on"))
+
+async def test_mic_on_before_the_caller_spoke_turns_voice_on_and_says_the_greeting():
+    session = FakeSession()
+
+    answer = await toggle_for(session)(SimpleNamespace(payload="on"))
 
     assert answer == "on"
     assert session.input.enabled is True
     assert not session.interrupted
+    assert session.said == ["Welcome!"]
+
+
+async def test_mic_on_after_the_caller_typed_does_not_repeat_the_greeting():
+    session = FakeSession(roles=("assistant", "user", "assistant"))
+
+    await toggle_for(session)(SimpleNamespace(payload="on"))
+
+    assert session.said == []

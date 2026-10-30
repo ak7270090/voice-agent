@@ -178,3 +178,23 @@ async def test_flow_of_an_unknown_agent_is_not_found(client, method):
     assert response.status_code == 404
     assert (await client.post("/agents/missing/flow/publish")).status_code == 404
     assert (await client.get("/agents/missing/flow/versions")).status_code == 404
+
+
+def test_tool_can_only_save_to_fields_that_exist():
+    nodes = [
+        *SMALL_FLOW["nodes"],
+        {
+            "id": "lookup",
+            "type": "tool",
+            "data": {
+                "name": "lookup",
+                "url": "https://crm.example/lookup",
+                "save_to_fields": {"email": "contact.email", "vip": "contact.vip"},
+            },
+        },
+    ]
+    nodes[1] = {**nodes[1], "data": {**nodes[1]["data"], "tools": ["lookup"]}}
+
+    assert "Save to fields: ['vip'] are not fields of any step" in issues_of(
+        {**SMALL_FLOW, "nodes": nodes}
+    )

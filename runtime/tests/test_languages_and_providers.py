@@ -1,5 +1,5 @@
 import pytest
-from livekit.plugins import openai
+from livekit.plugins import cartesia, deepgram, openai
 
 from studio_runtime.config import Settings
 from studio_runtime.control_plane import VoiceSettings
@@ -39,15 +39,36 @@ def test_language_without_a_locale_folder_is_unsupported():
 @pytest.mark.parametrize("spec", ["tts-1", "openai/", "acme/voice-1"])
 def test_bad_or_unknown_provider_specs_are_rejected(spec):
     with pytest.raises(UnsupportedProviderError):
-        split_model(spec)
+        split_model(spec, ("openai",))
 
 
 def test_openai_speech_plugins_are_built_from_the_agents_voice(monkeypatch):
     monkeypatch.setenv("OPENAI_API_KEY", "test")
 
     speech_to_text = create_stt(VOICE, "en", Settings())
-    voice = create_tts(VOICE)
+    voice = create_tts(VOICE, "en")
 
     assert isinstance(speech_to_text, openai.STT)
     assert isinstance(voice, openai.TTS)
     assert voice.model == "tts-1"
+
+
+def test_deepgram_and_cartesia_are_built_when_an_agent_names_them(monkeypatch):
+    monkeypatch.setenv("DEEPGRAM_API_KEY", "test")
+    monkeypatch.setenv("CARTESIA_API_KEY", "test")
+    fast = VoiceSettings(stt_model="deepgram/nova-3", tts_model="cartesia/sonic-3", voice="")
+
+    speech_to_text = create_stt(fast, "en", Settings())
+    voice = create_tts(fast, "en")
+
+    assert isinstance(speech_to_text, deepgram.STT)
+    assert isinstance(voice, cartesia.TTS)
+
+
+def test_deepgram_voice_is_named_by_its_model(monkeypatch):
+    monkeypatch.setenv("DEEPGRAM_API_KEY", "test")
+    aura = VoiceSettings(
+        stt_model="deepgram/nova-3", tts_model="deepgram/aura-2-thalia-en", voice=""
+    )
+
+    assert isinstance(create_tts(aura, "en"), deepgram.TTS)

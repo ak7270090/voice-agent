@@ -32,10 +32,12 @@ class Settings(BaseSettings):
     browser_call_token_ttl_minutes: int = 30
 
     # Starting values for new agents; each agent keeps its own copy.
-    default_llm_model: str = "openai:gpt-4.1-mini"
-    default_stt_model: str = "openai/gpt-4o-mini-transcribe"
-    default_tts_model: str = "openai/tts-1"
-    default_voice: str = "alloy"
+    # Deepgram for both: in the voice demo it cut transcription from ~960 to ~450 ms and the
+    # voice's first audio from 1-2 s to 0.3-1 s against OpenAI's (31 October 2026).
+    default_llm_model: str = "openai:gpt-5.4-mini"
+    default_stt_model: str = "deepgram/nova-3"
+    default_tts_model: str = "deepgram/aura-2-thalia-en"
+    default_voice: str = ""
     # Where the runtime reaches the demo clinic API used by the clinic template's tools.
     demo_clinic_api_url: str = "http://api:8000"
 

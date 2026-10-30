@@ -4,7 +4,9 @@ import { type FormEvent, type ReactNode, useState } from "react";
 
 import { Button, Card } from "@/components/ui/primitives";
 import type { Agent, AgentUpdate, KnowledgeBase } from "@/lib/api";
-import { VOICE_OPTIONS } from "@/lib/constants";
+import { STT_CHOICES, VOICE_CHOICES } from "@/lib/constants";
+
+const voiceKey = (ttsModel: string, voice: string) => `${ttsModel}|${voice}`;
 
 const INPUT_CLASS =
   "w-full rounded-lg border border-slate-200 px-3 py-2 text-[13px] outline-none focus:border-brand-500";
@@ -36,7 +38,9 @@ export function AgentEditor({
   const [greeting, setGreeting] = useState(agent.greeting);
   const [instructions, setInstructions] = useState(agent.instructions);
   const [llmModel, setLlmModel] = useState(agent.llm_model);
-  const [voice, setVoice] = useState(agent.language_settings[language].voice);
+  const speech = agent.language_settings[language];
+  const [voiceChoice, setVoiceChoice] = useState(voiceKey(speech.tts_model, speech.voice));
+  const [sttModel, setSttModel] = useState(speech.stt_model);
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -48,7 +52,11 @@ export function AgentEditor({
       knowledge_base_ids: linkedBases,
       language_settings: {
         ...agent.language_settings,
-        [language]: { ...agent.language_settings[language], voice },
+        [language]: {
+          stt_model: sttModel,
+          tts_model: voiceChoice.split("|")[0],
+          voice: voiceChoice.split("|")[1],
+        },
       },
     });
   }
@@ -60,7 +68,7 @@ export function AgentEditor({
           <Field label="Name">
             <input className={INPUT_CLASS} value={name} onChange={(e) => setName(e.target.value)} />
           </Field>
-          <Field label="LLM" hint="LangChain model string, e.g. openai:gpt-4.1-mini">
+          <Field label="LLM" hint="LangChain model string, e.g. openai:gpt-5.4-mini">
             <input
               className={INPUT_CLASS}
               value={llmModel}
@@ -83,23 +91,31 @@ export function AgentEditor({
           />
         </Field>
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Voice" hint={agent.language_settings[language].tts_model}>
+          <Field label="Voice" hint="Deepgram starts speaking sooner; OpenAI has more voices">
             <select
               className={INPUT_CLASS}
-              value={voice}
-              onChange={(e) => setVoice(e.target.value)}
+              value={voiceChoice}
+              onChange={(e) => setVoiceChoice(e.target.value)}
             >
-              {VOICE_OPTIONS.map((option) => (
-                <option key={option}>{option}</option>
+              {VOICE_CHOICES.map((choice) => (
+                <option key={choice.label} value={voiceKey(choice.tts_model, choice.voice)}>
+                  {choice.label}
+                </option>
               ))}
             </select>
           </Field>
           <Field label="Speech-to-text">
-            <input
-              className={`${INPUT_CLASS} bg-slate-50 text-slate-500`}
-              value={agent.language_settings[language].stt_model}
-              readOnly
-            />
+            <select
+              className={INPUT_CLASS}
+              value={sttModel}
+              onChange={(e) => setSttModel(e.target.value)}
+            >
+              {STT_CHOICES.map((choice) => (
+                <option key={choice.stt_model} value={choice.stt_model}>
+                  {choice.label}
+                </option>
+              ))}
+            </select>
           </Field>
         </div>
         <Field

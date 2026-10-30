@@ -42,6 +42,7 @@ class CallRecord(BaseModel):
     outcome: str | None = None
     fields: dict[str, Any] = {}
     flow_path: list[str] = []
+    turn_latency_ms: list[dict[str, float]] = []
 
 
 class KnowledgeHit(BaseModel):

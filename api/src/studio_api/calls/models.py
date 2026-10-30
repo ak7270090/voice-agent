@@ -23,3 +23,5 @@ class Call(Base):
     outcome: Mapped[str | None] = mapped_column(String(60))
     fields: Mapped[dict] = mapped_column(JSON, default=dict)
     flow_path: Mapped[list[str]] = mapped_column(JSON, default=list)
+    # Per agent reply, milliseconds per stage (e2e_latency = caller stops -> agent's first audio).
+    turn_latency_ms: Mapped[list[dict]] = mapped_column(JSON, default=list)

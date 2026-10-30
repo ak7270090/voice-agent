@@ -17,6 +17,7 @@ from pydantic import Field, create_model
 from studio_runtime.flows import prompts
 from studio_runtime.flows.http_tools import (
     MAX_TEXT_RESULT_CHARS,
+    ToolResult,
     call_tool,
     fill_leniently,
     placeholders,
@@ -45,6 +46,16 @@ SAVE_FIELDS_TOOL = "save_fields"
 MAX_AUTOMATIC_MOVES = 20
 
 FieldParsers = dict[str, Callable[[str, date], Any]]
+
+
+def value_at(data: dict, path: str) -> Any:
+    """The value at a dot path such as "doctor" or "booking.id"; None when it is missing."""
+    value: Any = data
+    for key in path.split("."):
+        if not isinstance(value, dict) or key not in value:
+            return None
+        value = value[key]
+    return value
 
 
 def slug(text: str) -> str:
@@ -79,6 +90,9 @@ class FlowRunner:
         self.outcome: str | None = None
         self.final_message = ""
         self.moved = False
+        # A step's "say on entering" line, waiting to be spoken by the graph.
+        self.entry_line = ""
+        self._move_targets: dict[str, str] = {}
 
     async def start(self) -> None:
         start = next(node for node in self._nodes.values() if isinstance(node, StartNode))
@@ -107,6 +121,7 @@ class FlowRunner:
             self.path.append(node.id)
             if isinstance(node, StepNode):
                 self.current = node
+                self.entry_line = node.data.say_on_enter
                 break
             if isinstance(node, EndNode | TransferNode):
                 self._finish(node)
@@ -135,14 +150,31 @@ class FlowRunner:
 
     async def _run_path_tool(self, node: ToolNode) -> FlowEdge | None:
         result = await call_tool(self._http, node.data, self.fields)
-        self._record(node.data.name, result.data)
+        self._record(node, result)
         wanted = SUCCESS_EDGE if result.ok else FAILURE_EDGE
         edges = self._outgoing(node.id, wanted) or self._outgoing(node.id, ALWAYS_EDGE)
         return edges[0] if edges else None
 
-    def _record(self, tool_name: str, data: Any) -> None:
-        self.results[tool_name] = data
-        self.last_result = (tool_name, data)
+    def _record(self, node: ToolNode, result: ToolResult) -> None:
+        self.results[node.data.name] = result.data
+        self.last_result = (node.data.name, result.data)
+        if result.ok and isinstance(result.data, dict):
+            for field, path in node.data.save_to_fields.items():
+                value = value_at(result.data, path)
+                if value is not None:
+                    self.fields[field] = value
+        self._notify()
+
+    def filler_for(self, tool_name: str) -> str:
+        """What to say while this tool call runs: an attached tool's own line, or the line of
+        the tool node a move leads into."""
+        target = self._move_targets.get(tool_name)
+        for node in self._nodes.values():
+            if not isinstance(node, ToolNode):
+                continue
+            if node.data.name == tool_name or node.id == target:
+                return node.data.say_while_running
+        return ""
 
     # Fields
 
@@ -295,6 +327,7 @@ class FlowRunner:
             while name in names:
                 name += "_"
             names.add(name)
+            self._move_targets[name] = target
             tools.append((self._move_tool(name, target, condition), condition))
         return tools
 
@@ -316,7 +349,7 @@ class FlowRunner:
                 if value not in (None, "")
             }
             result = await call_tool(self._http, node.data, {**self.fields, **given})
-            self._record(node.data.name, result.data)
+            self._record(node, result)
             return json.dumps(result.data, default=str)[:MAX_TEXT_RESULT_CHARS]
 
         return StructuredTool.from_function(

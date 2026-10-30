@@ -8,7 +8,8 @@ Current step: {step_name}
 
 FIELDS_SECTION = """Details this step collects (ask for one missing detail at a time):
 {lines}
-Call save_fields as soon as the caller gives any of them, using their exact words."""
+Call save_fields as soon as the caller gives any of them, using their exact words, and write
+your reply to the caller in the same message."""
 
 FIELD_HAVE = "- {name} ({description}): have {value}"
 FIELD_MISSING = "- {name} ({description}): still needed"

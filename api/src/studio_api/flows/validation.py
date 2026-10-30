@@ -105,6 +105,10 @@ def _check_steps_and_tools(flow: Flow, nodes: dict) -> list[FlowIssue]:
             if unknown and not _attached_anywhere(flow, node.id):
                 message = f"Placeholders {sorted(unknown)} are not fields of any step"
                 issues.append(FlowIssue(message=message, node_id=node.id))
+            not_fields = sorted(set(node.data.save_to_fields) - field_names)
+            if not_fields:
+                message = f"Save to fields: {not_fields} are not fields of any step"
+                issues.append(FlowIssue(message=message, node_id=node.id))
     for name, count in tool_names.items():
         if count > 1:
             issues.append(FlowIssue(message=f"Two tools are named '{name}'"))

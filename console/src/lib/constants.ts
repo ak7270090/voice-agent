@@ -1,16 +1,23 @@
 export const LANGUAGE_LABELS: Record<string, string> = { en: "English", hi: "Hindi" };
 
-// OpenAI text-to-speech voices; other providers come with Phase 8.
-export const VOICE_OPTIONS = [
-  "alloy",
-  "ash",
-  "coral",
-  "echo",
-  "fable",
-  "nova",
-  "onyx",
-  "sage",
-  "shimmer",
+// A voice is a text-to-speech model plus, for OpenAI, a voice name (Deepgram puts the voice in
+// the model name).
+export const VOICE_CHOICES = [
+  ...["thalia", "andromeda", "helena", "apollo", "arcas", "asteria"].map((name) => ({
+    label: `Deepgram Aura-2 · ${name} (fastest)`,
+    tts_model: `deepgram/aura-2-${name}-en`,
+    voice: "",
+  })),
+  ...["alloy", "ash", "coral", "echo", "nova", "sage", "shimmer"].map((name) => ({
+    label: `OpenAI tts-1 · ${name}`,
+    tts_model: "openai/tts-1",
+    voice: name,
+  })),
+];
+
+export const STT_CHOICES = [
+  { label: "Deepgram nova-3 (fastest)", stt_model: "deepgram/nova-3" },
+  { label: "OpenAI gpt-4o-mini-transcribe", stt_model: "openai/gpt-4o-mini-transcribe" },
 ];
 
 export const TEMPLATE_STYLES: Record<string, { icon: string; tint: string }> = {

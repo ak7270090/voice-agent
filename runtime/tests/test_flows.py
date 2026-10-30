@@ -1,5 +1,6 @@
 """Running a clinic-style flow with a scripted LLM and a fake clinic API: no model is called."""
 
+import asyncio
 import json
 from datetime import date
 
@@ -10,7 +11,7 @@ from langchain_core.messages import AIMessage, AIMessageChunk, HumanMessage, Sys
 from langchain_core.outputs import ChatGeneration, ChatResult
 
 from studio_runtime.flows.graph import FlowGraph
-from studio_runtime.flows.runner import FlowRunner
+from studio_runtime.flows.runner import FlowRunner, value_at
 from studio_runtime.flows.schema import Flow
 from studio_runtime.parsers import parsers_for
 
@@ -36,13 +37,19 @@ FLOW = {
                     {"name": "time", "type": "time"},
                 ],
                 "tools": ["check"],
+                "say_on_enter": "Sure.",
             },
         },
         {"id": "confirm", "type": "step", "data": {"name": "Confirm"}},
         {
             "id": "check",
             "type": "tool",
-            "data": {"name": "check_availability", "url": CLINIC + "/availability?day={day}"},
+            "data": {
+                "name": "check_availability",
+                "url": CLINIC + "/availability?day={day}",
+                "say_while_running": "One moment.",
+                "save_to_fields": {"day": "day"},
+            },
         },
         {
             "id": "book",
@@ -89,14 +96,17 @@ FLOW = {
 
 
 class FakeClinic:
-    def __init__(self, booking_status: int = 201) -> None:
+    def __init__(self, booking_status: int = 201, delay_seconds: float = 0) -> None:
         self.requests: list[httpx.Request] = []
         self.booking_status = booking_status
+        self.delay_seconds = delay_seconds
 
-    def __call__(self, request: httpx.Request) -> httpx.Response:
+    async def __call__(self, request: httpx.Request) -> httpx.Response:
         self.requests.append(request)
+        await asyncio.sleep(self.delay_seconds)
         if request.url.path == "/availability":
-            return httpx.Response(200, json={"free_times": ["11:00", "11:30"]})
+            day = request.url.params["day"]
+            return httpx.Response(200, json={"free_times": ["11:00", "11:30"], "day": day})
         return httpx.Response(self.booking_status, json={"booking_id": "A-1001"})
 
 
@@ -235,7 +245,7 @@ async def test_turn_that_moves_answers_from_the_new_step():
 
     reply = await run_turn(graph, "I want to book")
 
-    assert reply == "May I have your name?"
+    assert reply == "Sure. May I have your name?"
     assert runner.current.id == "collect"
     assert "Current step: Collect booking details" in model.seen[1][0].content
     assert model.bound[1][0] == "save_fields"
@@ -292,3 +302,74 @@ async def test_model_call_that_fails_before_speaking_is_retried():
     no_retry = FlowGraph(runner, FlakyModel(script=[AIMessage(content="x")]), "base", 0)
     with pytest.raises(ConnectionError):
         await run_turn(no_retry, "hi")
+
+
+def graph_for(runner: FlowRunner, script: list[AIMessage]) -> tuple[FlowGraph, ScriptedModel]:
+    model = ScriptedModel(script=script)
+    return FlowGraph(runner, model, "base", max_retries=0, filler_delay_seconds=0.01), model
+
+
+async def test_a_reply_written_with_save_fields_is_the_turns_only_model_call():
+    runner = make_runner()
+    await runner.start()
+    await runner.enter("collect")
+    runner.entry_line = ""
+    saved_and_asked = AIMessage(
+        content="Thanks, Rohan. How old is the patient?",
+        tool_calls=[{"name": "save_fields", "args": {"patient_name": "Rohan"}, "id": "c1"}],
+    )
+    graph, model = graph_for(runner, [saved_and_asked])
+
+    reply = await run_turn(graph, "It's for Rohan")
+
+    assert reply == "Thanks, Rohan. How old is the patient?"
+    assert len(model.seen) == 1
+    assert runner.fields["patient_name"] == "Rohan"
+
+
+async def test_a_move_still_asks_the_new_step_after_saying_its_entry_line():
+    runner = make_runner()
+    await runner.start()
+    graph, model = graph_for(
+        runner, [call("go_to_collect_booking_details"), AIMessage(content="Your name?")]
+    )
+
+    reply = await run_turn(graph, "Book me in")
+
+    assert reply == "Sure. Your name?"
+    assert len(model.seen) == 2
+    assert model.seen[1][-1].content == "Sure."
+
+
+async def test_a_slow_tool_says_its_line_once_and_a_fast_one_stays_silent():
+    slow = make_runner(FakeClinic(delay_seconds=0.1))
+    fast = make_runner(FakeClinic())
+    for runner in (slow, fast):
+        await runner.start()
+        await runner.enter("collect")
+        runner.entry_line = ""
+    checks = [call("check_availability", day="tomorrow"), AIMessage(content="11 or 11:30?")]
+    slow_graph, _ = graph_for(slow, list(checks))
+    fast_graph = FlowGraph(fast, ScriptedModel(script=list(checks)), "base", 0, 5.0)
+
+    assert await run_turn(slow_graph, "Which times?") == "One moment. 11 or 11:30?"
+    assert await run_turn(fast_graph, "Which times?") == "11 or 11:30?"
+
+
+async def test_a_tool_result_fills_the_fields_it_is_mapped_to():
+    runner = make_runner()
+    await runner.start()
+    await runner.enter("collect")
+    check = next(tool for tool in runner.tools() if tool.name == "check_availability")
+
+    await check.ainvoke({"day": "Saturday"})
+
+    assert runner.fields["day"] == "2026-10-31"
+
+
+def test_value_at_follows_dot_paths_and_misses_return_none():
+    data = {"booking": {"id": "A-1", "doctor": {"name": "Dr. Mehta"}}}
+
+    assert value_at(data, "booking.doctor.name") == "Dr. Mehta"
+    assert value_at(data, "booking.missing") is None
+    assert value_at(data, "booking.id.deeper") is None

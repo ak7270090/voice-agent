@@ -172,6 +172,7 @@ export type StepData = {
   fields: FieldSpec[];
   tools: string[];
   use_knowledge: boolean;
+  say_on_enter: string;
 };
 
 export type ToolData = {
@@ -180,6 +181,8 @@ export type ToolData = {
   method: "GET" | "POST";
   url: string;
   body: Record<string, string>;
+  say_while_running: string;
+  save_to_fields: Record<string, string>;
 };
 
 export type EndData = { outcome: string; message: string };

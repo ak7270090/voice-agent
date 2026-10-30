@@ -34,6 +34,7 @@ class UnreachableControlPlane:
 class FakeJobContext:
     def __init__(self, metadata: str) -> None:
         self.job = SimpleNamespace(metadata=metadata)
+        self.proc = SimpleNamespace(userdata={"tracer_provider": None})
         self.sent: list[tuple[str, str]] = []
         self.shut_down = False
 
