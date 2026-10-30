@@ -215,6 +215,8 @@ class FlowRunner:
             return node.data.name
         if isinstance(node, EndNode):
             return node.data.outcome
+        if isinstance(node, ToolNode):
+            return node.data.name
         return node.type
 
     def system_prompt(self, base_instructions: str) -> str:

@@ -167,6 +167,7 @@ async def test_filling_every_field_books_after_confirmation_and_ends_with_the_bo
         {"patient_name": "Rohan Gupta", "patient_age": "34", "day": "Saturday", "time": "11"}
     )
     confirm_move = next(t for t in runner.tools() if t.description == "Caller confirms")
+    assert confirm_move.name == "go_to_book_appointment"
     await confirm_move.ainvoke({})
 
     body = json.loads(clinic.requests[0].content)
