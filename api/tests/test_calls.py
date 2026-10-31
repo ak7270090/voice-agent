@@ -22,7 +22,7 @@ async def test_started_call_is_active_until_the_runtime_ends_it(client, runtime_
     latency = [{"e2e_latency": 1840, "llm_node_ttft": 610}]
     ended = await client.post(
         f"/runtime/calls/{call['id']}/end",
-        json={"transcript": transcript, "turn_latency_ms": latency},
+        json={"transcript": transcript, "turn_latency_ms": latency, "interruptions": 2},
         headers=runtime_headers,
     )
 
@@ -31,6 +31,7 @@ async def test_started_call_is_active_until_the_runtime_ends_it(client, runtime_
     assert ended.json()["ended_at"] is not None
     assert ended.json()["transcript"] == transcript
     assert ended.json()["turn_latency_ms"] == latency
+    assert ended.json()["interruptions"] == 2
 
 
 async def test_ending_a_call_twice_keeps_the_first_end(client, runtime_headers):

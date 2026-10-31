@@ -173,6 +173,7 @@ export type StepData = {
   tools: string[];
   use_knowledge: boolean;
   say_on_enter: string;
+  wait_after_enter: boolean;
 };
 
 export type ToolData = {

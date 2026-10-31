@@ -87,9 +87,16 @@ def build_clinic_booking_flow(clinic_api_url: str) -> Flow:
             data=StepData(
                 name="Read back and confirm",
                 instructions=(
-                    "In one sentence, read back all five details: the patient's name, their age, "
-                    "the doctor, the day and the time. Then ask the caller to confirm."
+                    "The details were just read back to the caller. If they say something is "
+                    "wrong, ask what to change."
                 ),
+                # Filled in by code from the collected fields, so names, ages, dates and times
+                # are said exactly; then the agent waits for the caller's answer.
+                say_on_enter=(
+                    "To confirm: {patient_name}, aged {patient_age}, with {doctor} on {day} at "
+                    "{time}. Is that right?"
+                ),
+                wait_after_enter=True,
             ),
         ),
         ToolNode(

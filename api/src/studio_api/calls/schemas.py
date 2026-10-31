@@ -1,6 +1,6 @@
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from studio_api.calls.constants import CHANNELS, TRANSCRIPT_ROLES
 from studio_api.database import UtcDateTime
@@ -23,6 +23,7 @@ class CallEnd(BaseModel):
     fields: dict[str, Any] = {}
     flow_path: list[str] = []
     turn_latency_ms: list[dict[str, float]] = []
+    interruptions: int = Field(default=0, ge=0)
 
 
 class CallRead(BaseModel):
@@ -40,3 +41,4 @@ class CallRead(BaseModel):
     fields: dict[str, Any]
     flow_path: list[str]
     turn_latency_ms: list[dict[str, float]]
+    interruptions: int

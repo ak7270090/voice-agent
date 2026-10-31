@@ -63,7 +63,7 @@ export function NodePanel({ node, toolNodes, onChange, onDelete, onClose }: Prop
           </Labelled>
           <Labelled
             label="Say on entering (optional)"
-            hint="Spoken the moment the call arrives here, while the reply is being written"
+            hint="Spoken the moment the call arrives here; {field} placeholders are filled in"
           >
             <input
               className={INPUT}
@@ -72,6 +72,14 @@ export function NodePanel({ node, toolNodes, onChange, onDelete, onClose }: Prop
               onChange={(e) => set({ say_on_enter: e.target.value })}
             />
           </Labelled>
+          <label className="-mt-2 flex items-center gap-2 text-[13px]">
+            <input
+              type="checkbox"
+              checked={data.wait_after_enter ?? false}
+              onChange={(e) => set({ wait_after_enter: e.target.checked })}
+            />
+            Then wait for the caller (no LLM reply), e.g. after reading details back
+          </label>
           <FieldsEditor fields={data.fields ?? []} onChange={(fields) => set({ fields })} />
           <div className="flex flex-col gap-1.5">
             <span className="text-xs font-medium text-slate-600">Tools this step may call</span>

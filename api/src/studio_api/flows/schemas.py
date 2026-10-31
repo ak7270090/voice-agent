@@ -29,8 +29,11 @@ class StepData(BaseModel):
     # Ids of tool nodes the LLM may call while in this step; no others.
     tools: list[str] = []
     use_knowledge: bool = False
-    # Spoken as soon as the flow arrives here, while the LLM writes the step's first reply.
+    # Spoken as soon as the flow arrives here, while the LLM writes the step's first reply;
+    # {field} placeholders are filled in by code (a read-back never misstates a number).
     say_on_enter: str = ""
+    # After saying the line, wait for the caller instead of asking the LLM for a reply.
+    wait_after_enter: bool = False
 
 
 class ToolData(BaseModel):

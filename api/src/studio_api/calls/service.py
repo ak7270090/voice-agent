@@ -38,6 +38,7 @@ async def end_call(session: AsyncSession, call_id: str, end: CallEnd) -> Call:
         call.fields = end.fields
         call.flow_path = end.flow_path
         call.turn_latency_ms = end.turn_latency_ms
+        call.interruptions = end.interruptions
         await session.commit()
     return call
 

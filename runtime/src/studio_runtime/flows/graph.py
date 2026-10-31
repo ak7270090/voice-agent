@@ -83,6 +83,9 @@ class FlowGraph:
                 yield spoken(f"{runner.entry_line} ")
                 history = [*history, AIMessage(content=runner.entry_line)]
                 runner.entry_line = ""
+                if runner.current.data.wait_after_enter:
+                    # The line is the whole reply (e.g. a read-back); the caller answers next.
+                    return
             tools = runner.tools()
             model = self._model.bind_tools(tools) if tools else self._model
             messages = [SystemMessage(runner.system_prompt(self._base_instructions))]

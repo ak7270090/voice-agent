@@ -206,12 +206,16 @@ class TurnLatencies:
 
     def __init__(self) -> None:
         self.turns: list[dict[str, float]] = []
+        # Agent replies the caller talked over (LiveKit marks them interrupted).
+        self.interruptions = 0
         self._caller_part: dict[str, float] = {}
 
     def on_conversation_item_added(self, event: ConversationItemAddedEvent) -> None:
         message = event.item
         if not isinstance(message, ChatMessage) or message.role not in ("user", "assistant"):
             return
+        if message.role == "assistant" and message.interrupted:
+            self.interruptions += 1
         latency_ms = {
             field: round(message.metrics[field] * 1000)
             for field in LATENCY_FIELDS

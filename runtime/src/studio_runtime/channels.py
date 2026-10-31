@@ -7,7 +7,7 @@ a typed chat costs only the LLM. The console's mic button turns voice on through
 import json
 
 from livekit import rtc
-from livekit.agents import AgentSession
+from livekit.agents import AgentSession, UserStateChangedEvent
 from pydantic import BaseModel, ValidationError
 
 WEB_CHANNEL = "web"
@@ -17,6 +17,8 @@ SET_VOICE_RPC_METHOD = "set_voice"
 VOICE_ON = "on"
 VOICE_OFF = "off"
 USER_ROLE = "user"
+AWAY_STATE = "away"
+SPEAKING_STATE = "speaking"
 
 
 class InvalidCallMetadataError(ValueError):
@@ -68,3 +70,24 @@ def register_voice_toggle(room: rtc.Room, session: AgentSession, greeting: str) 
         return VOICE_ON if enabled else VOICE_OFF
 
     room.local_participant.register_rpc_method(SET_VOICE_RPC_METHOD, handle_set_voice)
+
+
+def register_idle_caller(session: AgentSession, still_there: str, goodbye: str) -> None:
+    """A voice caller who goes quiet (LiveKit marks them "away" after `user_away_timeout`) is
+    asked once if they are still there; quiet again, the agent says goodbye and hangs up. A
+    typed chat is never asked: with the mic off there is no speech to wait for."""
+    asked = False
+
+    def on_user_state_changed(event: UserStateChangedEvent) -> None:
+        nonlocal asked
+        if event.new_state == SPEAKING_STATE:
+            asked = False
+        if event.new_state != AWAY_STATE or not session.input.audio_enabled:
+            return
+        if not asked:
+            asked = True
+            session.say(still_there)
+            return
+        session.say(goodbye).add_done_callback(lambda _: session.shutdown())
+
+    session.on("user_state_changed", on_user_state_changed)

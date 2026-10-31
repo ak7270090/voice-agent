@@ -45,7 +45,15 @@ FLOW = {
                 "say_on_enter": "Sure.",
             },
         },
-        {"id": "confirm", "type": "step", "data": {"name": "Confirm"}},
+        {
+            "id": "confirm",
+            "type": "step",
+            "data": {
+                "name": "Confirm",
+                "say_on_enter": "Confirm: {patient_name}, {day} at {time}?",
+                "wait_after_enter": True,
+            },
+        },
         {
             "id": "check",
             "type": "tool",
@@ -489,6 +497,20 @@ async def test_a_timeout_counts_as_no_answer():
     result = await check.ainvoke({"day": "Saturday"})
 
     assert "got no answer" in result
+
+
+async def test_a_read_back_is_filled_in_by_code_and_then_waits_for_the_caller():
+    runner = make_runner()
+    await runner.start()
+    await runner.enter("collect")
+    runner.fields.update({"patient_name": "Rohan", "patient_age": 34, "day": "2026-10-31"})
+    graph, model = graph_for(runner, [])
+
+    reply = await run_turn(graph, "11 am works")
+
+    assert reply == "Confirm: Rohan, Saturday 31 October at 11:00? "
+    assert runner.current.id == "confirm"
+    assert model.seen == []
 
 
 async def test_two_lookups_in_one_message_run_together():

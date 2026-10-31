@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import JSON, DateTime, ForeignKey, String
+from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from studio_api.calls.constants import ACTIVE_STATUS
@@ -25,3 +25,5 @@ class Call(Base):
     flow_path: Mapped[list[str]] = mapped_column(JSON, default=list)
     # Per agent reply, milliseconds per stage (e2e_latency = caller stops -> agent's first audio).
     turn_latency_ms: Mapped[list[dict]] = mapped_column(JSON, default=list)
+    # Agent replies the caller talked over.
+    interruptions: Mapped[int] = mapped_column(Integer, default=0)

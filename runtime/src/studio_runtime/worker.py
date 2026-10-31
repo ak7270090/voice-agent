@@ -22,7 +22,12 @@ from livekit.agents import (
 from livekit.plugins import silero
 from livekit.plugins.langchain import LLMAdapter
 
-from studio_runtime.channels import parse_call_metadata, register_voice_toggle, set_voice
+from studio_runtime.channels import (
+    parse_call_metadata,
+    register_idle_caller,
+    register_voice_toggle,
+    set_voice,
+)
 from studio_runtime.config import Settings, get_settings
 from studio_runtime.control_plane import AgentConfig, CallRecord, create_control_plane_client
 from studio_runtime.conversation import build_transcript, create_llm
@@ -62,6 +67,7 @@ def build_agent_session(
         llm=llm,
         tts=create_tts(voice, language),
         turn_handling=build_turn_handling(settings),
+        user_away_timeout=settings.caller_away_seconds,
     )
 
 
@@ -140,7 +146,9 @@ async def run_call(ctx: JobContext) -> None:
 
     async def close_call_record() -> None:
         record = CallRecord(
-            transcript=build_transcript(session.history), turn_latency_ms=latencies.turns
+            transcript=build_transcript(session.history),
+            turn_latency_ms=latencies.turns,
+            interruptions=latencies.interruptions,
         )
         if runner is not None:
             record.outcome, record.fields, record.flow_path = (
@@ -164,6 +172,7 @@ async def run_call(ctx: JobContext) -> None:
         room=ctx.room,
         room_options=room_io.RoomOptions(delete_room_on_close=True),
     )
+    register_idle_caller(session, locale.messages["still_there"], locale.messages["goodbye_quiet"])
     if metadata.is_web:
         set_voice(session, enabled=False)
         register_voice_toggle(ctx.room, session, config.greeting)

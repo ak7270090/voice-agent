@@ -56,6 +56,8 @@ MOVED_BY_START = "start"
 MOVED_BY_LLM = "llm"
 MOVED_BY_CODE = "code"
 
+ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+
 FieldParsers = dict[str, Callable[[str, date], Any]]
 T = TypeVar("T")
 
@@ -67,6 +69,14 @@ def value_at(data: dict, path: str) -> Any:
         if not isinstance(value, dict) or key not in value:
             return None
         value = value[key]
+    return value
+
+
+def spoken_value(value: Any) -> Any:
+    """An ISO date ("2026-11-02") as people say it ("Monday 2 November"); the rest unchanged."""
+    if isinstance(value, str) and ISO_DATE.fullmatch(value):
+        day = date.fromisoformat(value)
+        return f"{day:%A} {day.day} {day:%B}"
     return value
 
 
@@ -162,7 +172,7 @@ class FlowRunner:
                 self.path.append(node.id)
                 if isinstance(node, StepNode):
                     self.current = node
-                    self.entry_line = node.data.say_on_enter
+                    self.entry_line = fill_leniently(node.data.say_on_enter, self.message_values())
                     break
                 if isinstance(node, EndNode | TransferNode):
                     self._finish(node)
@@ -185,10 +195,12 @@ class FlowRunner:
         self.final_message = fill_leniently(node.data.message, self.message_values())
 
     def message_values(self) -> dict[str, Any]:
+        """Values for {placeholders} in spoken lines: the fields, then the latest tool result
+        (the service's answer wins), with dates said the way people say them."""
         values = dict(self.fields)
         if self.last_result and isinstance(self.last_result[1], dict):
             values.update(self.last_result[1])
-        return values
+        return {name: spoken_value(value) for name, value in values.items()}
 
     async def _run_path_tool(self, node: ToolNode) -> FlowEdge | None:
         """A tool node on the path runs without the LLM, so it gets its tool span here."""

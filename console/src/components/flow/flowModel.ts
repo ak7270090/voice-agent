@@ -103,6 +103,7 @@ export function defaultData(type: FlowNodeType): FlowNodeData {
         tools: [],
         use_knowledge: false,
         say_on_enter: "",
+        wait_after_enter: false,
       };
     case "tool":
       return {

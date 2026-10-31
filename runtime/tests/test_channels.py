@@ -5,6 +5,7 @@ import pytest
 from studio_runtime.channels import (
     InvalidCallMetadataError,
     parse_call_metadata,
+    register_idle_caller,
     register_voice_toggle,
     set_voice,
 )
@@ -82,5 +83,50 @@ async def test_mic_on_after_the_caller_typed_does_not_repeat_the_greeting():
     session = FakeSession(roles=("assistant", "user", "assistant"))
 
     await toggle_for(session)(SimpleNamespace(payload="on"))
+
+    assert session.said == []
+
+
+class IdleSession:
+    def __init__(self, voice_on: bool) -> None:
+        self.input = SimpleNamespace(audio_enabled=voice_on)
+        self.handlers: dict = {}
+        self.said: list[str] = []
+        self.shut_down = False
+
+    def on(self, event: str, handler) -> None:
+        self.handlers[event] = handler
+
+    def say(self, text: str):
+        self.said.append(text)
+        return SimpleNamespace(add_done_callback=lambda callback: callback(None))
+
+    def shutdown(self) -> None:
+        self.shut_down = True
+
+    def user(self, state: str) -> None:
+        self.handlers["user_state_changed"](SimpleNamespace(new_state=state))
+
+
+def test_a_quiet_voice_caller_is_asked_once_then_the_call_ends():
+    session = IdleSession(voice_on=True)
+    register_idle_caller(session, "Still there?", "Goodbye.")
+
+    session.user("away")
+    session.user("speaking")
+    session.user("away")
+    assert session.said == ["Still there?", "Still there?"]
+    assert not session.shut_down
+
+    session.user("away")
+    assert session.said[-1] == "Goodbye."
+    assert session.shut_down
+
+
+def test_a_typed_chat_is_never_asked_if_the_caller_is_there():
+    session = IdleSession(voice_on=False)
+    register_idle_caller(session, "Still there?", "Goodbye.")
+
+    session.user("away")
 
     assert session.said == []

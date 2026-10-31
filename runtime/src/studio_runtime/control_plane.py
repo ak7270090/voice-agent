@@ -43,6 +43,8 @@ class CallRecord(BaseModel):
     fields: dict[str, Any] = {}
     flow_path: list[str] = []
     turn_latency_ms: list[dict[str, float]] = []
+    # Agent replies the caller talked over: a high share means turn-taking cuts in or lags.
+    interruptions: int = 0
 
 
 class KnowledgeHit(BaseModel):

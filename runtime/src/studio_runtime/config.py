@@ -39,6 +39,8 @@ class Settings(BaseSettings):
     # Off: a reply drafted before the turn ends is thrown away if the caller goes on, but its
     # tools may already have moved the flow or booked a slot (clinic-voice-agent found the same).
     preemptive_generation: bool = False
+    # A voice caller silent this long (and the agent too) is asked "Are you still there?".
+    caller_away_seconds: float = 12.0
     # A tool's "say while it runs" line plays only if the tool is still running after this.
     filler_delay_seconds: float = 0.7
     # Flows read "tomorrow" and "Saturday" in this time zone.

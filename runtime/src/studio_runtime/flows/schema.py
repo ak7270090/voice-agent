@@ -20,6 +20,7 @@ class StepData(BaseModel):
     tools: list[str] = []
     use_knowledge: bool = False
     say_on_enter: str = ""
+    wait_after_enter: bool = False
 
 
 class ToolData(BaseModel):

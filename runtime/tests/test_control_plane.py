@@ -80,6 +80,7 @@ async def test_call_is_started_and_ended_with_its_transcript():
         "fields": {},
         "flow_path": [],
         "turn_latency_ms": [],
+        "interruptions": 0,
     }
 
 

@@ -59,6 +59,17 @@ def test_agent_reply_latencies_are_kept_in_milliseconds():
     ]
 
 
+def test_replies_the_caller_talked_over_are_counted():
+    latencies = TurnLatencies()
+    heard = ChatMessage(role="assistant", content=["Hi"])
+    cut_off = ChatMessage(role="assistant", content=["Your booking"], interrupted=True)
+
+    for item in (heard, cut_off):
+        latencies.on_conversation_item_added(SimpleNamespace(item=item))
+
+    assert latencies.interruptions == 1
+
+
 def test_turn_handling_comes_from_settings():
     options = build_turn_handling(
         Settings(endpointing_mode="fixed", min_endpointing_delay=0.3, preemptive_generation=False)
