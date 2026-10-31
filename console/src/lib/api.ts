@@ -170,6 +170,79 @@ export const startPhoneCall = (agentId: string, toNumber: string, fromNumberId: 
     body: JSON.stringify({ to_number: toNumber, from_number_id: fromNumberId }),
   });
 
+export type CampaignStatus = "draft" | "running" | "paused" | "completed";
+export type ContactStatus =
+  "pending" | "calling" | "retry" | "done" | "failed" | "skipped" | "opted_out";
+
+export type CampaignSettings = {
+  name: string;
+  agent_id: string;
+  from_number_id: string;
+  window_start: string;
+  window_end: string;
+  timezone: string;
+  max_concurrent: number;
+  max_attempts: number;
+  retry_after_minutes: number;
+};
+
+export type Campaign = CampaignSettings & {
+  id: string;
+  status: CampaignStatus;
+  created_at: string;
+  counts: Partial<Record<ContactStatus, number>>;
+};
+
+export type CampaignContact = {
+  id: string;
+  phone: string;
+  name: string;
+  variables: Record<string, string>;
+  consent: boolean;
+  status: ContactStatus;
+  attempts: number;
+  next_attempt_at: string | null;
+  outcome: string | null;
+  updated_at: string;
+};
+
+export type ContactImport = {
+  added: number;
+  skipped: number;
+  rejected: { row: number; reason: string }[];
+};
+
+export const listCampaigns = () => request<Campaign[]>("/campaigns");
+
+export const getCampaign = (campaignId: string) => request<Campaign>(`/campaigns/${campaignId}`);
+
+export const createCampaign = (settings: CampaignSettings) =>
+  request<Campaign>("/campaigns", { method: "POST", body: JSON.stringify(settings) });
+
+export const startCampaign = (campaignId: string) =>
+  request<Campaign>(`/campaigns/${campaignId}/start`, { method: "POST" });
+
+export const pauseCampaign = (campaignId: string) =>
+  request<Campaign>(`/campaigns/${campaignId}/pause`, { method: "POST" });
+
+export const listCampaignContacts = (campaignId: string) =>
+  request<CampaignContact[]>(`/campaigns/${campaignId}/contacts`);
+
+export async function importContacts(campaignId: string, file: File) {
+  const form = new FormData();
+  form.append("file", file);
+  // No JSON content type: the browser sets the multipart boundary itself.
+  const response = await fetch(`${API_URL}/campaigns/${campaignId}/contacts/csv`, {
+    method: "POST",
+    body: form,
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new ApiError(response.status, body.detail ?? response.statusText);
+  }
+  return (await response.json()) as ContactImport;
+}
+
 export type KnowledgeBase = {
   id: string;
   name: string;
