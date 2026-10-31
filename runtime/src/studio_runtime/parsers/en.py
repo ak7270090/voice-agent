@@ -33,6 +33,7 @@ WORD = re.compile(r"[a-z']+|\d+")
 ISO_DATE = re.compile(r"\b(\d{4})-(\d{2})-(\d{2})\b")
 CLOCK = re.compile(r"\b(\d{1,2})(?:[:.](\d{2}))?\s*(a\.?m\.?|p\.?m\.?)?(?![\d-])")
 DAY_OF_MONTH = re.compile(r"\b(\d{1,2})(?:st|nd|rd|th)?\b")
+NOON = re.compile(r"\bnoon\b")
 
 
 def words(text: str) -> list[str]:
@@ -101,7 +102,8 @@ def parse_day(text: str, today: date) -> str | None:
 def parse_time(text: str, today: date | None = None) -> str | None:
     """'11', '11:30', '4 pm', 'eleven', 'eleven thirty', 'noon'."""
     lowered = text.lower()
-    if "noon" in lowered:
+    # A whole word: "afternoon" contains "noon" but is not a time.
+    if NOON.search(lowered):
         return "12:00"
     clock = CLOCK.search(lowered)
     if clock:

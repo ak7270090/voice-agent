@@ -51,6 +51,10 @@ def test_days_are_resolved_from_today(text, expected):
         ("10 am", "10:00"),
         ("eleven thirty", "11:30"),
         ("noon", "12:00"),
+        ("at noon please", "12:00"),
+        # Not a time: "afternoon" once became 12:00 (it contains "noon") and was booked.
+        ("in the afternoon", None),
+        ("2 in the afternoon", "14:00"),
         ("not sure", None),
     ],
 )
