@@ -43,6 +43,7 @@ from studio_runtime.control_plane import (
 )
 from studio_runtime.conversation import build_transcript, create_llm
 from studio_runtime.flows.call import create_flow_llm, create_flow_runner
+from studio_runtime.flows.http_tools import fill_leniently
 from studio_runtime.flows.runner import FlowRunner
 from studio_runtime.knowledge import build_knowledge_tool
 from studio_runtime.languages import FALLBACK_LANGUAGE, build_instructions, load_locale
@@ -68,6 +69,7 @@ logger = logging.getLogger(__name__)
 
 # Flows can use the number on the other end in tools, like a field ("" on browser calls).
 CALLER_NUMBER_VALUE = "caller_number"
+KNOWN_DETAILS_HEADING = "About the person on this call: "
 
 VAD_USERDATA_KEY = "vad"
 TRACER_PROVIDER_USERDATA_KEY = "tracer_provider"
@@ -155,6 +157,17 @@ def in_background(work: Callable[[], Coroutine[Any, Any, None]]) -> Callable[[],
     return start
 
 
+def personalise(config: AgentConfig, variables: dict[str, str]) -> None:
+    """A campaign contact's details fill {name}-style placeholders in the greeting and the
+    voicemail message, and are told to the LLM. A placeholder with no value is left out, so
+    a test call never says "{name}" aloud."""
+    config.greeting = fill_leniently(config.greeting, variables)
+    config.voicemail_message = fill_leniently(config.voicemail_message, variables)
+    known = "; ".join(f"{name}: {value}" for name, value in variables.items() if value)
+    if known:
+        config.instructions = f"{config.instructions}\n\n{KNOWN_DETAILS_HEADING}{known}."
+
+
 async def agent_for(control_plane: ControlPlaneClient, metadata: CallMetadata) -> str:
     """The agent named in the dispatch, or the one the dialled number is bound to now."""
     if metadata.agent_id is not None:
@@ -216,6 +229,7 @@ async def run_call(ctx: JobContext) -> None:
         ctx.shutdown()
         return
 
+    personalise(config, metadata.variables)
     language = config.starting_language
     locale = load_locale(language)
     knowledge_tool = (
@@ -232,7 +246,7 @@ async def run_call(ctx: JobContext) -> None:
             ctx.room,
             knowledge_tool,
             locale.messages,
-            {CALLER_NUMBER_VALUE: line.remote_number or ""},
+            {CALLER_NUMBER_VALUE: line.remote_number or "", **metadata.variables},
         )
         await runner.start()
         instructions = build_instructions(config.instructions, locale, has_knowledge=False)
@@ -245,7 +259,12 @@ async def run_call(ctx: JobContext) -> None:
 
     direction = OUTBOUND_DIRECTION if metadata.is_outbound else INBOUND_DIRECTION
     call_id = await control_plane.start_call(
-        config.id, ctx.room.name, metadata.channel, direction, line.remote_number
+        config.id,
+        ctx.room.name,
+        metadata.channel,
+        direction,
+        line.remote_number,
+        metadata.campaign_contact_id,
     )
     session = build_agent_session(
         config, language, ctx.proc.userdata[VAD_USERDATA_KEY], llm, settings

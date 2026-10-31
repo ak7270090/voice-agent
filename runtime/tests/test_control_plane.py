@@ -86,6 +86,15 @@ async def test_call_is_started_and_ended_with_its_transcript():
     }
 
 
+async def test_a_campaign_call_record_names_its_contact():
+    client, requests = client_answering(lambda request: httpx.Response(201, json={"id": "call-2"}))
+
+    await client.start_call("agent-1", "out-1", "phone", "outbound", "+9198", "contact-1")
+    await client.aclose()
+
+    assert json.loads(requests[0].content)["campaign_contact_id"] == "contact-1"
+
+
 async def test_the_number_dialled_says_which_agent_answers():
     client, requests = client_answering(
         lambda request: httpx.Response(

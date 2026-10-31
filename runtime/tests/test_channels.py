@@ -60,6 +60,16 @@ def test_an_outgoing_call_names_the_number_to_ring_and_its_trunk():
     assert metadata.is_outbound
 
 
+def test_a_campaign_call_names_its_contact_and_their_details():
+    metadata = parse_call_metadata(
+        '{"agent_id": "a-1", "dial_to": "+9198", "outbound_trunk_id": "ST_1",'
+        ' "campaign_contact_id": "c-1", "variables": {"name": "Asha"}}'
+    )
+
+    assert metadata.campaign_contact_id == "c-1"
+    assert metadata.variables == {"name": "Asha"}
+
+
 @pytest.mark.parametrize(
     "raw",
     [

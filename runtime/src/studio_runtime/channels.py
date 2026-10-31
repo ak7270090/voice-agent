@@ -37,6 +37,9 @@ class CallMetadata(BaseModel):
     # Outgoing calls: the number to ring, through this outbound trunk.
     dial_to: str | None = None
     outbound_trunk_id: str | None = None
+    # Campaign calls: the contact being called, and what is known about them ({name}, ...).
+    campaign_contact_id: str | None = None
+    variables: dict[str, str] = {}
 
     @model_validator(mode="after")
     def names_an_agent_or_a_number(self) -> Self:

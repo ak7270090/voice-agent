@@ -85,17 +85,18 @@ class ControlPlaneClient:
         channel: str,
         direction: str = INBOUND_DIRECTION,
         remote_number: str | None = None,
+        campaign_contact_id: str | None = None,
     ) -> str:
-        response = await self._http.post(
-            "/runtime/calls",
-            json={
-                "agent_id": agent_id,
-                "room_name": room_name,
-                "channel": channel,
-                "direction": direction,
-                "remote_number": remote_number,
-            },
-        )
+        call = {
+            "agent_id": agent_id,
+            "room_name": room_name,
+            "channel": channel,
+            "direction": direction,
+            "remote_number": remote_number,
+        }
+        if campaign_contact_id is not None:
+            call["campaign_contact_id"] = campaign_contact_id
+        response = await self._http.post("/runtime/calls", json=call)
         response.raise_for_status()
         return response.json()["id"]
 

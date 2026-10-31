@@ -22,6 +22,29 @@ def test_server_registers_the_call_handler_under_the_configured_agent_name():
     assert server._entrypoint_fnc is run_call
 
 
+def test_a_campaign_contacts_details_fill_the_greeting_and_are_told_to_the_llm():
+    config = SimpleNamespace(
+        greeting="Hello {name}, about your {appointment_time} appointment.",
+        voicemail_message="Hi {name}, please call us back.",
+        instructions="Remind patients.",
+    )
+
+    worker.personalise(config, {"name": "Asha", "appointment_time": "4 pm"})
+
+    assert config.greeting == "Hello Asha, about your 4 pm appointment."
+    assert config.voicemail_message == "Hi Asha, please call us back."
+    assert config.instructions.endswith("name: Asha; appointment_time: 4 pm.")
+
+
+def test_without_details_a_placeholder_is_left_out_not_said():
+    config = SimpleNamespace(greeting="Hello {name}.", voicemail_message="", instructions="x")
+
+    worker.personalise(config, {})
+
+    assert config.greeting == "Hello ."
+    assert config.instructions == "x"
+
+
 class UnreachableControlPlane:
     closed = False
 
