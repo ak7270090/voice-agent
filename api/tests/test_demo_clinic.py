@@ -23,7 +23,14 @@ BOOKING = {
 
 @pytest.mark.parametrize(
     ("query", "doctor_id"),
-    [("Dr. Priya Mehta", "dr-mehta"), ("dermatologist", "dr-mehta"), ("my knee hurts", "dr-khan")],
+    [
+        ("Dr. Priya Mehta", "dr-mehta"),
+        ("dermatologist", "dr-mehta"),
+        ("my knee hurts", "dr-khan"),
+        # First names, as a caller said on a phone call ("Priya" once matched nobody).
+        ("Priya", "dr-mehta"),
+        ("Dr. Anil", "dr-sharma"),
+    ],
 )
 def test_doctor_is_found_by_name_speciality_or_problem(query, doctor_id):
     assert find_doctor(query).id == doctor_id

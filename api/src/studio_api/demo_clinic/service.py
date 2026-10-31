@@ -26,10 +26,16 @@ class SlotNotAvailableError(ValueError):
 
 
 def find_doctor(query: str) -> Doctor:
-    """By id, name, speciality or a word a caller might use ("skin", "knee")."""
+    """By id, name (or first name alone), speciality, or a word a caller might use ("skin",
+    "knee")."""
     wanted = query.lower().replace("dr.", "").replace("doctor", "").strip()
     for doctor in DOCTORS:
-        if wanted in (doctor.id, doctor.name.lower()) or wanted in doctor.speciality:
+        name_words = doctor.name.lower().replace("dr.", "").split()
+        if (
+            wanted in (doctor.id, doctor.name.lower(), " ".join(name_words))
+            or wanted in name_words
+            or wanted in doctor.speciality
+        ):
             return doctor
     for doctor in DOCTORS:
         if any(keyword in wanted for keyword in doctor.keywords):
