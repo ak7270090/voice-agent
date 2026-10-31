@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 import { AgentEditor } from "@/components/agents/AgentEditor";
+import { CallMe } from "@/components/agents/CallMe";
 import { RecentCalls } from "@/components/agents/RecentCalls";
 import { TestCallPanel } from "@/components/test-call/TestCallPanel";
 import { Button, Chip, PageHeader } from "@/components/ui/primitives";
@@ -115,7 +116,10 @@ export default function AgentPage({ params }: { params: { id: string } }) {
               />
               <RecentCalls calls={calls} />
             </div>
-            <TestCallPanel agentId={agent.id} onCallEnded={onCallEnded} />
+            <div className="flex flex-col gap-4 self-start xl:sticky xl:top-6">
+              <TestCallPanel agentId={agent.id} onCallEnded={onCallEnded} />
+              <CallMe agentId={agent.id} onCallStarted={onCallEnded} />
+            </div>
           </div>
         )}
       </div>

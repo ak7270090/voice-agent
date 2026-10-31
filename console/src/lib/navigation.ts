@@ -35,7 +35,7 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     title: "Deploy",
     items: [
-      { label: "Phone numbers", href: "/numbers", icon: Phone, available: false },
+      { label: "Phone numbers", href: "/numbers", icon: Phone, available: true },
       { label: "Campaigns", href: "/campaigns", icon: Send, available: false },
       { label: "Integrations", href: "/integrations", icon: Plug, available: false },
     ],

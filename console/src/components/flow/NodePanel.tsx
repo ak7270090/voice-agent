@@ -141,7 +141,10 @@ export function NodePanel({ node, toolNodes, onChange, onDelete, onClose }: Prop
                 <option>POST</option>
               </select>
             </Labelled>
-            <Labelled label="URL" hint="{field} placeholders are filled from collected fields">
+            <Labelled
+              label="URL"
+              hint="{field} placeholders are filled from collected fields; {caller_number} is the phone number on the other end"
+            >
               <input
                 className={INPUT}
                 value={data.url ?? ""}
@@ -219,10 +222,11 @@ export function NodePanel({ node, toolNodes, onChange, onDelete, onClose }: Prop
           </Labelled>
           <Labelled
             label="Transfer to"
-            hint="Phone number; transfers work once phone numbers arrive (Phase 4)"
+            hint="+919876543210 or sip:desk@pbx.example.com; on phone calls the caller is handed over after the message (browser calls just end)"
           >
             <input
               className={INPUT}
+              placeholder="+919876543210"
               value={data.destination ?? ""}
               onChange={(e) => set({ destination: e.target.value })}
             />

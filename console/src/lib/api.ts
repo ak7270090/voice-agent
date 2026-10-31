@@ -16,6 +16,7 @@ export type AgentFields = {
   description: string;
   instructions: string;
   greeting: string;
+  voicemail_message: string;
   llm_model: string;
   languages: string[];
   language_settings: Record<string, VoiceSettings>;
@@ -56,6 +57,8 @@ export type Call = {
   agent_id: string;
   room_name: string;
   channel: string;
+  direction: "inbound" | "outbound";
+  remote_number: string | null;
   status: "active" | "ended";
   started_at: string;
   ended_at: string | null;
@@ -119,6 +122,53 @@ export const startBrowserCall = (agentId: string) =>
 
 export const listCalls = (agentId: string) =>
   request<Call[]>(`/calls?agent_id=${encodeURIComponent(agentId)}`);
+
+export type PhoneProvider = "livekit" | "sip_trunk";
+
+export type PhoneNumber = {
+  id: string;
+  number: string;
+  label: string;
+  provider: PhoneProvider;
+  agent_id: string | null;
+  dispatch_rule_id: string;
+  can_call_out: boolean;
+  can_transfer: boolean;
+  created_at: string;
+};
+
+export type OutboundTrunk = { address: string; username: string; password: string };
+
+export type PhoneNumberCreate = {
+  number: string;
+  label: string;
+  provider: PhoneProvider;
+  agent_id: string | null;
+  outbound: OutboundTrunk | null;
+};
+
+export const listPhoneNumbers = () => request<PhoneNumber[]>("/phone-numbers");
+
+export const addPhoneNumber = (body: PhoneNumberCreate) =>
+  request<PhoneNumber>("/phone-numbers", { method: "POST", body: JSON.stringify(body) });
+
+export const updatePhoneNumber = (
+  numberId: string,
+  changes: { label?: string; agent_id?: string | null },
+) =>
+  request<PhoneNumber>(`/phone-numbers/${numberId}`, {
+    method: "PATCH",
+    body: JSON.stringify(changes),
+  });
+
+export const deletePhoneNumber = (numberId: string) =>
+  request<void>(`/phone-numbers/${numberId}`, { method: "DELETE" });
+
+export const startPhoneCall = (agentId: string, toNumber: string, fromNumberId: string) =>
+  request<{ room: string }>(`/agents/${agentId}/phone-calls`, {
+    method: "POST",
+    body: JSON.stringify({ to_number: toNumber, from_number_id: fromNumberId }),
+  });
 
 export type KnowledgeBase = {
   id: string;

@@ -9,11 +9,17 @@ function duration(call: Call): string {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
+function channelLabel(call: Call): string {
+  if (call.channel !== "phone") return call.channel;
+  const arrow = call.direction === "outbound" ? "to" : "from";
+  return call.remote_number ? `phone ${arrow} ${call.remote_number}` : "phone";
+}
+
 export function RecentCalls({ calls }: { calls: Call[] }) {
   return (
     <Card>
       <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3">
-        <h3 className="text-[13px] font-semibold">Recent test calls</h3>
+        <h3 className="text-[13px] font-semibold">Recent calls</h3>
         <Chip>{calls.length}</Chip>
       </div>
       {calls.length === 0 ? (
@@ -34,7 +40,7 @@ export function RecentCalls({ calls }: { calls: Call[] }) {
             {calls.map((call) => (
               <tr key={call.id} className="border-t border-slate-100 text-slate-700">
                 <td className="px-4 py-2">{new Date(call.started_at).toLocaleString()}</td>
-                <td className="px-4 py-2">{call.channel}</td>
+                <td className="px-4 py-2">{channelLabel(call)}</td>
                 <td className="px-4 py-2">
                   <Chip tone={call.status === "active" ? "green" : "neutral"}>{call.status}</Chip>
                 </td>

@@ -36,6 +36,7 @@ export function AgentEditor({
   const [linkedBases, setLinkedBases] = useState<string[]>(agent.knowledge_base_ids);
   const [name, setName] = useState(agent.name);
   const [greeting, setGreeting] = useState(agent.greeting);
+  const [voicemailMessage, setVoicemailMessage] = useState(agent.voicemail_message);
   const [instructions, setInstructions] = useState(agent.instructions);
   const [llmModel, setLlmModel] = useState(agent.llm_model);
   const speech = agent.language_settings[language];
@@ -47,6 +48,7 @@ export function AgentEditor({
     onSave({
       name,
       greeting,
+      voicemail_message: voicemailMessage,
       instructions,
       llm_model: llmModel,
       knowledge_base_ids: linkedBases,
@@ -81,6 +83,17 @@ export function AgentEditor({
             className={INPUT_CLASS}
             value={greeting}
             onChange={(e) => setGreeting(e.target.value)}
+          />
+        </Field>
+        <Field
+          label="Voicemail message"
+          hint="Left when an outgoing call reaches voicemail; empty hangs up instead"
+        >
+          <input
+            className={INPUT_CLASS}
+            value={voicemailMessage}
+            placeholder="e.g. Hi, this is City Clinic. Please call us back at your convenience."
+            onChange={(e) => setVoicemailMessage(e.target.value)}
           />
         </Field>
         <Field label="Instructions" hint="Who the agent is and what it should do">
