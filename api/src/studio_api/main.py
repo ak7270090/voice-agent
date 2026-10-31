@@ -25,6 +25,9 @@ from studio_api.health import router as health_router
 from studio_api.jobs import create_job_queue
 from studio_api.knowledge.router import router as knowledge_router
 from studio_api.knowledge.router import runtime_router as knowledge_runtime_router
+from studio_api.numbers.router import router as numbers_router
+from studio_api.numbers.router import runtime_router as numbers_runtime_router
+from studio_api.numbers.telephony import Telephony
 from studio_api.storage import create_file_store
 from studio_api.tracing import create_tracer_provider, trace_requests
 
@@ -49,6 +52,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     export_provider_keys()
     app.state.embeddings = create_embeddings(settings)
     app.state.job_queue = await create_job_queue(settings)
+    app.state.telephony = Telephony(settings)
     yield
     await app.state.job_queue.aclose()
     await http.aclose()
@@ -73,6 +77,8 @@ def create_app() -> FastAPI:
         knowledge_router,
         knowledge_runtime_router,
         flows_router,
+        numbers_router,
+        numbers_runtime_router,
         demo_clinic_router,
     ):
         app.include_router(router)

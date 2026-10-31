@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from studio_api.calls.constants import ACTIVE_STATUS
+from studio_api.calls.constants import ACTIVE_STATUS, INBOUND_DIRECTION
 from studio_api.database import Base, new_id, utc_now
 
 
@@ -14,6 +14,9 @@ class Call(Base):
     agent_id: Mapped[str] = mapped_column(ForeignKey("agents.id", ondelete="CASCADE"), index=True)
     room_name: Mapped[str] = mapped_column(String(120), unique=True)
     channel: Mapped[str] = mapped_column(String(20))
+    direction: Mapped[str] = mapped_column(String(20), default=INBOUND_DIRECTION)
+    # Phone calls: the caller's number (inbound) or the number dialled (outbound).
+    remote_number: Mapped[str | None] = mapped_column(String(20))
     status: Mapped[str] = mapped_column(String(20), default=ACTIVE_STATUS)
     started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

@@ -34,6 +34,28 @@ async def test_started_call_is_active_until_the_runtime_ends_it(client, runtime_
     assert ended.json()["interruptions"] == 2
 
 
+async def test_a_phone_call_keeps_its_direction_and_the_other_partys_number(
+    client, runtime_headers
+):
+    agent = await create_agent(client)
+
+    response = await client.post(
+        "/runtime/calls",
+        json={
+            "agent_id": agent["id"],
+            "room_name": "out-1",
+            "channel": "phone",
+            "direction": "outbound",
+            "remote_number": "+919876543210",
+        },
+        headers=runtime_headers,
+    )
+
+    assert response.json()["direction"] == "outbound"
+    assert response.json()["remote_number"] == "+919876543210"
+    assert (await start_call(client, runtime_headers, agent["id"]))["direction"] == "inbound"
+
+
 async def test_ending_a_call_twice_keeps_the_first_end(client, runtime_headers):
     agent = await create_agent(client)
     call = await start_call(client, runtime_headers, agent["id"])

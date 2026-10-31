@@ -5,6 +5,7 @@ from collections import defaultdict
 
 from studio_api.flows.constants import (
     ALLOWED_EDGE_KINDS,
+    CALL_VALUES,
     CONDITION_EDGE,
     FIELDS_COMPLETE_EDGE,
     GLOBAL_NODE,
@@ -12,10 +13,12 @@ from studio_api.flows.constants import (
     START_NODE,
     STEP_NODE,
     TOOL_NODE,
+    TRANSFER_DESTINATION_PATTERN,
 )
-from studio_api.flows.schemas import Flow, FlowIssue, StepNode, ToolNode
+from studio_api.flows.schemas import Flow, FlowIssue, StepNode, ToolNode, TransferNode
 
 PLACEHOLDER = re.compile(PLACEHOLDER_PATTERN)
+TRANSFER_DESTINATION = re.compile(TRANSFER_DESTINATION_PATTERN)
 
 
 def article(word: str) -> str:
@@ -99,9 +102,11 @@ def _check_steps_and_tools(flow: Flow, nodes: dict) -> list[FlowIssue]:
             if not node.data.url.startswith(("http://", "https://")):
                 issues.append(FlowIssue(message="Tool needs an http(s) URL", node_id=node.id))
             templates = [node.data.url, *node.data.body.values()]
-            unknown = {
-                name for text in templates for name in PLACEHOLDER.findall(text)
-            } - field_names
+            unknown = (
+                {name for text in templates for name in PLACEHOLDER.findall(text)}
+                - field_names
+                - set(CALL_VALUES)
+            )
             if unknown and not _attached_anywhere(flow, node.id):
                 message = f"Placeholders {sorted(unknown)} are not fields of any step"
                 issues.append(FlowIssue(message=message, node_id=node.id))
@@ -109,6 +114,11 @@ def _check_steps_and_tools(flow: Flow, nodes: dict) -> list[FlowIssue]:
             if not_fields:
                 message = f"Save to fields: {not_fields} are not fields of any step"
                 issues.append(FlowIssue(message=message, node_id=node.id))
+        # Empty is allowed: the call then ends after the message (browser-only agents).
+        destination = node.data.destination if isinstance(node, TransferNode) else ""
+        if destination and not TRANSFER_DESTINATION.fullmatch(destination):
+            message = "Transfer to a number like +919876543210 or a sip: address"
+            issues.append(FlowIssue(message=message, node_id=node.id))
     for name, count in tool_names.items():
         if count > 1:
             issues.append(FlowIssue(message=f"Two tools are named '{name}'"))

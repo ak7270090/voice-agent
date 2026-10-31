@@ -99,6 +99,35 @@ def test_tool_in_the_path_needs_known_placeholders_and_a_url():
     assert "Placeholders ['phone'] are not fields of any step" in issues
 
 
+def test_a_tool_in_the_path_may_use_the_callers_number():
+    lookup = {"name": "lookup", "url": "https://crm.example/customers?phone={caller_number}"}
+    nodes = [*SMALL_FLOW["nodes"], {"id": "lookup", "type": "tool", "data": lookup}]
+    edges = [
+        SMALL_FLOW["edges"][0],
+        {"id": "e2", "source": "ask", "target": "lookup", "kind": "fields_complete"},
+        {"id": "e3", "source": "lookup", "target": "done", "kind": "success"},
+    ]
+
+    assert issues_of({"nodes": nodes, "edges": edges}) == []
+
+
+@pytest.mark.parametrize(
+    ("destination", "valid"),
+    [("", True), ("+919876543210", True), ("sip:desk@pbx.example.com", True), ("desk", False)],
+)
+def test_transfer_goes_to_a_phone_number_or_a_sip_address(destination, valid):
+    transfer = {"id": "desk", "type": "transfer", "data": {"destination": destination}}
+    nodes = [*SMALL_FLOW["nodes"][:2], transfer]
+    edges = [
+        SMALL_FLOW["edges"][0],
+        {"id": "e2", "source": "ask", "target": "desk", "kind": "fields_complete"},
+    ]
+
+    issues = issues_of({"nodes": nodes, "edges": edges})
+
+    assert (issues == []) is valid
+
+
 def test_unknown_node_type_is_rejected_by_the_schema():
     with pytest.raises(ValidationError):
         Flow.model_validate({"nodes": [{"id": "x", "type": "teleport"}]})

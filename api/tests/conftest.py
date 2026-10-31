@@ -6,6 +6,7 @@ from collections.abc import AsyncIterator
 import httpx
 import pytest
 from langchain_core.embeddings import Embeddings
+from livekit import api
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from sqlalchemy.pool import NullPool, StaticPool
@@ -18,6 +19,7 @@ from studio_api.demo_clinic import models as demo_clinic_models  # noqa: F401
 from studio_api.flows import models as flow_models  # noqa: F401
 from studio_api.knowledge.constants import EMBEDDING_DIMENSIONS
 from studio_api.main import create_app
+from studio_api.numbers import models as number_models  # noqa: F401
 
 RUNTIME_TOKEN = "test-runtime-token"
 TEST_DATABASE = "studio_test"
@@ -57,6 +59,47 @@ class MemoryFileStore:
         self.files.pop(key, None)
 
 
+class FakeTelephony:
+    """LiveKit's SIP side in memory; `fail_on` names a step that raises like LiveKit would."""
+
+    def __init__(self) -> None:
+        self.trunks: dict[str, dict] = {}
+        self.rules: dict[str, dict] = {}
+        self.dispatches: list[tuple[str, dict]] = []
+        self.fail_on: str | None = None
+
+    def _maybe_fail(self, step: str) -> None:
+        if self.fail_on == step:
+            raise api.TwirpError("invalid_argument", f"{step} refused", status=400)
+
+    async def create_inbound_trunk(self, number: str) -> str:
+        self._maybe_fail("inbound")
+        trunk_id = f"ST_in{len(self.trunks)}"
+        self.trunks[trunk_id] = {"direction": "inbound", "number": number}
+        return trunk_id
+
+    async def create_outbound_trunk(self, number: str, outbound) -> str:
+        self._maybe_fail("outbound")
+        trunk_id = f"ST_out{len(self.trunks)}"
+        self.trunks[trunk_id] = {"direction": "outbound", "address": outbound.address}
+        return trunk_id
+
+    async def create_dispatch_rule(self, number_id: str, number: str, trunk_id) -> str:
+        self._maybe_fail("rule")
+        rule_id = f"SDR_{len(self.rules)}"
+        self.rules[rule_id] = {"number_id": number_id, "trunk_id": trunk_id}
+        return rule_id
+
+    async def delete(self, dispatch_rule_id, trunk_ids: list[str]) -> None:
+        self.rules.pop(dispatch_rule_id, None)
+        for trunk_id in trunk_ids:
+            self.trunks.pop(trunk_id, None)
+
+    async def dispatch_outbound_call(self, room: str, metadata: dict) -> None:
+        self._maybe_fail("dispatch")
+        self.dispatches.append((room, metadata))
+
+
 class RecordingJobQueue:
     def __init__(self) -> None:
         self.jobs: list[tuple] = []
@@ -86,11 +129,19 @@ def job_queue() -> RecordingJobQueue:
     return RecordingJobQueue()
 
 
-async def serve(engine: AsyncEngine, file_store, job_queue) -> AsyncIterator[httpx.AsyncClient]:
+@pytest.fixture
+def telephony() -> FakeTelephony:
+    return FakeTelephony()
+
+
+async def serve(
+    engine: AsyncEngine, file_store, job_queue, telephony=None
+) -> AsyncIterator[httpx.AsyncClient]:
     app = create_app()
     app.state.session_factory = create_session_factory(engine)
     app.state.file_store = file_store
     app.state.job_queue = job_queue
+    app.state.telephony = telephony or FakeTelephony()
     app.state.embeddings = WordEmbeddings()
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as http:
@@ -111,10 +162,10 @@ async def sqlite_engine() -> AsyncIterator[AsyncEngine]:
 
 @pytest.fixture
 async def client(
-    settings, sqlite_engine, file_store, job_queue
+    settings, sqlite_engine, file_store, job_queue, telephony
 ) -> AsyncIterator[httpx.AsyncClient]:
     """The API on an in-memory SQLite database; no Docker needed."""
-    async for http in serve(sqlite_engine, file_store, job_queue):
+    async for http in serve(sqlite_engine, file_store, job_queue, telephony):
         yield http
 
 

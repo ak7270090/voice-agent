@@ -2,4 +2,7 @@ ACTIVE_STATUS = "active"
 ENDED_STATUS = "ended"
 
 CHANNELS = ("web", "phone")
+INBOUND_DIRECTION = "inbound"
+OUTBOUND_DIRECTION = "outbound"
+DIRECTIONS = (INBOUND_DIRECTION, OUTBOUND_DIRECTION)
 TRANSCRIPT_ROLES = ("user", "assistant")

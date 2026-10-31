@@ -27,3 +27,8 @@ HTTP_METHODS = ("GET", "POST")
 IDENTIFIER_PATTERN = r"^[a-z][a-z0-9_]*$"
 # {field} placeholders in tool URLs, bodies and end messages.
 PLACEHOLDER_PATTERN = r"\{([a-z][a-z0-9_]*)\}"
+# Filled by the runtime before the first step, so tools can use them like fields (a phone
+# call's number for a customer lookup; empty on browser test calls).
+CALL_VALUES = ("caller_number",)
+# A transfer goes to a phone number or a SIP address (sip:desk@pbx.example.com).
+TRANSFER_DESTINATION_PATTERN = r"^(\+[1-9]\d{6,14}|sips?:\S+)$"

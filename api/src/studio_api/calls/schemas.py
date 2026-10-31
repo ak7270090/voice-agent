@@ -2,7 +2,12 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from studio_api.calls.constants import CHANNELS, TRANSCRIPT_ROLES
+from studio_api.calls.constants import (
+    CHANNELS,
+    DIRECTIONS,
+    INBOUND_DIRECTION,
+    TRANSCRIPT_ROLES,
+)
 from studio_api.database import UtcDateTime
 
 
@@ -15,6 +20,8 @@ class CallStart(BaseModel):
     agent_id: str
     room_name: str
     channel: Literal[CHANNELS]
+    direction: Literal[DIRECTIONS] = INBOUND_DIRECTION
+    remote_number: str | None = Field(default=None, max_length=20)
 
 
 class CallEnd(BaseModel):
@@ -33,6 +40,8 @@ class CallRead(BaseModel):
     agent_id: str
     room_name: str
     channel: str
+    direction: str
+    remote_number: str | None
     status: str
     started_at: UtcDateTime
     ended_at: UtcDateTime | None

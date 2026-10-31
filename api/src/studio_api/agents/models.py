@@ -26,6 +26,8 @@ class Agent(Base):
     template: Mapped[str | None] = mapped_column(String(60))
     instructions: Mapped[str] = mapped_column(Text)
     greeting: Mapped[str] = mapped_column(Text)
+    # Left on an answering machine when an outgoing call reaches one; empty: hang up instead.
+    voicemail_message: Mapped[str] = mapped_column(Text, default="")
     llm_model: Mapped[str] = mapped_column(String(120))
     languages: Mapped[list[str]] = mapped_column(JSON)
     # Per language: {"stt_model": ..., "tts_model": ..., "voice": ...}

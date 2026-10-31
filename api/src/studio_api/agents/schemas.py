@@ -20,6 +20,7 @@ class AgentFields(BaseModel):
     description: str = ""
     instructions: str = Field(min_length=1)
     greeting: str = Field(min_length=1)
+    voicemail_message: str = ""
     llm_model: str = Field(min_length=1)
     languages: list[str] = Field(min_length=1)
     language_settings: dict[str, VoiceSettings]
@@ -41,6 +42,7 @@ class AgentUpdate(BaseModel):
     description: str | None = None
     instructions: str | None = Field(default=None, min_length=1)
     greeting: str | None = Field(default=None, min_length=1)
+    voicemail_message: str | None = None
     llm_model: str | None = Field(default=None, min_length=1)
     languages: list[str] | None = Field(default=None, min_length=1)
     language_settings: dict[str, VoiceSettings] | None = None
@@ -90,6 +92,7 @@ class RuntimeAgentConfig(BaseModel):
     name: str
     instructions: str
     greeting: str
+    voicemail_message: str
     llm_model: str
     languages: list[str]
     language_settings: dict[str, VoiceSettings]
