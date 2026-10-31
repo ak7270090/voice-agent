@@ -17,6 +17,10 @@ class Call(Base):
     direction: Mapped[str] = mapped_column(String(20), default=INBOUND_DIRECTION)
     # Phone calls: the caller's number (inbound) or the number dialled (outbound).
     remote_number: Mapped[str | None] = mapped_column(String(20))
+    # Campaign calls: the contact whose attempt this was.
+    campaign_contact_id: Mapped[str | None] = mapped_column(
+        ForeignKey("campaign_contacts.id", ondelete="SET NULL")
+    )
     status: Mapped[str] = mapped_column(String(20), default=ACTIVE_STATUS)
     started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

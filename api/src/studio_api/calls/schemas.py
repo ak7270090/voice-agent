@@ -22,6 +22,7 @@ class CallStart(BaseModel):
     channel: Literal[CHANNELS]
     direction: Literal[DIRECTIONS] = INBOUND_DIRECTION
     remote_number: str | None = Field(default=None, max_length=20)
+    campaign_contact_id: str | None = None
 
 
 class CallEnd(BaseModel):
@@ -42,6 +43,7 @@ class CallRead(BaseModel):
     channel: str
     direction: str
     remote_number: str | None
+    campaign_contact_id: str | None
     status: str
     started_at: UtcDateTime
     ended_at: UtcDateTime | None

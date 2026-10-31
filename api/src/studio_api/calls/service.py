@@ -5,6 +5,7 @@ from studio_api.agents.service import get_agent
 from studio_api.calls.constants import ENDED_STATUS
 from studio_api.calls.models import Call
 from studio_api.calls.schemas import CallEnd, CallStart
+from studio_api.campaigns.service import record_call_outcome
 from studio_api.database import utc_now
 
 
@@ -39,6 +40,10 @@ async def end_call(session: AsyncSession, call_id: str, end: CallEnd) -> Call:
         call.flow_path = end.flow_path
         call.turn_latency_ms = end.turn_latency_ms
         call.interruptions = end.interruptions
+        if call.campaign_contact_id is not None:
+            await record_call_outcome(
+                session, call.campaign_contact_id, call.room_name, end.outcome, utc_now()
+            )
         await session.commit()
     return call
 

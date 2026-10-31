@@ -46,6 +46,11 @@ class Settings(BaseSettings):
     # Where the runtime reaches the demo clinic API used by the clinic template's tools.
     demo_clinic_api_url: str = "http://api:8000"
 
+    # Campaigns: how often the dialler looks for contacts to call, and how long a call may stay
+    # "calling" before it counts as not answered (a runtime that never reported back).
+    dialler_interval_seconds: int = 10
+    campaign_call_timeout_minutes: int = 15
+
     # Knowledge bases. Changing the embedding model's size needs a migration (chunks.embedding).
     embedding_model: str = "openai:text-embedding-3-small"
     max_upload_bytes: int = 20 * 1024 * 1024

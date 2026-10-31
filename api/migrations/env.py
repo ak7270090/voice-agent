@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from studio_api.agents import models as agent_models  # noqa: F401 - registers the tables
 from studio_api.calls import models as call_models  # noqa: F401 - registers the tables
+from studio_api.campaigns import models as campaign_models  # noqa: F401
 from studio_api.config import get_settings
 from studio_api.database import Base
 from studio_api.demo_clinic import models as demo_clinic_models  # noqa: F401

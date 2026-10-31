@@ -252,11 +252,22 @@ def build_reminder_flow() -> Flow:
                 message="No problem. The front desk will call you to find a new time. Goodbye.",
             ),
         ),
+        EndNode(
+            id="opted_out",
+            type="end",
+            position=at(3, 2),
+            # A campaign never calls a contact again after this outcome.
+            data=EndData(
+                outcome="opted_out",
+                message="Understood, we won't call you again. Goodbye.",
+            ),
+        ),
     ]
     edges = [
         edge("start", "remind", "always"),
         edge("remind", "confirmed", condition="The patient will come"),
         edge("remind", "reschedule", condition="The patient cannot come or wants another time"),
+        edge("remind", "opted_out", condition="The person asks not to be called again"),
     ]
     return Flow(nodes=nodes, edges=edges)
 

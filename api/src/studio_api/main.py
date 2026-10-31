@@ -15,6 +15,7 @@ from studio_api.agents.router import router as agents_router
 from studio_api.agents.router import runtime_router as agents_runtime_router
 from studio_api.calls.router import router as calls_router
 from studio_api.calls.router import runtime_router as calls_runtime_router
+from studio_api.campaigns.router import router as campaigns_router
 from studio_api.config import export_provider_keys, get_settings
 from studio_api.database import create_session_factory
 from studio_api.demo_clinic.router import router as demo_clinic_router
@@ -79,6 +80,7 @@ def create_app() -> FastAPI:
         flows_router,
         numbers_router,
         numbers_runtime_router,
+        campaigns_router,
         demo_clinic_router,
     ):
         app.include_router(router)
