@@ -13,10 +13,12 @@ from studio_runtime.flows.schema import ToolData
 PLACEHOLDER = re.compile(r"\{([a-z][a-z0-9_]*)\}")
 # Tool results go back into the LLM's prompt; long pages are cut.
 MAX_TEXT_RESULT_CHARS = 2000
-# A lookup that gets no answer is tried once more; a booking is not (it may have gone through).
-RETRIED_METHODS = ("GET",)
-LOOKUP_ATTEMPTS = 2
+# A request that gets no answer is tried once more if repeating it is safe: a lookup (GET), or a
+# booking sent with an idempotency key (the service returns the first booking, not a second).
+SAFE_TO_REPEAT_METHODS = ("GET",)
+ATTEMPTS_WHEN_SAFE = 2
 SERVER_ERROR_STATUS = 500
+IDEMPOTENCY_HEADER = "Idempotency-Key"
 
 
 class MissingValueError(KeyError):
@@ -68,23 +70,33 @@ def build_body(tool: ToolData, values: dict[str, Any]) -> dict[str, Any]:
     return body
 
 
-async def call_tool(http: httpx.AsyncClient, tool: ToolData, values: dict[str, Any]) -> ToolResult:
+async def call_tool(
+    http: httpx.AsyncClient,
+    tool: ToolData,
+    values: dict[str, Any],
+    idempotency_key: str | None = None,
+) -> ToolResult:
     try:
         url = fill(tool.url, values, url_encode=True)
         body = build_body(tool, values) if tool.method == "POST" else None
     except MissingValueError as error:
         return ToolResult(ok=False, data={"error": f"missing value for {error.args[0]}"})
-    attempts = LOOKUP_ATTEMPTS if tool.method in RETRIED_METHODS else 1
-    for _ in range(attempts):
-        result = await _send(http, tool.method, url, body)
+    headers = {}
+    if idempotency_key and tool.method not in SAFE_TO_REPEAT_METHODS:
+        headers[IDEMPOTENCY_HEADER] = idempotency_key
+    safe_to_repeat = tool.method in SAFE_TO_REPEAT_METHODS or bool(headers)
+    for _ in range(ATTEMPTS_WHEN_SAFE if safe_to_repeat else 1):
+        result = await _send(http, tool.method, url, body, headers)
         if not result.unavailable:
             break
     return result
 
 
-async def _send(http: httpx.AsyncClient, method: str, url: str, body: Any) -> ToolResult:
+async def _send(
+    http: httpx.AsyncClient, method: str, url: str, body: Any, headers: dict[str, str]
+) -> ToolResult:
     try:
-        response = await http.request(method, url, json=body)
+        response = await http.request(method, url, json=body, headers=headers)
     except httpx.HTTPError as error:
         return ToolResult(ok=False, data={"error": type(error).__name__}, unavailable=True)
     try:

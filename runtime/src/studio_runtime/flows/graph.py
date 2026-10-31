@@ -61,6 +61,10 @@ class FlowGraph:
     async def astream(self, state: dict, *args: Any, **kwargs: Any) -> AsyncIterator[Any]:
         runner = self._runner
         if runner.ended:
+            # The caller spoke over the end message (or after it): say it again; the call
+            # hangs up once it has been heard in full.
+            if runner.final_message:
+                yield spoken(runner.final_message)
             return
         history = [m for m in state.get("messages", []) if not isinstance(m, SystemMessage)]
         users = [m for m in history if isinstance(m, HumanMessage)]

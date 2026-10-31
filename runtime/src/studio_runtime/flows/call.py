@@ -46,6 +46,8 @@ def create_flow_runner(
         datetime.now(ZoneInfo(settings.timezone)).date(),
         knowledge_tool=knowledge_tool,
         tool_unavailable_line=messages["tool_unavailable"],
+        # One key per call and tool node: a booking retried or cut off is made only once.
+        idempotency_prefix=room.name,
         on_change=lambda runner: publish_progress(room, runner),
     )
 

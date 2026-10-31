@@ -1,6 +1,7 @@
 from datetime import date
+from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Header, HTTPException, status
 
 from studio_api.database import SessionDep
 from studio_api.demo_clinic import service
@@ -35,9 +36,13 @@ async def read_availability(doctor: str, day: date, session: SessionDep) -> Avai
 
 
 @router.post("/appointments", status_code=status.HTTP_201_CREATED)
-async def book_appointment(body: BookingRequest, session: SessionDep) -> BookingRead:
+async def book_appointment(
+    body: BookingRequest,
+    session: SessionDep,
+    idempotency_key: Annotated[str | None, Header(max_length=200)] = None,
+) -> BookingRead:
     try:
-        return await service.book(session, body)
+        return await service.book(session, body, idempotency_key)
     except service.DoctorNotFoundError as error:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, f"no doctor matches '{body.doctor}'"

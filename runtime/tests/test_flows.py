@@ -105,16 +105,23 @@ TOOL_UNAVAILABLE_LINE = "Sorry, I can't check that right now."
 
 class FakeClinic:
     def __init__(
-        self, booking_status: int = 201, delay_seconds: float = 0, down_lookups: int = 0
+        self,
+        booking_status: int = 201,
+        delay_seconds: float = 0,
+        down_lookups: int = 0,
+        down_bookings: int = 0,
     ) -> None:
         self.requests: list[httpx.Request] = []
         self.booking_status = booking_status
         self.delay_seconds = delay_seconds
-        # How many availability lookups get 503 before the clinic answers again.
+        # How many lookups or bookings get 503 before the clinic answers again.
         self.down_lookups = down_lookups
+        self.down_bookings = down_bookings
+        self.request_seen = asyncio.Event()
 
     async def __call__(self, request: httpx.Request) -> httpx.Response:
         self.requests.append(request)
+        self.request_seen.set()
         await asyncio.sleep(self.delay_seconds)
         if request.url.path == "/availability":
             if self.down_lookups:
@@ -122,10 +129,13 @@ class FakeClinic:
                 return httpx.Response(503, text="unavailable")
             day = request.url.params["day"]
             return httpx.Response(200, json={"free_times": ["11:00", "11:30"], "day": day})
+        if self.down_bookings:
+            self.down_bookings -= 1
+            return httpx.Response(503, text="unavailable")
         return httpx.Response(self.booking_status, json={"booking_id": "A-1001"})
 
 
-def make_runner(clinic: FakeClinic | None = None) -> FlowRunner:
+def make_runner(clinic: FakeClinic | None = None, idempotency_prefix: str = "") -> FlowRunner:
     http = httpx.AsyncClient(transport=httpx.MockTransport(clinic or FakeClinic()))
     return FlowRunner(
         Flow.model_validate(FLOW),
@@ -133,7 +143,16 @@ def make_runner(clinic: FakeClinic | None = None) -> FlowRunner:
         parsers_for("en"),
         FRIDAY,
         tool_unavailable_line=TOOL_UNAVAILABLE_LINE,
+        idempotency_prefix=idempotency_prefix,
     )
+
+
+async def ready_to_book(runner: FlowRunner) -> None:
+    await runner.start()
+    runner.fields.update(
+        {"patient_name": "Rohan", "patient_age": 34, "day": "2026-10-31", "time": "11:00"}
+    )
+    await runner.enter("confirm")
 
 
 class ScriptedModel(BaseChatModel):
@@ -298,7 +317,7 @@ async def test_global_move_ends_with_the_transfer_message():
 
     assert reply == "Connecting you."
     assert runner.outcome == "transfer_requested"
-    assert await run_turn(graph, "hello?") == ""
+    assert await run_turn(graph, "hello?") == "Connecting you."
 
 
 class FlakyModel(ScriptedModel):
@@ -417,18 +436,43 @@ async def test_a_tool_that_stays_unavailable_gets_a_fixed_apology_and_no_guess()
     assert "Never guess" in model.seen[1][-1].content
 
 
-async def test_a_booking_without_an_answer_is_not_sent_twice():
+async def test_a_booking_without_an_idempotency_key_is_not_sent_twice():
     clinic = FakeClinic(booking_status=502)
     runner = make_runner(clinic)
-    await runner.start()
-    runner.fields.update({"patient_name": "Rohan", "patient_age": 34, "day": "2026-10-31"})
-    runner.fields["time"] = "11:00"
-    await runner.enter("confirm")
+    await ready_to_book(runner)
 
     await runner.enter("book")
 
     assert len(clinic.requests) == 1
     assert runner.current.id == "collect"
+
+
+async def test_a_booking_with_a_key_is_retried_safely_with_the_same_key():
+    clinic = FakeClinic(down_bookings=1)
+    runner = make_runner(clinic, idempotency_prefix="web-3f9a")
+    await ready_to_book(runner)
+
+    await runner.enter("book")
+
+    keys = [request.headers["Idempotency-Key"] for request in clinic.requests]
+    assert keys == ["web-3f9a:book", "web-3f9a:book"]
+    assert runner.outcome == "booked"
+
+
+async def test_a_booking_finishes_when_the_caller_cuts_in_and_its_message_is_said_next():
+    clinic = FakeClinic(delay_seconds=0.2)
+    runner = make_runner(clinic)
+    await ready_to_book(runner)
+    graph, _ = graph_for(runner, [call("go_to_book_appointment")])
+
+    turn = asyncio.ensure_future(run_turn(graph, "Yes, that's right"))
+    await clinic.request_seen.wait()
+    turn.cancel()
+    await asyncio.sleep(0.4)
+
+    assert len(clinic.requests) == 1
+    assert runner.outcome == "booked"
+    assert await run_turn(graph, "Wait, is it booked?") == "Booked: A-1001."
 
 
 async def test_a_timeout_counts_as_no_answer():

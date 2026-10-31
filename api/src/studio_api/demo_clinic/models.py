@@ -18,4 +18,6 @@ class DemoAppointment(Base):
     doctor_id: Mapped[str] = mapped_column(String(40))
     day: Mapped[date] = mapped_column(Date)
     time: Mapped[str] = mapped_column(String(5))
+    # Sent by the caller of the API: the same key again returns this booking instead of a second.
+    idempotency_key: Mapped[str | None] = mapped_column(String(200), unique=True, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)

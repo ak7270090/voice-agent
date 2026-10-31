@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 
 import httpx
+from livekit.agents.llm import ChatMessage
 
 from studio_runtime import worker
 from studio_runtime.config import Settings
@@ -65,3 +66,28 @@ async def test_browser_call_for_an_agent_that_cannot_be_loaded_says_so_and_ends(
     ]
     assert ctx.shut_down
     assert control_plane.closed
+
+
+class FakeSession:
+    def __init__(self) -> None:
+        self.handlers: dict = {}
+        self.shut_down = False
+
+    def on(self, event: str, handler) -> None:
+        self.handlers[event] = handler
+
+    def shutdown(self) -> None:
+        self.shut_down = True
+
+
+def test_the_call_ends_only_after_the_end_message_is_heard_in_full():
+    session = FakeSession()
+    runner = SimpleNamespace(ended=True, final_message="Booked: A-1001.")
+    worker.end_after_final_message(session, runner)
+    cut_off = ChatMessage(role="assistant", content=["Booked: A-1001."], interrupted=True)
+    heard = ChatMessage(role="assistant", content=["Booked: A-1001."])
+
+    session.handlers["conversation_item_added"](SimpleNamespace(item=cut_off))
+    assert not session.shut_down
+    session.handlers["conversation_item_added"](SimpleNamespace(item=heard))
+    assert session.shut_down

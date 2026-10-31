@@ -4,11 +4,12 @@ Moves between steps are made by code: the LLM picks a condition by calling its t
 "all fields collected" or a tool's success or failure moves without asking it.
 """
 
+import asyncio
 import json
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Coroutine
 from datetime import date
-from typing import Any
+from typing import Any, TypeVar
 
 import httpx
 from langchain_core.tools import BaseTool, StructuredTool
@@ -56,6 +57,7 @@ MOVED_BY_LLM = "llm"
 MOVED_BY_CODE = "code"
 
 FieldParsers = dict[str, Callable[[str, date], Any]]
+T = TypeVar("T")
 
 
 def value_at(data: dict, path: str) -> Any:
@@ -66,6 +68,12 @@ def value_at(data: dict, path: str) -> Any:
             return None
         value = value[key]
     return value
+
+
+async def finish_even_if_interrupted(work: Coroutine[Any, Any, T]) -> T:
+    """Runs `work` to the end even if the awaiting turn is cancelled (the caller cut in); the
+    turn still stops, but the work and its state change complete in the background."""
+    return await asyncio.shield(asyncio.ensure_future(work))
 
 
 def slug(text: str) -> str:
@@ -81,8 +89,10 @@ class FlowRunner:
         today: date,
         knowledge_tool: BaseTool | None = None,
         tool_unavailable_line: str = "",
+        idempotency_prefix: str = "",
         on_change: Callable[["FlowRunner"], None] | None = None,
     ) -> None:
+        self._idempotency_prefix = idempotency_prefix
         self._nodes = {node.id: node for node in flow.nodes}
         self._edges = flow.edges
         self._http = http
@@ -126,7 +136,14 @@ class FlowRunner:
             self._on_change(self)
 
     async def enter(self, node_id: str, moved_by: str = MOVED_BY_LLM) -> None:
-        """Runs tool nodes on the way and stops at the next step, end or transfer."""
+        """Runs tool nodes on the way and stops at the next step, end or transfer.
+
+        Once started, a move finishes even if the caller talks over the agent and LiveKit
+        cancels the turn: a booking on the way must not be cut off halfway, and the flow's state
+        must say whether it happened. The next turn then answers from that state."""
+        await finish_even_if_interrupted(self._enter(node_id, moved_by))
+
+    async def _enter(self, node_id: str, moved_by: str) -> None:
         self.moved = True
         start = len(self.path)
         source = self.current.id if self.current else None
@@ -168,12 +185,18 @@ class FlowRunner:
         """A tool node on the path runs without the LLM, so it gets its tool span here."""
         with flow_span(node.data.name, self.fields) as span:
             span.set_attribute(LANGFUSE_OBSERVATION_TYPE, TOOL_OBSERVATION)
-            result = await call_tool(self._http, node.data, self.fields)
+            result = await call_tool(
+                self._http, node.data, self.fields, self._idempotency_key(node)
+            )
             set_span_output(span, {"ok": result.ok, "result": result.data})
         self._record(node, result)
         wanted = SUCCESS_EDGE if result.ok else FAILURE_EDGE
         edges = self._outgoing(node.id, wanted) or self._outgoing(node.id, ALWAYS_EDGE)
         return edges[0] if edges else None
+
+    def _idempotency_key(self, node: ToolNode) -> str | None:
+        """The same for every attempt of one tool in one call, so the service books once."""
+        return f"{self._idempotency_prefix}:{node.id}" if self._idempotency_prefix else None
 
     def _record(self, node: ToolNode, result: ToolResult) -> None:
         self.results[node.data.name] = result.data
@@ -364,6 +387,12 @@ class FlowRunner:
 
         return StructuredTool.from_function(coroutine=move, name=name, description=condition)
 
+    async def _call_and_record(self, node: ToolNode, given: dict[str, Any]) -> ToolResult:
+        values = {**self.fields, **given}
+        result = await call_tool(self._http, node.data, values, self._idempotency_key(node))
+        self._record(node, result)
+        return result
+
     def _attached_tool(self, node: ToolNode) -> BaseTool:
         arguments = {name: (str | None, Field(default=None)) for name in placeholders(node.data)}
         schema = create_model(f"{node.data.name}_args", **arguments)
@@ -374,8 +403,7 @@ class FlowRunner:
                 for name, value in values.items()
                 if value not in (None, "")
             }
-            result = await call_tool(self._http, node.data, {**self.fields, **given})
-            self._record(node, result)
+            result = await finish_even_if_interrupted(self._call_and_record(node, given))
             if result.unavailable:
                 # Said by code, word for word; the LLM is told not to guess.
                 self.failure_line = self._tool_unavailable_line

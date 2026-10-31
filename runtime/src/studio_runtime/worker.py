@@ -11,6 +11,7 @@ from livekit.agents import (
     AgentServer,
     AgentSession,
     AgentStateChangedEvent,
+    ConversationItemAddedEvent,
     JobContext,
     JobExecutorType,
     JobProcess,
@@ -43,6 +44,7 @@ VAD_USERDATA_KEY = "vad"
 TRACER_PROVIDER_USERDATA_KEY = "tracer_provider"
 TRANSCRIPTION_TOPIC = "lk.transcription"
 LISTENING_STATE = "listening"
+ASSISTANT_ROLE = "assistant"
 
 
 def prewarm_process(process: JobProcess) -> None:
@@ -64,12 +66,27 @@ def build_agent_session(
 
 
 def end_after_final_message(session: AgentSession, runner: FlowRunner) -> None:
-    """When the flow reaches an End or Transfer node, hang up once its message has been said."""
+    """When the flow reaches an End or Transfer node, hang up once its message has been heard
+    in full. A message the caller talked over is said again on the next turn (FlowGraph), so
+    a booking's ID is never lost to an interruption."""
 
-    def on_state_changed(event: AgentStateChangedEvent) -> None:
-        if runner.ended and event.new_state == LISTENING_STATE:
+    def on_item_added(event: ConversationItemAddedEvent) -> None:
+        message = event.item
+        if (
+            runner.ended
+            and runner.final_message
+            and getattr(message, "role", None) == ASSISTANT_ROLE
+            and runner.final_message in message.text_content
+            and not message.interrupted
+        ):
             session.shutdown()
 
+    def on_state_changed(event: AgentStateChangedEvent) -> None:
+        # Ended with nothing to say (a tool node with no way on): hang up once quiet.
+        if runner.ended and not runner.final_message and event.new_state == LISTENING_STATE:
+            session.shutdown()
+
+    session.on("conversation_item_added", on_item_added)
     session.on("agent_state_changed", on_state_changed)
 
 

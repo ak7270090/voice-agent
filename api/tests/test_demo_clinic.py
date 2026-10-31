@@ -70,6 +70,18 @@ async def test_booking_returns_an_id_and_takes_the_slot(client):
     assert "11:00" not in free
 
 
+async def test_a_repeated_booking_with_the_same_key_returns_the_first_booking(client):
+    key = {"Idempotency-Key": "web-3f9a:book"}
+
+    first = await client.post("/demo-clinic/appointments", json=BOOKING, headers=key)
+    again = await client.post("/demo-clinic/appointments", json=BOOKING, headers=key)
+    other_caller = await client.post("/demo-clinic/appointments", json=BOOKING)
+
+    assert first.status_code == again.status_code == 201
+    assert again.json()["booking_id"] == first.json()["booking_id"]
+    assert other_caller.status_code == 409
+
+
 async def test_unknown_doctor_cannot_be_booked_or_checked(client):
     booking = await client.post(
         "/demo-clinic/appointments", json={**BOOKING, "doctor": "astrologer"}

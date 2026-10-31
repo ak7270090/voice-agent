@@ -83,7 +83,13 @@ async def availability(session: AsyncSession, doctor_query: str, day: date) -> A
     )
 
 
-async def book(session: AsyncSession, request: BookingRequest) -> BookingRead:
+async def book(
+    session: AsyncSession, request: BookingRequest, idempotency_key: str | None = None
+) -> BookingRead:
+    """A repeated request with the same idempotency key (a retry, or one that was cut off)
+    gets the booking it already made, not a second one or a "slot taken" error."""
+    if idempotency_key and (earlier := await _booked_with(session, idempotency_key)):
+        return booking_read(earlier)
     doctor = find_doctor(request.doctor)
     if request.time not in await free_slots(session, doctor, request.day):
         raise SlotNotAvailableError(f"{doctor.name} is not free on {request.day} at {request.time}")
@@ -95,18 +101,31 @@ async def book(session: AsyncSession, request: BookingRequest) -> BookingRead:
         doctor_id=doctor.id,
         day=request.day,
         time=request.time,
+        idempotency_key=idempotency_key,
     )
     session.add(appointment)
     try:
         await session.commit()
     except IntegrityError as error:
         await session.rollback()
+        if idempotency_key and (earlier := await _booked_with(session, idempotency_key)):
+            return booking_read(earlier)
         raise SlotNotAvailableError("that slot was just taken") from error
+    return booking_read(appointment)
+
+
+async def _booked_with(session: AsyncSession, idempotency_key: str) -> DemoAppointment | None:
+    return await session.scalar(
+        select(DemoAppointment).where(DemoAppointment.idempotency_key == idempotency_key)
+    )
+
+
+def booking_read(appointment: DemoAppointment) -> BookingRead:
     return BookingRead(
         booking_id=f"{BOOKING_ID_PREFIX}{appointment.booking_number}",
         patient_name=appointment.patient_name,
         patient_age=appointment.patient_age,
-        doctor=doctor.name,
+        doctor=next(doctor.name for doctor in DOCTORS if doctor.id == appointment.doctor_id),
         day=appointment.day,
         weekday=f"{appointment.day:%A}",
         time=appointment.time,
