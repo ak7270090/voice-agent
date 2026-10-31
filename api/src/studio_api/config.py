@@ -28,6 +28,11 @@ class Settings(BaseSettings):
     livekit_api_key: str = ""
     livekit_api_secret: str = ""
     runtime_agent_name: str = "studio-agent"
+
+    # Requests the runtime makes during a call join that call's trace in Langfuse.
+    langfuse_public_key: str = ""
+    langfuse_secret_key: str = ""
+    langfuse_base_url: str = "https://cloud.langfuse.com"
     runtime_api_token: str = ""
     browser_call_token_ttl_minutes: int = 30
 

@@ -27,6 +27,9 @@ dependencies = [
     "langchain-openai~=1.7",
     "langchain-text-splitters~=1.1",
     "markitdown[pdf,docx,pptx,xlsx]~=0.1.9",
+    "langfuse~=5.0",
+    "opentelemetry-sdk~=1.45",
+    "opentelemetry-instrumentation-fastapi~=0.66b2",
 ]
 
 [project.optional-dependencies]

@@ -13,6 +13,7 @@ from contextlib import contextmanager
 from typing import Any
 from uuid import UUID
 
+import httpx
 from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.messages import BaseMessage
 from langchain_core.outputs import LLMResult
@@ -20,6 +21,7 @@ from langfuse import Langfuse
 from livekit.agents import ConversationItemAddedEvent
 from livekit.agents.llm import ChatMessage
 from livekit.agents.telemetry import set_tracer_provider, tracer
+from opentelemetry import propagate
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.trace import Span
 
@@ -35,6 +37,7 @@ LANGFUSE_USAGE_DETAILS = "langfuse.observation.usage_details"
 GEN_AI_MODEL = "gen_ai.request.model"
 LLM_CALL_SPAN_NAME = "llm_call"
 TOOL_OBSERVATION = "tool"
+STT_SPAN_NAME = "stt"
 # Passed by FlowGraph in each LLM call's LangChain metadata; shown on the llm_call span.
 FLOW_STEP_KEY = "flow.step"
 
@@ -154,6 +157,32 @@ class LlmCallTracer(BaseCallbackHandler):
             span.end()
 
 
+async def add_trace_context(request: httpx.Request) -> None:
+    """httpx request hook: a W3C `traceparent` header from the current span, so the API (or
+    any traced service) continues this call's trace instead of starting its own."""
+    propagate.inject(request.headers)
+
+
+TRACE_CONTEXT_HOOKS = {"request": [add_trace_context]}
+
+
+def record_stt_span(message: ChatMessage) -> None:
+    """LiveKit streams speech-to-text inside the session and opens no span for it. This one
+    covers the caller stopping to the final transcript, from LiveKit's own timings; a typed
+    message has neither, so it gets none."""
+    stopped = message.metrics.get("stopped_speaking_at")
+    delay = message.metrics.get("transcription_delay")
+    if stopped is None or delay is None:
+        return
+    span = tracer.start_span(STT_SPAN_NAME, start_time=seconds_to_ns(stopped))
+    span.set_attribute(LANGFUSE_OBSERVATION_OUTPUT, message.text_content or "")
+    span.end(end_time=seconds_to_ns(stopped + delay))
+
+
+def seconds_to_ns(seconds: float) -> int:
+    return int(seconds * 1_000_000_000)
+
+
 @contextmanager
 def flow_span(name: str, observation_input: Any = None) -> Iterator[Span]:
     """A span around the flow's own code (reading an answer, a move, saving fields), so the
@@ -223,6 +252,7 @@ class TurnLatencies:
         }
         if message.role == "user":
             self._caller_part = latency_ms
+            record_stt_span(message)
             return
         if latency_ms:
             turn = {**self._caller_part, **latency_ms}

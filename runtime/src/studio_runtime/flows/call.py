@@ -16,6 +16,7 @@ from studio_runtime.control_plane import AgentConfig
 from studio_runtime.conversation import create_chat_model
 from studio_runtime.flows.graph import FlowGraph
 from studio_runtime.flows.runner import FlowRunner
+from studio_runtime.observability import TRACE_CONTEXT_HOOKS
 from studio_runtime.parsers import parsers_for
 
 # Participant attributes the console reads to highlight the live node and show the fields.
@@ -41,7 +42,7 @@ def create_flow_runner(
 ) -> FlowRunner:
     return FlowRunner(
         config.flow,
-        httpx.AsyncClient(timeout=settings.tool_timeout_seconds),
+        httpx.AsyncClient(timeout=settings.tool_timeout_seconds, event_hooks=TRACE_CONTEXT_HOOKS),
         parsers_for(language),
         datetime.now(ZoneInfo(settings.timezone)).date(),
         knowledge_tool=knowledge_tool,

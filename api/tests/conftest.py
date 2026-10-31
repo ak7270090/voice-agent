@@ -72,6 +72,7 @@ def settings(monkeypatch):
     monkeypatch.setattr(settings, "livekit_url", "wss://example.livekit.cloud")
     monkeypatch.setattr(settings, "livekit_api_key", "test-key")
     monkeypatch.setattr(settings, "livekit_api_secret", "test-secret-that-is-long-enough-for-hs256")
+    monkeypatch.setattr(settings, "langfuse_public_key", "")
     return settings
 
 

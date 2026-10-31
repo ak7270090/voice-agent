@@ -26,6 +26,7 @@ from studio_api.jobs import create_job_queue
 from studio_api.knowledge.router import router as knowledge_router
 from studio_api.knowledge.router import runtime_router as knowledge_runtime_router
 from studio_api.storage import create_file_store
+from studio_api.tracing import create_tracer_provider, trace_requests
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +76,7 @@ def create_app() -> FastAPI:
         demo_clinic_router,
     ):
         app.include_router(router)
+    trace_requests(app, create_tracer_provider(get_settings()))
     return app
 
 

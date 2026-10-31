@@ -9,10 +9,6 @@ import pytest
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, AIMessageChunk, HumanMessage, SystemMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
-from livekit.agents.telemetry import set_tracer_provider
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import SimpleSpanProcessor
-from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
 from studio_runtime.flows.graph import FlowGraph
 from studio_runtime.flows.runner import FlowRunner, value_at
@@ -547,16 +543,6 @@ async def test_the_llm_sees_only_the_result_fields_the_tool_names():
     assert json.loads(result) == {"free_times": ["11:00", "11:30"]}
     assert '"day"' not in runner.system_prompt("base").split("Latest result")[1]
     assert runner.fields["day"] == "2026-10-31"
-
-
-@pytest.fixture
-def spans():
-    exporter = InMemorySpanExporter()
-    provider = TracerProvider()
-    provider.add_span_processor(SimpleSpanProcessor(exporter))
-    set_tracer_provider(provider)
-    yield exporter
-    set_tracer_provider(TracerProvider())
 
 
 async def test_a_turn_traces_its_tool_calls_moves_and_saved_fields(spans):

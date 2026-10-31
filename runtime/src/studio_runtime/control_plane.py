@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 from studio_runtime.config import Settings
 from studio_runtime.flows.schema import Flow
+from studio_runtime.observability import TRACE_CONTEXT_HOOKS
 
 
 class VoiceSettings(BaseModel):
@@ -93,5 +94,7 @@ def create_control_plane_client(settings: Settings) -> ControlPlaneClient:
             base_url=settings.api_url,
             headers={"Authorization": f"Bearer {settings.runtime_api_token}"},
             timeout=settings.api_timeout_seconds,
+            # The API continues the call's trace (agent config, knowledge search, call record).
+            event_hooks=TRACE_CONTEXT_HOOKS,
         )
     )
