@@ -1,6 +1,6 @@
 {
   "pass_rate": 1.0,
-  "median_reply_seconds": 0.982,
-  "p95_reply_seconds": 1.655,
-  "replies": 21
+  "median_reply_seconds": 1.318,
+  "p95_reply_seconds": 3.247,
+  "replies": 33
 }

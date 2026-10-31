@@ -21,6 +21,11 @@ from studio_api.flows.schemas import (
 
 COLUMN = 300
 ROW = 150
+# The demo clinic's doctors, as the agent names them when the caller has not said.
+DOCTOR_LIST = (
+    "Dr. Anil Sharma, general physician; Dr. Priya Mehta, skin; Dr. Ravi Iyer, children; "
+    "Dr. Sana Khan, bones and joints"
+)
 
 
 def at(column: float, row: float) -> Position:
@@ -52,22 +57,51 @@ def build_clinic_booking_flow(clinic_api_url: str) -> Flow:
             data=StepData(
                 name="Collect booking details",
                 instructions=(
-                    "Ask for one missing detail at a time. As soon as you know the doctor (or "
-                    "the problem) and the day, call check_availability and offer only the free "
-                    "times it returns. If the day has none, offer the next open days."
+                    "Save every detail the caller has already given in this call, then ask for "
+                    "one missing detail at a time. If the caller has not said which doctor or "
+                    "what the problem is, ask, and name the doctors: "
+                    + DOCTOR_LIST
+                    + ". Do not ask for a time yet: the free times are checked next. If you "
+                    "are back here because no doctor matched, say so and ask again."
                 ),
                 fields=[
                     FieldSpec(name="patient_name", type="name", description="Patient's full name"),
                     FieldSpec(name="patient_age", type="number", description="Patient's age"),
                     FieldSpec(
                         name="doctor",
-                        description="Doctor's name, or the speciality or problem (e.g. skin)",
+                        description=(
+                            "Which doctor: a name, speciality or health problem, e.g. Dr. "
+                            "Mehta, skin, skin doctor, fever. 'A doctor appointment' alone does "
+                            "not say which"
+                        ),
                     ),
                     FieldSpec(name="day", type="date", description="Day of the appointment"),
-                    FieldSpec(name="time", type="time", description="A free time on that day"),
+                ],
+                say_on_enter="Sure, I can help with that.",
+            ),
+        ),
+        StepNode(
+            id="choose_time",
+            type="step",
+            position=at(-1, 3),
+            data=StepData(
+                name="Choose a free time",
+                instructions=(
+                    "Offer only times from the latest check_availability result, a few at a "
+                    "time, said the way people say them (13:30 is half past one); never "
+                    "suggest any other time. If the day has none, offer its next "
+                    "open days, and when the caller picks another day, call check_availability "
+                    "for it. If you are back here because the booking failed, call "
+                    "check_availability again and offer the new free times."
+                ),
+                fields=[
+                    FieldSpec(
+                        name="time",
+                        type="time",
+                        description="One of the free times the caller chose",
+                    ),
                 ],
                 tools=["check_availability"],
-                say_on_enter="Sure, I can help with that.",
             ),
         ),
         StepNode(
@@ -108,7 +142,9 @@ def build_clinic_booking_flow(clinic_api_url: str) -> Flow:
                 description="Free times for a doctor (name or speciality) on a day (YYYY-MM-DD).",
                 url=f"{clinic_api_url}/demo-clinic/availability?doctor={{doctor}}&day={{day}}",
                 say_while_running="One moment, let me check.",
-                save_to_fields={"doctor": "doctor"},
+                # The clinic's own spelling, and the day it checked (a new day the caller
+                # picked replaces the old one).
+                save_to_fields={"doctor": "doctor", "day": "day"},
                 result_fields=["doctor", "weekday", "free_times", "next_open_days"],
             ),
         ),
@@ -167,11 +203,21 @@ def build_clinic_booking_flow(clinic_api_url: str) -> Flow:
         edge("greet", "questions", condition="The caller has a question about the hospital"),
         edge("questions", "collect", condition="The caller wants to book an appointment"),
         edge("questions", "goodbye", condition="The caller has no more questions"),
-        edge("collect", "confirm", "fields_complete"),
+        # The free times are checked by code once the doctor and day are known, so a time is
+        # only ever chosen from them (the LLM once skipped the check and made up 12:00).
+        edge("collect", "check_availability", "fields_complete"),
+        edge("check_availability", "choose_time", "success"),
+        edge("check_availability", "collect", "failure"),
+        edge("choose_time", "confirm", "fields_complete"),
         edge("confirm", "book", condition="The caller confirms the details are right"),
-        edge("confirm", "collect", condition="The caller wants to change a detail"),
+        edge("confirm", "choose_time", condition="The caller wants a different time or day"),
+        edge(
+            "confirm",
+            "collect",
+            condition="The caller wants to change the name, age or doctor",
+        ),
         edge("book", "booked", "success"),
-        edge("book", "collect", "failure"),
+        edge("book", "choose_time", "failure"),
         edge("wants_human", "front_desk", "always"),
     ]
     return Flow(nodes=nodes, edges=edges)

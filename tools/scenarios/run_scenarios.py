@@ -28,6 +28,8 @@ API = "http://localhost:8000"
 TEMPLATE_ID = "clinic-booking"
 AGENT_NAME = "Clinic booking (scenario runs)"
 DOCTOR = "skin"
+PHYSICIAN = "general physician"
+AFTERNOON = "12:00"
 DAYS_AHEAD = 60
 # Booked, read back then changed (two), taken by someone else, and booked instead.
 SLOTS_NEEDED = 5
@@ -51,7 +53,10 @@ class Scenario:
     lines: list[str]
     # Any of these outcomes passes (None: the call ended without reaching an End node).
     expected_outcomes: tuple[str | None, ...]
+    # A value, or a set of allowed values (e.g. any free afternoon time).
     expected_fields: dict = field(default_factory=dict)
+    # Words some agent reply must contain (e.g. a doctor's name the agent had to offer).
+    expected_in_replies: tuple[str, ...] = ()
 
 
 @dataclass
@@ -118,18 +123,30 @@ class TesterCall:
             await self.room.disconnect()
 
 
-async def free_slots(api: httpx.AsyncClient) -> tuple[date, list[str]]:
-    """A day in the next two months with a free time for every scenario that books, so
+async def free_day(
+    api: httpx.AsyncClient,
+    doctor: str,
+    needed: int,
+    earliest: str = "00:00",
+    not_on: date | None = None,
+) -> tuple[date, list[str]]:
+    """A day in the next two months with `needed` free times from `earliest` on, so
     scenarios never take each other's slot and re-runs never collide."""
     for offset in range(1, DAYS_AHEAD):
         day = date.today() + timedelta(days=offset)
+        if day == not_on:
+            continue
         response = await api.get(
-            "/demo-clinic/availability", params={"doctor": DOCTOR, "day": day.isoformat()}
+            "/demo-clinic/availability", params={"doctor": doctor, "day": day.isoformat()}
         )
-        free = response.json()["free_times"]
-        if len(free) >= SLOTS_NEEDED:
+        free = [time for time in response.json()["free_times"] if time >= earliest]
+        if len(free) >= needed:
             return day, free
-    raise RuntimeError(f"no day with {SLOTS_NEEDED} free times in the next two months")
+    raise RuntimeError(f"no day with {needed} free times for {doctor} in the next two months")
+
+
+def spoken_day(day: date) -> str:
+    return f"{day.day} {day:%B}"
 
 
 def spoken_clock(clock: str) -> str:
@@ -139,8 +156,12 @@ def spoken_clock(clock: str) -> str:
 
 
 async def build_scenarios(api: httpx.AsyncClient) -> list[Scenario]:
-    day, (booked, read_back, changed, taken, instead, *_) = await free_slots(api)
-    when = f"{day.day} {day:%B}"
+    day, (booked, read_back, changed, taken, instead, *_) = await free_day(
+        api, DOCTOR, SLOTS_NEEDED
+    )
+    when = spoken_day(day)
+    physician_day, (physician_time, *_) = await free_day(api, PHYSICIAN, 1)
+    afternoon_day, afternoon_times = await free_day(api, DOCTOR, 1, AFTERNOON, not_on=day)
     asking = f"I want to book an appointment with the {DOCTOR} doctor."
     patient = "My name is Rohan Gupta and I am 34 years old."
     # Someone else takes this slot first, so the booking gets 409 and the flow goes back.
@@ -190,6 +211,37 @@ async def build_scenarios(api: httpx.AsyncClient) -> list[Scenario]:
             ("booked",),
             {"time": instead},
         ),
+        # The caller names no doctor: the agent must ask, naming the doctors, and book the one
+        # chosen (a phone call once saved "doctor appointment" as the doctor).
+        Scenario(
+            "doctor not named",
+            [
+                "I want to book a doctor appointment.",
+                patient,
+                f"{spoken_day(physician_day)}, please.",
+                "A general physician, please.",
+                f"{spoken_clock(physician_time)} works.",
+                "Yes.",
+            ],
+            ("booked",),
+            {"doctor": "Dr. Anil Sharma", "time": physician_time},
+            expected_in_replies=("Mehta",),
+        ),
+        # A vague time: the booked time must be one the clinic said was free, never made up
+        # (the same phone call once got 12:00 for "the afternoon" without any check).
+        Scenario(
+            "asks for the afternoon",
+            [
+                asking,
+                patient,
+                f"{spoken_day(afternoon_day)}, please.",
+                "Something in the afternoon, please.",
+                "The earliest of those is fine.",
+                "Yes.",
+            ],
+            ("booked",),
+            {"time": set(afternoon_times)},
+        ),
         Scenario("asks for a person", ["Can I talk to a person, please?"], ("transfer_requested",)),
         # The scenario agent has no knowledge base, so this only checks the question path:
         # a reply, no booking. It may answer and stay, or say goodbye ("answered").
@@ -212,6 +264,10 @@ async def clinic_agent(api: httpx.AsyncClient) -> str:
     return agent["id"]
 
 
+def matches(actual: object, expected: object) -> bool:
+    return actual in expected if isinstance(expected, set) else actual == expected
+
+
 async def run(api: httpx.AsyncClient, agent_id: str, scenario: Scenario) -> Result:
     response = await api.post(f"/agents/{agent_id}/browser-calls")
     browser_call = response.raise_for_status().json()
@@ -229,11 +285,20 @@ async def run(api: httpx.AsyncClient, agent_id: str, scenario: Scenario) -> Resu
     wrong = {
         name: record["fields"].get(name)
         for name, value in scenario.expected_fields.items()
-        if record["fields"].get(name) != value
+        if not matches(record["fields"].get(name), value)
     }
+    said = " ".join(call.replies)
+    unsaid = [words for words in scenario.expected_in_replies if words not in said]
     outcome_ok = record["outcome"] in scenario.expected_outcomes
-    passed = outcome_ok and not wrong and None not in seconds
-    problem = "" if passed else f"fields {wrong}" if wrong else "unexpected outcome or no reply"
+    passed = outcome_ok and not wrong and not unsaid and None not in seconds
+    if passed:
+        problem = ""
+    elif wrong:
+        problem = f"fields {wrong}"
+    elif unsaid:
+        problem = f"never said {unsaid}"
+    else:
+        problem = "unexpected outcome or no reply"
     return Result(scenario, passed, record["outcome"], timed, call.replies, problem)
 
 
