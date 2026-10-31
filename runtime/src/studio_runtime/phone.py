@@ -11,8 +11,22 @@ from dataclasses import dataclass
 
 from livekit import api, rtc
 from livekit.agents import AMD, AgentSession, AMDCategory
+from livekit.agents.voice.amd.classifier import AMD_PROMPT
 
 logger = logging.getLogger(__name__)
+
+# Added to LiveKit's detection examples. A greeting often pauses after its first sentence, and
+# the detector classifies what it has heard by then: "Hi. You've reached Rohan Gupta." was
+# taken for a person, so the agent talked to the machine instead of leaving its message.
+VOICEMAIL_OPENINGS = """
+
+Input: "Hi. You've reached Rohan Gupta."
+Output: machine-vm
+Note: no person answering says "you've reached" or gives their full name as a greeting; these
+open voicemail greetings even before "leave a message" is heard.
+
+Input: "Namaste, aap Priya Sharma ko call kar rahe hain."
+Output: machine-vm"""
 
 SIP_PHONE_ATTRIBUTE = "sip.phoneNumber"
 CALLEE_IDENTITY = "callee"
@@ -76,6 +90,7 @@ async def ring(
         participant_identity=CALLEE_IDENTITY,
         ivr_detection=False,
         suppress_compatibility_warning=True,
+        detection_options={"prompt": AMD_PROMPT + VOICEMAIL_OPENINGS},
     ) as detector:
         if not await _dial(livekit, request):
             return None
