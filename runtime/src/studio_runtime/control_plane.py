@@ -9,6 +9,9 @@ from studio_runtime.config import Settings
 from studio_runtime.flows.schema import Flow
 from studio_runtime.observability import TRACE_CONTEXT_HOOKS
 
+INBOUND_DIRECTION = "inbound"
+OUTBOUND_DIRECTION = "outbound"
+
 
 class VoiceSettings(BaseModel):
     stt_model: str
@@ -21,6 +24,7 @@ class AgentConfig(BaseModel):
     name: str
     instructions: str
     greeting: str
+    voicemail_message: str = ""
     llm_model: str
     languages: list[str]
     language_settings: dict[str, VoiceSettings]
@@ -48,6 +52,12 @@ class CallRecord(BaseModel):
     interruptions: int = 0
 
 
+class PhoneNumber(BaseModel):
+    id: str
+    number: str
+    agent_id: str | None = None
+
+
 class KnowledgeHit(BaseModel):
     document_name: str
     text: str
@@ -63,10 +73,28 @@ class ControlPlaneClient:
         response.raise_for_status()
         return AgentConfig.model_validate(response.json())
 
-    async def start_call(self, agent_id: str, room_name: str, channel: str) -> str:
+    async def get_phone_number(self, number_id: str) -> PhoneNumber:
+        response = await self._http.get(f"/runtime/phone-numbers/{number_id}")
+        response.raise_for_status()
+        return PhoneNumber.model_validate(response.json())
+
+    async def start_call(
+        self,
+        agent_id: str,
+        room_name: str,
+        channel: str,
+        direction: str = INBOUND_DIRECTION,
+        remote_number: str | None = None,
+    ) -> str:
         response = await self._http.post(
             "/runtime/calls",
-            json={"agent_id": agent_id, "room_name": room_name, "channel": channel},
+            json={
+                "agent_id": agent_id,
+                "room_name": room_name,
+                "channel": channel,
+                "direction": direction,
+                "remote_number": remote_number,
+            },
         )
         response.raise_for_status()
         return response.json()["id"]

@@ -45,7 +45,30 @@ def test_metadata_without_a_channel_is_a_phone_call():
     assert not parse_call_metadata('{"agent_id": "agent-1"}').is_web
 
 
-@pytest.mark.parametrize("raw", ["", "not json", '{"channel": "web"}'])
+def test_an_incoming_phone_call_names_only_the_number_dialled():
+    metadata = parse_call_metadata('{"number_id": "n-1", "channel": "phone"}')
+
+    assert metadata.agent_id is None
+    assert not metadata.is_web and not metadata.is_outbound
+
+
+def test_an_outgoing_call_names_the_number_to_ring_and_its_trunk():
+    metadata = parse_call_metadata(
+        '{"agent_id": "a-1", "dial_to": "+919876543210", "outbound_trunk_id": "ST_1"}'
+    )
+
+    assert metadata.is_outbound
+
+
+@pytest.mark.parametrize(
+    "raw",
+    [
+        "",
+        "not json",
+        '{"channel": "web"}',
+        '{"agent_id": "a-1", "dial_to": "+919876543210"}',
+    ],
+)
 def test_metadata_without_an_agent_is_rejected(raw):
     with pytest.raises(InvalidCallMetadataError):
         parse_call_metadata(raw)

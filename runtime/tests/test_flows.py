@@ -85,7 +85,11 @@ FLOW = {
             "type": "global",
             "data": {"name": "Human", "condition": "Caller wants a person"},
         },
-        {"id": "desk", "type": "transfer", "data": {"message": "Connecting you."}},
+        {
+            "id": "desk",
+            "type": "transfer",
+            "data": {"message": "Connecting you.", "destination": "+914412345678"},
+        },
     ],
     "edges": [
         {"id": "e1", "source": "start", "target": "greet", "kind": "always"},
@@ -379,7 +383,45 @@ async def test_global_move_ends_with_the_transfer_message():
 
     assert reply == "Connecting you."
     assert runner.outcome == "transfer_requested"
+    assert runner.transfer_to == "+914412345678"
     assert await run_turn(graph, "hello?") == "Connecting you."
+
+
+async def test_call_values_are_known_before_the_first_step_and_fill_tool_urls():
+    lookups: list[str] = []
+
+    def crm(request: httpx.Request) -> httpx.Response:
+        lookups.append(str(request.url))
+        return httpx.Response(200, json={"name": "Rohan"})
+
+    flow = {
+        "nodes": [
+            {"id": "start", "type": "start"},
+            {
+                "id": "who",
+                "type": "tool",
+                "data": {"name": "who", "url": "https://crm.example/c?phone={caller_number}"},
+            },
+            {"id": "done", "type": "end", "data": {"message": "Hello {name}."}},
+        ],
+        "edges": [
+            {"id": "e1", "source": "start", "target": "who", "kind": "always"},
+            {"id": "e2", "source": "who", "target": "done", "kind": "success"},
+        ],
+    }
+    runner = FlowRunner(
+        Flow.model_validate(flow),
+        httpx.AsyncClient(transport=httpx.MockTransport(crm)),
+        parsers_for("en"),
+        FRIDAY,
+        call_values={"caller_number": "+919876543210"},
+    )
+
+    await runner.start()
+
+    assert lookups == ["https://crm.example/c?phone=%2B919876543210"]
+    assert runner.final_message == "Hello Rohan."
+    assert runner.fields["caller_number"] == "+919876543210"
 
 
 class FlakyModel(ScriptedModel):

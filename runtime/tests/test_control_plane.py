@@ -72,6 +72,8 @@ async def test_call_is_started_and_ended_with_its_transcript():
         "agent_id": "agent-1",
         "room_name": "web-abc",
         "channel": "web",
+        "direction": "inbound",
+        "remote_number": None,
     }
     assert requests[1].url.path == "/runtime/calls/call-1/end"
     assert json.loads(requests[1].content) == {
@@ -82,6 +84,20 @@ async def test_call_is_started_and_ended_with_its_transcript():
         "turn_latency_ms": [],
         "interruptions": 0,
     }
+
+
+async def test_the_number_dialled_says_which_agent_answers():
+    client, requests = client_answering(
+        lambda request: httpx.Response(
+            200, json={"id": "n-1", "number": "+14155550100", "agent_id": "agent-1"}
+        )
+    )
+
+    number = await client.get_phone_number("n-1")
+    await client.aclose()
+
+    assert requests[0].url.path == "/runtime/phone-numbers/n-1"
+    assert number.agent_id == "agent-1"
 
 
 def test_client_sends_the_runtime_token_to_the_configured_api():

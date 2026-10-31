@@ -39,6 +39,7 @@ def create_flow_runner(
     room: rtc.Room,
     knowledge_tool: BaseTool | None,
     messages: dict[str, str],
+    call_values: dict[str, str] | None = None,
 ) -> FlowRunner:
     return FlowRunner(
         config.flow,
@@ -50,6 +51,7 @@ def create_flow_runner(
         # One key per call and tool node: a booking retried or cut off is made only once.
         idempotency_prefix=room.name,
         on_change=lambda runner: publish_progress(room, runner),
+        call_values=call_values,
     )
 
 

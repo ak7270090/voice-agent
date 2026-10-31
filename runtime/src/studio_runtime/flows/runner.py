@@ -109,6 +109,7 @@ class FlowRunner:
         tool_unavailable_line: str = "",
         idempotency_prefix: str = "",
         on_change: Callable[["FlowRunner"], None] | None = None,
+        call_values: dict[str, Any] | None = None,
     ) -> None:
         self._idempotency_prefix = idempotency_prefix
         self._nodes = {node.id: node for node in flow.nodes}
@@ -119,7 +120,8 @@ class FlowRunner:
         self._knowledge_tool = knowledge_tool
         self._tool_unavailable_line = tool_unavailable_line
         self._on_change = on_change
-        self.fields: dict[str, Any] = {}
+        # Known before the first step (the caller's number): tools use them like fields.
+        self.fields: dict[str, Any] = dict(call_values or {})
         self.results: dict[str, Any] = {}
         self.last_result: tuple[str, Any] | None = None
         self._last_result_for_llm: tuple[str, Any] | None = None
@@ -128,6 +130,8 @@ class FlowRunner:
         self.ended = False
         self.outcome: str | None = None
         self.final_message = ""
+        # A Transfer node's number or sip: address, handed the caller after its message.
+        self.transfer_to = ""
         self.moved = False
         # A step's "say on entering" line, waiting to be spoken by the graph.
         self.entry_line = ""
@@ -208,6 +212,7 @@ class FlowRunner:
             self.outcome = node.data.outcome
         else:
             self.outcome = TRANSFER_OUTCOME
+            self.transfer_to = node.data.destination
         self.final_message = fill_leniently(node.data.message, self.message_values())
 
     def message_values(self) -> dict[str, Any]:

@@ -4,5 +4,6 @@
   "knowledge_nothing_found": "Nothing about this in the documents.",
   "tool_unavailable": "Sorry, I can't check that right now.",
   "still_there": "Are you still there?",
-  "goodbye_quiet": "I can't hear you, so I'll end the call now. Please call back anytime. Goodbye."
+  "goodbye_quiet": "I can't hear you, so I'll end the call now. Please call back anytime. Goodbye.",
+  "transfer_failed": "Sorry, I couldn't connect you right now. Please call back in a little while. Goodbye."
 }

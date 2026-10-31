@@ -57,6 +57,11 @@ class Settings(BaseSettings):
     llm_timeout_seconds: float = 10.0
     llm_retry_delay_seconds: float = 0.5
 
+    # Outgoing calls: LiveKit's answering-machine detection classifies the first words with
+    # this model through LiveKit Inference (it needs LiveKit's own tool calls, which the
+    # LangChain adapter does not pass on). "" skips detection and greets whoever answers.
+    amd_llm_model: str = "openai/gpt-4.1-mini"
+
 
 @lru_cache
 def get_settings() -> Settings:
