@@ -6,7 +6,6 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 import httpx
-from langchain.chat_models import init_chat_model
 from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.tools import BaseTool
 from livekit import rtc
@@ -14,6 +13,7 @@ from livekit.plugins.langchain import LLMAdapter
 
 from studio_runtime.config import Settings
 from studio_runtime.control_plane import AgentConfig
+from studio_runtime.conversation import create_chat_model
 from studio_runtime.flows.graph import FlowGraph
 from studio_runtime.flows.runner import FlowRunner
 from studio_runtime.parsers import parsers_for
@@ -59,7 +59,7 @@ def create_flow_llm(
 ) -> LLMAdapter:
     graph = FlowGraph(
         runner,
-        init_chat_model(config.llm_model),
+        create_chat_model(config.llm_model, settings),
         base_instructions,
         settings.llm_max_retries,
         filler_delay_seconds=settings.filler_delay_seconds,

@@ -1,7 +1,27 @@
+import pytest
 from langchain_core.messages import AIMessageChunk, ToolMessage
 from livekit.agents import ChatContext
 
-from studio_runtime.conversation import SpokenReplyGraph, build_transcript
+from studio_runtime.config import Settings
+from studio_runtime.conversation import SpokenReplyGraph, build_transcript, create_chat_model
+
+
+@pytest.mark.parametrize(
+    ("llm_model", "effort", "expected"),
+    [
+        ("openai:gpt-5.4-mini", "none", "none"),
+        ("openai:gpt-5.4-mini", "", None),
+        ("openai:gpt-4.1-mini", "none", None),
+    ],
+)
+def test_reasoning_effort_applies_only_to_openai_reasoning_models(
+    monkeypatch, llm_model, effort, expected
+):
+    monkeypatch.setenv("OPENAI_API_KEY", "test")
+
+    model = create_chat_model(llm_model, Settings(llm_reasoning_effort=effort))
+
+    assert model.reasoning_effort == expected
 
 
 class FakeGraph:

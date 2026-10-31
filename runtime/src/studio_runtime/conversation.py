@@ -11,6 +11,7 @@ from langchain.agents import create_agent
 from langchain.agents.middleware import ModelRetryMiddleware
 from langchain.chat_models import init_chat_model
 from langchain_core.callbacks import BaseCallbackHandler
+from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessageChunk
 from langchain_core.tools import BaseTool
 from langgraph.graph.state import CompiledStateGraph
@@ -21,6 +22,24 @@ from studio_runtime.config import Settings
 from studio_runtime.control_plane import TranscriptTurn
 
 TRANSCRIPT_ROLES = ("user", "assistant")
+OPENAI_PROVIDER = "openai"
+# OpenAI's reasoning models: they think before answering unless told otherwise.
+OPENAI_REASONING_MODEL_PREFIX = "gpt-5"
+
+
+def create_chat_model(llm_model: str, settings: Settings) -> BaseChatModel:
+    """The agent's model from its "provider:model" string. A voice turn only picks a step's tool
+    or writes a sentence, so a reasoning model's thinking (time before the first word) is set
+    by `llm_reasoning_effort` ("none" skips it); other models take no such option."""
+    provider, _, model = llm_model.partition(":")
+    options = {}
+    if (
+        settings.llm_reasoning_effort
+        and provider == OPENAI_PROVIDER
+        and model.startswith(OPENAI_REASONING_MODEL_PREFIX)
+    ):
+        options["reasoning_effort"] = settings.llm_reasoning_effort
+    return init_chat_model(llm_model, **options)
 
 
 def build_conversation_graph(
@@ -33,7 +52,8 @@ def build_conversation_graph(
         initial_delay=settings.llm_retry_delay_seconds,
         on_failure="error",
     )
-    return create_agent(model=init_chat_model(llm_model), tools=tools, middleware=[retry])
+    model = create_chat_model(llm_model, settings)
+    return create_agent(model=model, tools=tools, middleware=[retry])
 
 
 class SpokenReplyGraph:
