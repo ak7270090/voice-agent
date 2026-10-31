@@ -27,6 +27,7 @@ from langchain_core.messages import (
 
 from studio_runtime.flows import prompts
 from studio_runtime.flows.runner import SAVE_FIELDS_TOOL, FlowRunner
+from studio_runtime.observability import FLOW_STEP_KEY
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +96,7 @@ class FlowGraph:
                     result = prompts.UNKNOWN_TOOL.format(name=call["name"])
                 else:
                     filler = "" if filler_said else runner.filler_for(call["name"])
-                    task = asyncio.ensure_future(tool.ainvoke(call["args"]))
+                    task = asyncio.ensure_future(tool.ainvoke(call["args"], config=self._config()))
                     if filler and not await self._finishes_quickly(task):
                         yield spoken(f"{filler} ")
                         filler_said = True
@@ -113,9 +114,14 @@ class FlowGraph:
         done, _ = await asyncio.wait({task}, timeout=self._filler_delay_seconds)
         return bool(done)
 
+    def _config(self) -> dict:
+        """LangChain config for each model and tool call: the tracer, and the step for its span."""
+        step = self._runner.current.id if self._runner.current else ""
+        return {"callbacks": self._callbacks, "metadata": {FLOW_STEP_KEY: step}}
+
     async def _stream(self, model, messages: list[BaseMessage]) -> AsyncIterator[AIMessageChunk]:
         """Retries a model call that fails before saying anything (a dropped connection)."""
-        config = {"callbacks": self._callbacks}
+        config = self._config()
         for attempt in range(self._max_retries + 1):
             started = False
             try:

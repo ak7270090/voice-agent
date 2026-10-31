@@ -8,6 +8,8 @@ clinic-voice-agent, where it priced each LLM call and measured voice-to-voice la
 import asyncio
 import json
 import logging
+from collections.abc import Iterator
+from contextlib import contextmanager
 from typing import Any
 from uuid import UUID
 
@@ -32,6 +34,9 @@ LANGFUSE_OBSERVATION_OUTPUT = "langfuse.observation.output"
 LANGFUSE_USAGE_DETAILS = "langfuse.observation.usage_details"
 GEN_AI_MODEL = "gen_ai.request.model"
 LLM_CALL_SPAN_NAME = "llm_call"
+TOOL_OBSERVATION = "tool"
+# Passed by FlowGraph in each LLM call's LangChain metadata; shown on the llm_call span.
+FLOW_STEP_KEY = "flow.step"
 
 # Seconds, from LiveKit's per-message metrics. e2e_latency is voice-to-voice: from the caller
 # stopping to the agent's first audio.
@@ -77,10 +82,11 @@ class CallTracing:
 
 
 class LlmCallTracer(BaseCallbackHandler):
-    """One Langfuse generation per LLM call, with model and token usage, so Langfuse prices it.
+    """One Langfuse generation per LLM call, with model and token usage, so Langfuse prices it,
+    and one tool observation per tool call, with its arguments, result and duration.
 
-    LiveKit's LangChain adapter reports no usage, and a flow turn makes one or more model calls
-    of its own; each gets a span.
+    LiveKit's LangChain adapter reports no usage, and the flow runs its tools itself, so LiveKit
+    has no span for them; each gets one here.
     """
 
     run_inline = True
@@ -94,12 +100,16 @@ class LlmCallTracer(BaseCallbackHandler):
         messages: list[list[BaseMessage]],
         *,
         run_id: UUID,
+        metadata: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> None:
         span = tracer.start_span(LLM_CALL_SPAN_NAME)
         span.set_attribute(LANGFUSE_OBSERVATION_TYPE, "generation")
         prompt = [{"role": m.type, "content": m.text} for m in messages[0]] if messages else []
         span.set_attribute(LANGFUSE_OBSERVATION_INPUT, json.dumps(prompt, ensure_ascii=False))
+        step = (metadata or {}).get(FLOW_STEP_KEY)
+        if step:
+            span.set_attribute(FLOW_STEP_KEY, step)
         self._open_spans[run_id] = span
 
     def on_llm_end(self, response: LLMResult, *, run_id: UUID, **kwargs: Any) -> None:
@@ -111,10 +121,53 @@ class LlmCallTracer(BaseCallbackHandler):
         span.end()
 
     def on_llm_error(self, error: BaseException, *, run_id: UUID, **kwargs: Any) -> None:
+        self._end_with_error(run_id, error)
+
+    def on_tool_start(
+        self,
+        serialized: dict[str, Any] | None,
+        input_str: str,
+        *,
+        run_id: UUID,
+        inputs: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> None:
+        span = tracer.start_span((serialized or {}).get("name") or TOOL_OBSERVATION)
+        span.set_attribute(LANGFUSE_OBSERVATION_TYPE, TOOL_OBSERVATION)
+        arguments = json.dumps(inputs, default=str) if inputs is not None else input_str
+        span.set_attribute(LANGFUSE_OBSERVATION_INPUT, arguments)
+        self._open_spans[run_id] = span
+
+    def on_tool_end(self, output: Any, *, run_id: UUID, **kwargs: Any) -> None:
+        span = self._open_spans.pop(run_id, None)
+        if span is not None:
+            span.set_attribute(LANGFUSE_OBSERVATION_OUTPUT, str(getattr(output, "content", output)))
+            span.end()
+
+    def on_tool_error(self, error: BaseException, *, run_id: UUID, **kwargs: Any) -> None:
+        self._end_with_error(run_id, error)
+
+    def _end_with_error(self, run_id: UUID, error: BaseException) -> None:
         span = self._open_spans.pop(run_id, None)
         if span is not None:
             span.record_exception(error)
             span.end()
+
+
+@contextmanager
+def flow_span(name: str, observation_input: Any = None) -> Iterator[Span]:
+    """A span around the flow's own code (reading an answer, a move, saving fields), so the
+    trace shows what the flow did between LLM calls. A no-op when tracing is off."""
+    with tracer.start_as_current_span(name) as span:
+        if observation_input is not None:
+            span.set_attribute(
+                LANGFUSE_OBSERVATION_INPUT, json.dumps(observation_input, default=str)
+            )
+        yield span
+
+
+def set_span_output(span: Span, output: Any) -> None:
+    span.set_attribute(LANGFUSE_OBSERVATION_OUTPUT, json.dumps(output, default=str))
 
 
 def llm_call_attributes(response: LLMResult) -> dict[str, str | int]:

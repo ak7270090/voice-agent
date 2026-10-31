@@ -9,10 +9,15 @@ import pytest
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, AIMessageChunk, HumanMessage, SystemMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
+from livekit.agents.telemetry import set_tracer_provider
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import SimpleSpanProcessor
+from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
 from studio_runtime.flows.graph import FlowGraph
 from studio_runtime.flows.runner import FlowRunner, value_at
 from studio_runtime.flows.schema import Flow
+from studio_runtime.observability import LlmCallTracer
 from studio_runtime.parsers import parsers_for
 
 FRIDAY = date(2026, 10, 30)
@@ -365,6 +370,42 @@ async def test_a_tool_result_fills_the_fields_it_is_mapped_to():
     await check.ainvoke({"day": "Saturday"})
 
     assert runner.fields["day"] == "2026-10-31"
+
+
+@pytest.fixture
+def spans():
+    exporter = InMemorySpanExporter()
+    provider = TracerProvider()
+    provider.add_span_processor(SimpleSpanProcessor(exporter))
+    set_tracer_provider(provider)
+    yield exporter
+    set_tracer_provider(TracerProvider())
+
+
+async def test_a_turn_traces_its_tool_calls_moves_and_saved_fields(spans):
+    runner = make_runner()
+    await runner.start()
+    await runner.enter("collect")
+    runner.entry_line = ""
+    model = ScriptedModel(
+        script=[call("check_availability", day="tomorrow"), AIMessage(content="11 or 11:30?")]
+    )
+    graph = FlowGraph(runner, model, "base", max_retries=0, callbacks=[LlmCallTracer()])
+
+    await run_turn(graph, "Which times?")
+    await runner.save_fields({"patient_name": "Rohan", "patient_age": "34", "time": "11"})
+
+    finished = spans.get_finished_spans()
+    tool = next(span for span in finished if span.name == "check_availability")
+    llm_call = next(span for span in finished if span.name == "llm_call")
+    last_move = [span for span in finished if span.name == "flow.move"][-1]
+    assert tool.attributes["langfuse.observation.type"] == "tool"
+    assert '"day": "tomorrow"' in tool.attributes["langfuse.observation.input"]
+    assert "11:30" in tool.attributes["langfuse.observation.output"]
+    assert llm_call.attributes["flow.step"] == "collect"
+    assert '"moved_by": "code"' in last_move.attributes["langfuse.observation.input"]
+    assert '"to": "confirm"' in last_move.attributes["langfuse.observation.output"]
+    assert any(span.name == "flow.save_fields" for span in finished)
 
 
 def test_value_at_follows_dot_paths_and_misses_return_none():

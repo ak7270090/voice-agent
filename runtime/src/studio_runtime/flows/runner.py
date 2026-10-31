@@ -33,6 +33,12 @@ from studio_runtime.flows.schema import (
     ToolNode,
     TransferNode,
 )
+from studio_runtime.observability import (
+    LANGFUSE_OBSERVATION_TYPE,
+    TOOL_OBSERVATION,
+    flow_span,
+    set_span_output,
+)
 
 CONDITION_EDGE = "condition"
 FIELDS_COMPLETE_EDGE = "fields_complete"
@@ -44,6 +50,10 @@ TOOL_FAILED_OUTCOME = "tool_failed"
 DATE_FIELD = "date"
 SAVE_FIELDS_TOOL = "save_fields"
 MAX_AUTOMATIC_MOVES = 20
+# Who moved the flow, shown on each flow.move span.
+MOVED_BY_START = "start"
+MOVED_BY_LLM = "llm"
+MOVED_BY_CODE = "code"
 
 FieldParsers = dict[str, Callable[[str, date], Any]]
 
@@ -97,7 +107,7 @@ class FlowRunner:
     async def start(self) -> None:
         start = next(node for node in self._nodes.values() if isinstance(node, StartNode))
         self.path.append(start.id)
-        await self.enter(self._outgoing(start.id)[0].target)
+        await self.enter(self._outgoing(start.id)[0].target, moved_by=MOVED_BY_START)
 
     async def aclose(self) -> None:
         await self._http.aclose()
@@ -113,25 +123,29 @@ class FlowRunner:
         if self._on_change is not None:
             self._on_change(self)
 
-    async def enter(self, node_id: str) -> None:
+    async def enter(self, node_id: str, moved_by: str = MOVED_BY_LLM) -> None:
         """Runs tool nodes on the way and stops at the next step, end or transfer."""
         self.moved = True
-        for _ in range(MAX_AUTOMATIC_MOVES):
-            node = self._nodes[node_id]
-            self.path.append(node.id)
-            if isinstance(node, StepNode):
-                self.current = node
-                self.entry_line = node.data.say_on_enter
-                break
-            if isinstance(node, EndNode | TransferNode):
-                self._finish(node)
-                break
-            if isinstance(node, ToolNode):
-                next_edge = await self._run_path_tool(node)
-                if next_edge is None:
-                    self.ended, self.outcome = True, TOOL_FAILED_OUTCOME
+        start = len(self.path)
+        source = self.current.id if self.current else None
+        with flow_span("flow.move", {"from": source, "moved_by": moved_by}) as span:
+            for _ in range(MAX_AUTOMATIC_MOVES):
+                node = self._nodes[node_id]
+                self.path.append(node.id)
+                if isinstance(node, StepNode):
+                    self.current = node
+                    self.entry_line = node.data.say_on_enter
                     break
-                node_id = next_edge.target
+                if isinstance(node, EndNode | TransferNode):
+                    self._finish(node)
+                    break
+                if isinstance(node, ToolNode):
+                    next_edge = await self._run_path_tool(node)
+                    if next_edge is None:
+                        self.ended, self.outcome = True, TOOL_FAILED_OUTCOME
+                        break
+                    node_id = next_edge.target
+            set_span_output(span, {"to": self.path[-1], "through": self.path[start:]})
         self._notify()
 
     def _finish(self, node: EndNode | TransferNode) -> None:
@@ -149,7 +163,11 @@ class FlowRunner:
         return values
 
     async def _run_path_tool(self, node: ToolNode) -> FlowEdge | None:
-        result = await call_tool(self._http, node.data, self.fields)
+        """A tool node on the path runs without the LLM, so it gets its tool span here."""
+        with flow_span(node.data.name, self.fields) as span:
+            span.set_attribute(LANGFUSE_OBSERVATION_TYPE, TOOL_OBSERVATION)
+            result = await call_tool(self._http, node.data, self.fields)
+            set_span_output(span, {"ok": result.ok, "result": result.data})
         self._record(node, result)
         wanted = SUCCESS_EDGE if result.ok else FAILURE_EDGE
         edges = self._outgoing(node.id, wanted) or self._outgoing(node.id, ALWAYS_EDGE)
@@ -200,23 +218,26 @@ class FlowRunner:
         return FieldSpec(name=name)
 
     async def save_fields(self, values: dict[str, Any]) -> str:
-        specs = {field.name: field for field in self._step_fields()}
-        problems = []
-        for name, raw in values.items():
-            if raw in (None, "") or name not in specs:
-                continue
-            value = self._normalise(specs[name], raw)
-            if value is None:
-                problems.append(prompts.COULD_NOT_READ.format(name=name, value=raw))
-            else:
-                self.fields[name] = value
-        self._notify()
-        moved = await self._move_if_complete()
-        missing = ", ".join(field.name for field in self.missing_fields())
-        status = (
-            prompts.ALL_COLLECTED if not missing else prompts.STILL_NEEDED.format(names=missing)
-        )
-        return " ".join([prompts.SAVED, status, *problems] + ([moved] if moved else []))
+        with flow_span("flow.save_fields", values) as span:
+            specs = {field.name: field for field in self._step_fields()}
+            problems = []
+            for name, raw in values.items():
+                if raw in (None, "") or name not in specs:
+                    continue
+                value = self._normalise(specs[name], raw)
+                if value is None:
+                    problems.append(prompts.COULD_NOT_READ.format(name=name, value=raw))
+                else:
+                    self.fields[name] = value
+            self._notify()
+            moved = await self._move_if_complete()
+            missing = ", ".join(field.name for field in self.missing_fields())
+            status = (
+                prompts.ALL_COLLECTED if not missing else prompts.STILL_NEEDED.format(names=missing)
+            )
+            result = " ".join([prompts.SAVED, status, *problems] + ([moved] if moved else []))
+            set_span_output(span, result)
+        return result
 
     async def take_answer(self, user_text: str) -> None:
         """Reads the next missing typed field from the caller's own words before the LLM runs,
@@ -224,11 +245,14 @@ class FlowRunner:
         missing = self.missing_fields()
         if not missing or missing[0].type not in self._parsers:
             return
-        value = self._normalise(missing[0], user_text)
-        if value is not None:
-            self.fields[missing[0].name] = value
-            self._notify()
-            await self._move_if_complete()
+        field = missing[0]
+        with flow_span("flow.take_answer", {"field": field.name, "words": user_text}) as span:
+            value = self._normalise(field, user_text)
+            set_span_output(span, {field.name: value})
+            if value is not None:
+                self.fields[field.name] = value
+                self._notify()
+                await self._move_if_complete()
 
     async def _move_if_complete(self) -> str | None:
         if self.current is None or self.missing_fields():
@@ -236,7 +260,7 @@ class FlowRunner:
         edges = self._outgoing(self.current.id, FIELDS_COMPLETE_EDGE)
         if not edges:
             return None
-        await self.enter(edges[0].target)
+        await self.enter(edges[0].target, moved_by=MOVED_BY_CODE)
         return prompts.MOVED.format(target=self.label(edges[0].target))
 
     # What the LLM sees
