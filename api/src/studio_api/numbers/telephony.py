@@ -62,6 +62,8 @@ class Telephony:
                 numbers=[number],
                 auth_username=outbound.username,
                 auth_password=outbound.password,
+                # Offers encrypted audio too: Linphone refused plain-only with 488.
+                media_encryption=api.SIPMediaEncryption.SIP_MEDIA_ENCRYPT_ALLOW,
             )
         )
         async with self._livekit() as livekit:
