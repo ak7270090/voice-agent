@@ -25,6 +25,7 @@ from langchain_core.messages import (
     SystemMessage,
     ToolMessage,
 )
+from langchain_core.tools import BaseTool
 
 from studio_runtime.flows import prompts
 from studio_runtime.flows.runner import SAVE_FIELDS_TOOL, FlowRunner
@@ -95,18 +96,15 @@ class FlowGraph:
             scratch.append(AIMessage(content=reply.text, tool_calls=reply.tool_calls))
             runner.moved = False
             by_name = {tool.name: tool for tool in tools}
-            for call in reply.tool_calls:
-                tool = by_name.get(call["name"])
-                if tool is None:
-                    result = prompts.UNKNOWN_TOOL.format(name=call["name"])
-                else:
-                    filler = "" if filler_said else runner.filler_for(call["name"])
-                    task = asyncio.ensure_future(tool.ainvoke(call["args"], config=self._config()))
-                    if filler and not await self._finishes_quickly(task):
-                        yield spoken(f"{filler} ")
-                        filler_said = True
-                    result = await task
-                scratch.append(ToolMessage(content=str(result), tool_call_id=call["id"]))
+            for group in tool_call_groups(reply.tool_calls, runner):
+                results = asyncio.gather(*(self._run_tool(by_name, call) for call in group))
+                fillers = (runner.filler_for(call["name"]) for call in group)
+                filler = "" if filler_said else next((line for line in fillers if line), "")
+                if filler and not await self._finishes_quickly(results):
+                    yield spoken(f"{filler} ")
+                    filler_said = True
+                for call, result in zip(group, await results, strict=True):
+                    scratch.append(ToolMessage(content=str(result), tool_call_id=call["id"]))
                 if runner.failure_line:
                     yield spoken(f"{runner.failure_line} ")
                     runner.failure_line = ""
@@ -117,6 +115,12 @@ class FlowGraph:
                 scratch = []
             elif reply.text and only_saved_fields(reply.tool_calls):
                 return
+
+    async def _run_tool(self, tools: dict[str, BaseTool], call: dict) -> Any:
+        tool = tools.get(call["name"])
+        if tool is None:
+            return prompts.UNKNOWN_TOOL.format(name=call["name"])
+        return await tool.ainvoke(call["args"], config=self._config())
 
     async def _finishes_quickly(self, task: asyncio.Future) -> bool:
         done, _ = await asyncio.wait({task}, timeout=self._filler_delay_seconds)
@@ -141,6 +145,15 @@ class FlowGraph:
                 if started or attempt == self._max_retries:
                     raise
                 logger.warning("model call failed; retrying", exc_info=True)
+
+
+def tool_call_groups(tool_calls: list[dict], runner: FlowRunner) -> list[list[dict]]:
+    """Calls that look things up or save fields run together, so two slow lookups take as long
+    as one. A move changes the step, so then each call runs alone, in order, and a move stops
+    the rest (the new step decides what happens next)."""
+    if any(runner.is_move(call["name"]) for call in tool_calls):
+        return [[call] for call in tool_calls]
+    return [tool_calls]
 
 
 def only_saved_fields(tool_calls: list[dict]) -> bool:

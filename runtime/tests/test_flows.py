@@ -54,6 +54,7 @@ FLOW = {
                 "url": CLINIC + "/availability?day={day}",
                 "say_while_running": "One moment.",
                 "save_to_fields": {"day": "day"},
+                "result_fields": ["free_times"],
             },
         },
         {
@@ -488,6 +489,42 @@ async def test_a_timeout_counts_as_no_answer():
     result = await check.ainvoke({"day": "Saturday"})
 
     assert "got no answer" in result
+
+
+async def test_two_lookups_in_one_message_run_together():
+    clinic = FakeClinic(delay_seconds=0.3)
+    runner = make_runner(clinic)
+    await runner.start()
+    await runner.enter("collect")
+    runner.entry_line = ""
+    both = AIMessage(
+        content="",
+        tool_calls=[
+            {"name": "check_availability", "args": {"day": "Saturday"}, "id": "c1"},
+            {"name": "check_availability", "args": {"day": "Monday"}, "id": "c2"},
+        ],
+    )
+    graph = FlowGraph(runner, ScriptedModel(script=[both, AIMessage(content="Both work.")]), "b", 0)
+
+    started = asyncio.get_running_loop().time()
+    await run_turn(graph, "Saturday or Monday?")
+    elapsed = asyncio.get_running_loop().time() - started
+
+    assert len(clinic.requests) == 2
+    assert elapsed < 0.55
+
+
+async def test_the_llm_sees_only_the_result_fields_the_tool_names():
+    runner = make_runner()
+    await runner.start()
+    await runner.enter("collect")
+    check = next(tool for tool in runner.tools() if tool.name == "check_availability")
+
+    result = await check.ainvoke({"day": "Saturday"})
+
+    assert json.loads(result) == {"free_times": ["11:00", "11:30"]}
+    assert '"day"' not in runner.system_prompt("base").split("Latest result")[1]
+    assert runner.fields["day"] == "2026-10-31"
 
 
 @pytest.fixture

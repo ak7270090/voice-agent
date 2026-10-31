@@ -30,6 +30,7 @@ class ToolData(BaseModel):
     body: dict[str, str] = {}
     say_while_running: str = ""
     save_to_fields: dict[str, str] = {}
+    result_fields: list[str] = []
 
 
 class EndData(BaseModel):

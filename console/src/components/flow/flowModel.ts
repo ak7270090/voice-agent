@@ -113,6 +113,7 @@ export function defaultData(type: FlowNodeType): FlowNodeData {
         body: {},
         say_while_running: "",
         save_to_fields: {},
+        result_fields: [],
       };
     case "end":
       return { outcome: "completed", message: "" };

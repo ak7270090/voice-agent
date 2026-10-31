@@ -70,6 +70,14 @@ def value_at(data: dict, path: str) -> Any:
     return value
 
 
+def shown_to_llm(node: ToolNode, data: Any) -> Any:
+    """Only the result fields the tool names, if any: a shorter prompt is faster and gives the
+    model less to misread. Fields and end messages still get the whole result."""
+    if not node.data.result_fields or not isinstance(data, dict):
+        return data
+    return {path: value_at(data, path) for path in node.data.result_fields}
+
+
 async def finish_even_if_interrupted(work: Coroutine[Any, Any, T]) -> T:
     """Runs `work` to the end even if the awaiting turn is cancelled (the caller cut in); the
     turn still stops, but the work and its state change complete in the background."""
@@ -104,6 +112,7 @@ class FlowRunner:
         self.fields: dict[str, Any] = {}
         self.results: dict[str, Any] = {}
         self.last_result: tuple[str, Any] | None = None
+        self._last_result_for_llm: tuple[str, Any] | None = None
         self.path: list[str] = []
         self.current: StepNode | None = None
         self.ended = False
@@ -201,12 +210,17 @@ class FlowRunner:
     def _record(self, node: ToolNode, result: ToolResult) -> None:
         self.results[node.data.name] = result.data
         self.last_result = (node.data.name, result.data)
+        self._last_result_for_llm = (node.data.name, shown_to_llm(node, result.data))
         if result.ok and isinstance(result.data, dict):
             for field, path in node.data.save_to_fields.items():
                 value = value_at(result.data, path)
                 if value is not None:
                     self.fields[field] = value
         self._notify()
+
+    def is_move(self, tool_name: str) -> bool:
+        """True for a step's go_to_… tools (known once `tools()` has built them this pass)."""
+        return tool_name in self._move_targets
 
     def filler_for(self, tool_name: str) -> str:
         """What to say while this tool call runs: an attached tool's own line, or the line of
@@ -313,8 +327,8 @@ class FlowRunner:
         if step.data.fields:
             lines = "\n".join(self._field_line(field) for field in step.data.fields)
             sections.append(prompts.FIELDS_SECTION.format(lines=lines))
-        if self.last_result is not None:
-            name, data = self.last_result
+        if self._last_result_for_llm is not None:
+            name, data = self._last_result_for_llm
             result = json.dumps(data, default=str)[:MAX_TEXT_RESULT_CHARS]
             sections.append(prompts.RESULTS_SECTION.format(tool=name, result=result))
         moves = [(tool.name, condition) for tool, condition in self._move_tools()]
@@ -408,7 +422,8 @@ class FlowRunner:
                 # Said by code, word for word; the LLM is told not to guess.
                 self.failure_line = self._tool_unavailable_line
                 return prompts.TOOL_UNAVAILABLE.format(name=node.data.name)
-            return json.dumps(result.data, default=str)[:MAX_TEXT_RESULT_CHARS]
+            shown = shown_to_llm(node, result.data)
+            return json.dumps(shown, default=str)[:MAX_TEXT_RESULT_CHARS]
 
         return StructuredTool.from_function(
             coroutine=run,

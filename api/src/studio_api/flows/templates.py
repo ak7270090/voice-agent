@@ -102,6 +102,7 @@ def build_clinic_booking_flow(clinic_api_url: str) -> Flow:
                 url=f"{clinic_api_url}/demo-clinic/availability?doctor={{doctor}}&day={{day}}",
                 say_while_running="One moment, let me check.",
                 save_to_fields={"doctor": "doctor"},
+                result_fields=["doctor", "weekday", "free_times", "next_open_days"],
             ),
         ),
         ToolNode(

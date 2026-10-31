@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus, Trash2, X } from "lucide-react";
+import { useState } from "react";
 
 import type { FieldSpec, FieldType, FlowNodeData } from "@/lib/api";
 
@@ -163,6 +164,17 @@ export function NodePanel({ node, toolNodes, onChange, onDelete, onClose }: Prop
             rows={data.save_to_fields ?? {}}
             onChange={(save_to_fields) => set({ save_to_fields })}
           />
+          <Labelled
+            label="Show the LLM only (optional)"
+            hint="Paths in the JSON result, comma-separated; empty shows all of it"
+          >
+            <ListInput
+              key={node.id}
+              values={data.result_fields ?? []}
+              placeholder="e.g. doctor, free_times"
+              onChange={(result_fields) => set({ result_fields })}
+            />
+          </Labelled>
         </>
       )}
 
@@ -290,6 +302,35 @@ function FieldsEditor({
         <Plus size={13} /> Add field
       </button>
     </div>
+  );
+}
+
+/** A comma-separated list, kept as typed until the input loses focus. */
+function ListInput({
+  values,
+  placeholder,
+  onChange,
+}: {
+  values: string[];
+  placeholder: string;
+  onChange: (values: string[]) => void;
+}) {
+  const [text, setText] = useState(values.join(", "));
+  return (
+    <input
+      className={`${INPUT} font-mono text-xs`}
+      value={text}
+      placeholder={placeholder}
+      onChange={(e) => setText(e.target.value)}
+      onBlur={() =>
+        onChange(
+          text
+            .split(",")
+            .map((value) => value.trim())
+            .filter(Boolean),
+        )
+      }
+    />
   );
 }
 

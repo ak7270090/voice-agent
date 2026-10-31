@@ -183,6 +183,7 @@ export type ToolData = {
   body: Record<string, string>;
   say_while_running: string;
   save_to_fields: Record<string, string>;
+  result_fields: string[];
 };
 
 export type EndData = { outcome: string; message: string };

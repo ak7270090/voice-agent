@@ -44,6 +44,8 @@ class ToolData(BaseModel):
     say_while_running: str = ""
     # field name -> dot path in the JSON result, e.g. {"doctor": "doctor"}; copied on success.
     save_to_fields: dict[Identifier, str] = {}
+    # Dot paths of the result the LLM is shown (empty: all of it); a shorter prompt is faster.
+    result_fields: list[str] = []
 
 
 class EndData(BaseModel):
