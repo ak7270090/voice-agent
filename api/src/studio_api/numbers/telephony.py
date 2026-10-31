@@ -44,7 +44,11 @@ class Telephony:
     async def create_inbound_trunk(self, number: str) -> str:
         request = api.CreateSIPInboundTrunkRequest(
             trunk=api.SIPInboundTrunkInfo(
-                name=f"{LIVEKIT_RESOURCE_PREFIX} {number} in", numbers=[number]
+                name=f"{LIVEKIT_RESOURCE_PREFIX} {number} in",
+                numbers=[number],
+                # Encrypted audio (SRTP) as well as plain: Linphone encrypts by default, and
+                # with plain-only LiveKit heard nothing and dropped the call after ~20 s.
+                media_encryption=api.SIPMediaEncryption.SIP_MEDIA_ENCRYPT_ALLOW,
             )
         )
         async with self._livekit() as livekit:
