@@ -35,6 +35,8 @@ logger = logging.getLogger(__name__)
 
 # Model calls in one turn: tool calls, a move, then the reply.
 MAX_PASSES = 6
+# tool_choice for a pass that must answer the caller in words.
+NO_TOOL_CALLS = "none"
 
 
 def spoken(text: str) -> tuple[AIMessageChunk, dict]:
@@ -74,6 +76,7 @@ class FlowGraph:
             await runner.take_answer(users[-1].text)
         scratch: list[BaseMessage] = []
         filler_said = False
+        words_only = False
         for _ in range(MAX_PASSES):
             if runner.ended:
                 if runner.final_message:
@@ -87,7 +90,12 @@ class FlowGraph:
                     # The line is the whole reply (e.g. a read-back); the caller answers next.
                     return
             tools = runner.tools()
-            model = self._model.bind_tools(tools) if tools else self._model
+            if tools and words_only:
+                model = self._model.bind_tools(tools, tool_choice=NO_TOOL_CALLS)
+            elif tools:
+                model = self._model.bind_tools(tools)
+            else:
+                model = self._model
             messages = [SystemMessage(runner.system_prompt(self._base_instructions))]
             reply = None
             async for chunk in self._stream(model, messages + history + scratch):
@@ -116,8 +124,13 @@ class FlowGraph:
             if runner.moved:
                 # The new step starts clean; what it needs is in its prompt.
                 scratch = []
-            elif reply.text and only_saved_fields(reply.tool_calls):
-                return
+                words_only = False
+            elif only_saved_fields(reply.tool_calls):
+                if reply.text:
+                    return
+                # Saved without a word to the caller: the next pass must speak, not save again
+                # (the model re-saved six times in a scenario run, leaving the caller in silence).
+                words_only = True
 
     async def _run_tool(self, tools: dict[str, BaseTool], call: dict) -> Any:
         tool = tools.get(call["name"])

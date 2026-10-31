@@ -32,7 +32,9 @@ def create_chat_model(llm_model: str, settings: Settings) -> BaseChatModel:
     or writes a sentence, so a reasoning model's thinking (time before the first word) is set
     by `llm_reasoning_effort` ("none" skips it); other models take no such option."""
     provider, _, model = llm_model.partition(":")
-    options = {}
+    # A request that stalls is cut off and retried by FlowGraph (one took 31 s in a scenario
+    # run while the next took 1 s); the client's own hidden retries would only add waiting.
+    options: dict[str, object] = {"timeout": settings.llm_timeout_seconds, "max_retries": 0}
     if (
         settings.llm_reasoning_effort
         and provider == OPENAI_PROVIDER

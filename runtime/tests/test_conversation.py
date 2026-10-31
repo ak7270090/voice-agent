@@ -19,9 +19,13 @@ def test_reasoning_effort_applies_only_to_openai_reasoning_models(
 ):
     monkeypatch.setenv("OPENAI_API_KEY", "test")
 
-    model = create_chat_model(llm_model, Settings(llm_reasoning_effort=effort))
+    model = create_chat_model(
+        llm_model, Settings(llm_reasoning_effort=effort, llm_timeout_seconds=7)
+    )
 
     assert model.reasoning_effort == expected
+    assert model.request_timeout == 7
+    assert model.max_retries == 0
 
 
 class FakeGraph:

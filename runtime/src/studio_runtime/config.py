@@ -47,10 +47,14 @@ class Settings(BaseSettings):
     timezone: str = "Asia/Kolkata"
     # A caller hears silence while a tool runs: give up after this and say so instead.
     tool_timeout_seconds: float = 3.0
-    # OpenAI GPT-5 models think before answering by default; "none" answers at once, "" leaves
-    # the model's default (to compare the two).
-    llm_reasoning_effort: str = "none"
+    # OpenAI GPT-5 models think before answering by default; "none" answers at once, "" keeps
+    # the model's default. Measured with the scenario run (31 October 2026): "none" made the
+    # model skip save_fields and the availability check, failing "change a detail" twice, and
+    # replies were no faster (median 1.15 s vs 0.88 s), so the default is kept.
+    llm_reasoning_effort: str = ""
     llm_max_retries: int = 2
+    # Longest wait for the model before a request is cut off and retried (FlowGraph, LangGraph).
+    llm_timeout_seconds: float = 10.0
     llm_retry_delay_seconds: float = 0.5
 
 

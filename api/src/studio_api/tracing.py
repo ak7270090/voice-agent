@@ -44,4 +44,7 @@ def follow_callers_tracer_provider() -> TracerProvider:
 
 def trace_requests(app: FastAPI, tracer_provider: TracerProvider | None) -> None:
     if tracer_provider is not None:
-        FastAPIInstrumentor.instrument_app(app, tracer_provider=tracer_provider)
+        # One span per request; the ASGI send/receive sub-spans add nothing to a call's trace.
+        FastAPIInstrumentor.instrument_app(
+            app, tracer_provider=tracer_provider, exclude_spans=["send", "receive"]
+        )

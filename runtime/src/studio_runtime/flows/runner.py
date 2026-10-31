@@ -133,6 +133,12 @@ class FlowRunner:
         self.entry_line = ""
         # Said by the graph when a tool's service gave no answer.
         self.failure_line = ""
+        # The flow came back to a step it had left: an action failed (a slot just taken) or the
+        # caller wants to change something. Its fields are still filled in, so until the caller
+        # speaks again the step does not move on; re-saving them would only read the same
+        # details back. `returned_after_failure` says which, for the prompt.
+        self.holding = False
+        self.returned_after_failure = False
         self._move_targets: dict[str, str] = {}
 
     async def start(self) -> None:
@@ -167,12 +173,21 @@ class FlowRunner:
         start = len(self.path)
         source = self.current.id if self.current else None
         with flow_span("flow.move", {"from": source, "moved_by": moved_by}) as span:
+            after_failure = False
             for _ in range(MAX_AUTOMATIC_MOVES):
                 node = self._nodes[node_id]
                 self.path.append(node.id)
                 if isinstance(node, StepNode):
                     self.current = node
-                    self.entry_line = fill_leniently(node.data.say_on_enter, self.message_values())
+                    # Back at a step that collects details: no opening line again ("Sure, I can
+                    # help with that." twice); the LLM says what happens next, told why it is
+                    # back by its prompt. A step without fields (a read-back) speaks again.
+                    came_back = after_failure or node.id in self.path[:-1]
+                    returned = came_back and bool(node.data.fields)
+                    self.holding = returned
+                    self.returned_after_failure = after_failure
+                    line = "" if returned else node.data.say_on_enter
+                    self.entry_line = fill_leniently(line, self.message_values())
                     break
                 if isinstance(node, EndNode | TransferNode):
                     self._finish(node)
@@ -182,6 +197,7 @@ class FlowRunner:
                     if next_edge is None:
                         self.ended, self.outcome = True, TOOL_FAILED_OUTCOME
                         break
+                    after_failure = next_edge.kind == FAILURE_EDGE
                     node_id = next_edge.target
             set_span_output(span, {"to": self.path[-1], "through": self.path[start:]})
         self._notify()
@@ -293,6 +309,8 @@ class FlowRunner:
     async def take_answer(self, user_text: str) -> None:
         """Reads the next missing typed field from the caller's own words before the LLM runs,
         so an answer counts even when the LLM forgets to save it (clinic-voice-agent's fix)."""
+        # The caller has spoken since the flow came back: the step may move on again.
+        self.holding = False
         missing = self.missing_fields()
         if not missing or missing[0].type not in self._parsers:
             return
@@ -306,7 +324,7 @@ class FlowRunner:
                 await self._move_if_complete()
 
     async def _move_if_complete(self) -> str | None:
-        if self.current is None or self.missing_fields():
+        if self.current is None or self.missing_fields() or self.holding:
             return None
         edges = self._outgoing(self.current.id, FIELDS_COMPLETE_EDGE)
         if not edges:
@@ -343,6 +361,10 @@ class FlowRunner:
             name, data = self._last_result_for_llm
             result = json.dumps(data, default=str)[:MAX_TEXT_RESULT_CHARS]
             sections.append(prompts.RESULTS_SECTION.format(tool=name, result=result))
+        if self.holding and self.returned_after_failure:
+            sections.append(prompts.AFTER_FAILURE.format(tool=self._last_result_for_llm[0]))
+        elif self.holding:
+            sections.append(prompts.BACK_TO_CHANGE)
         moves = [(tool.name, condition) for tool, condition in self._move_tools()]
         if moves:
             lines = "\n".join(prompts.MOVE_LINE.format(tool=n, condition=c) for n, c in moves)

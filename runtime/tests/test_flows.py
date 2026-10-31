@@ -166,6 +166,7 @@ class ScriptedModel(BaseChatModel):
     script: list[AIMessage]
     seen: list[list] = []
     bound: list[list[str]] = []
+    tool_choices: list[str | None] = []
 
     @property
     def _llm_type(self) -> str:
@@ -173,6 +174,7 @@ class ScriptedModel(BaseChatModel):
 
     def bind_tools(self, tools, **kwargs):
         self.bound.append([tool.name for tool in tools])
+        self.tool_choices.append(kwargs.get("tool_choice"))
         return self
 
     def _generate(self, messages, stop=None, run_manager=None, **kwargs) -> ChatResult:
@@ -243,6 +245,61 @@ async def test_a_failed_booking_goes_back_to_collecting():
     assert runner.current.id == "collect"
     assert not runner.ended
     assert "Latest result of book_appointment" in runner.system_prompt("base")
+
+
+async def test_back_after_a_failed_booking_the_step_waits_for_the_caller():
+    runner = make_runner(FakeClinic(booking_status=409))
+    await ready_to_book(runner)
+
+    await runner.enter("book")
+    resaved = await runner.save_fields({"time": "11"})
+
+    assert runner.entry_line == ""
+    assert "book_appointment just failed" in runner.system_prompt("base")
+    assert runner.current.id == "collect" and "Moved on" not in resaved
+
+    await runner.take_answer("Then 11:30 please")
+    await runner.save_fields({"time": "11:30"})
+    assert runner.current.id == "confirm"
+
+
+async def test_back_to_change_a_detail_the_step_asks_instead_of_reading_back_again():
+    runner = make_runner()
+    await runner.start()
+    await runner.enter("collect")
+    await runner.save_fields(
+        {"patient_name": "Rohan", "patient_age": "34", "day": "Saturday", "time": "11"}
+    )
+    change = next(t for t in runner.tools() if t.description == "Caller changes a detail")
+
+    await change.ainvoke({})
+    resaved = await runner.save_fields({"time": "11"})
+
+    assert runner.current.id == "collect" and runner.entry_line == ""
+    assert "came back to this step to change something" in runner.system_prompt("base")
+    assert "Moved on" not in resaved
+
+    await runner.take_answer("12 please")
+    await runner.save_fields({"time": "12"})
+    assert runner.current.id == "confirm"
+    assert runner.entry_line == "Confirm: Rohan, Saturday 31 October at 12:00?"
+
+
+async def test_a_pass_that_only_saved_without_words_makes_the_next_one_speak():
+    runner = make_runner()
+    await runner.start()
+    await runner.enter("collect")
+    runner.entry_line = ""
+    saved_silently = AIMessage(
+        content="",
+        tool_calls=[{"name": "save_fields", "args": {"patient_name": "Rohan"}, "id": "c1"}],
+    )
+    graph, model = graph_for(runner, [saved_silently, AIMessage(content="How old are you?")])
+
+    reply = await run_turn(graph, "I'm Rohan")
+
+    assert reply == "How old are you?"
+    assert model.tool_choices == [None, "none"]
 
 
 async def test_unreadable_answers_are_not_saved():
