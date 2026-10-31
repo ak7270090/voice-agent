@@ -100,16 +100,26 @@ FLOW = {
 }
 
 
+TOOL_UNAVAILABLE_LINE = "Sorry, I can't check that right now."
+
+
 class FakeClinic:
-    def __init__(self, booking_status: int = 201, delay_seconds: float = 0) -> None:
+    def __init__(
+        self, booking_status: int = 201, delay_seconds: float = 0, down_lookups: int = 0
+    ) -> None:
         self.requests: list[httpx.Request] = []
         self.booking_status = booking_status
         self.delay_seconds = delay_seconds
+        # How many availability lookups get 503 before the clinic answers again.
+        self.down_lookups = down_lookups
 
     async def __call__(self, request: httpx.Request) -> httpx.Response:
         self.requests.append(request)
         await asyncio.sleep(self.delay_seconds)
         if request.url.path == "/availability":
+            if self.down_lookups:
+                self.down_lookups -= 1
+                return httpx.Response(503, text="unavailable")
             day = request.url.params["day"]
             return httpx.Response(200, json={"free_times": ["11:00", "11:30"], "day": day})
         return httpx.Response(self.booking_status, json={"booking_id": "A-1001"})
@@ -117,7 +127,13 @@ class FakeClinic:
 
 def make_runner(clinic: FakeClinic | None = None) -> FlowRunner:
     http = httpx.AsyncClient(transport=httpx.MockTransport(clinic or FakeClinic()))
-    return FlowRunner(Flow.model_validate(FLOW), http, parsers_for("en"), FRIDAY)
+    return FlowRunner(
+        Flow.model_validate(FLOW),
+        http,
+        parsers_for("en"),
+        FRIDAY,
+        tool_unavailable_line=TOOL_UNAVAILABLE_LINE,
+    )
 
 
 class ScriptedModel(BaseChatModel):
@@ -370,6 +386,64 @@ async def test_a_tool_result_fills_the_fields_it_is_mapped_to():
     await check.ainvoke({"day": "Saturday"})
 
     assert runner.fields["day"] == "2026-10-31"
+
+
+async def test_a_lookup_without_an_answer_is_tried_once_more():
+    clinic = FakeClinic(down_lookups=1)
+    runner = make_runner(clinic)
+    await runner.start()
+    await runner.enter("collect")
+    check = next(tool for tool in runner.tools() if tool.name == "check_availability")
+
+    result = await check.ainvoke({"day": "Saturday"})
+
+    assert len(clinic.requests) == 2
+    assert "11:30" in result
+
+
+async def test_a_tool_that_stays_unavailable_gets_a_fixed_apology_and_no_guess():
+    runner = make_runner(FakeClinic(down_lookups=2))
+    await runner.start()
+    await runner.enter("collect")
+    runner.entry_line = ""
+    graph, model = graph_for(
+        runner,
+        [call("check_availability", day="Saturday"), AIMessage(content="Shall I try again?")],
+    )
+
+    reply = await run_turn(graph, "What times are free?")
+
+    assert reply == f"One moment. {TOOL_UNAVAILABLE_LINE} Shall I try again?"
+    assert "Never guess" in model.seen[1][-1].content
+
+
+async def test_a_booking_without_an_answer_is_not_sent_twice():
+    clinic = FakeClinic(booking_status=502)
+    runner = make_runner(clinic)
+    await runner.start()
+    runner.fields.update({"patient_name": "Rohan", "patient_age": 34, "day": "2026-10-31"})
+    runner.fields["time"] = "11:00"
+    await runner.enter("confirm")
+
+    await runner.enter("book")
+
+    assert len(clinic.requests) == 1
+    assert runner.current.id == "collect"
+
+
+async def test_a_timeout_counts_as_no_answer():
+    async def times_out(request: httpx.Request) -> httpx.Response:
+        raise httpx.ReadTimeout("slow", request=request)
+
+    http = httpx.AsyncClient(transport=httpx.MockTransport(times_out))
+    runner = FlowRunner(Flow.model_validate(FLOW), http, parsers_for("en"), FRIDAY)
+    await runner.start()
+    await runner.enter("collect")
+    check = next(tool for tool in runner.tools() if tool.name == "check_availability")
+
+    result = await check.ainvoke({"day": "Saturday"})
+
+    assert "got no answer" in result
 
 
 @pytest.fixture

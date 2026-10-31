@@ -30,3 +30,8 @@ ALL_COLLECTED = "All details collected."
 COULD_NOT_READ = "Could not read {name} from {value!r}; ask again."
 MOVED = "Moved on to: {target}. Continue from there."
 UNKNOWN_TOOL = "{name} is not available in this step."
+TOOL_UNAVAILABLE = (
+    "{name} got no answer: the service is unavailable. The caller has already been told it "
+    "can't be checked right now. Offer to try again in a moment or to connect them to a person. "
+    "Never guess the answer."
+)

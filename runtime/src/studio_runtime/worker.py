@@ -103,7 +103,7 @@ async def run_call(ctx: JobContext) -> None:
     runner = None
     if config.flow is not None:
         runner = create_flow_runner(
-            config, language, settings, ctx.room, knowledge_tool, locale.messages["knowledge_rule"]
+            config, language, settings, ctx.room, knowledge_tool, locale.messages
         )
         await runner.start()
         instructions = build_instructions(config.instructions, locale, has_knowledge=False)

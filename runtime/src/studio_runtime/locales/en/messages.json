@@ -1,5 +1,6 @@
 {
   "agent_unavailable": "Sorry, this agent is not available right now. Please try again later.",
   "knowledge_rule": "For questions about the business, call search_knowledge first and answer only from what it returns. If it finds nothing relevant, say you do not have that information.",
-  "knowledge_nothing_found": "Nothing about this in the documents."
+  "knowledge_nothing_found": "Nothing about this in the documents.",
+  "tool_unavailable": "Sorry, I can't check that right now."
 }

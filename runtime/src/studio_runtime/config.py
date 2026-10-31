@@ -43,7 +43,8 @@ class Settings(BaseSettings):
     filler_delay_seconds: float = 0.7
     # Flows read "tomorrow" and "Saturday" in this time zone.
     timezone: str = "Asia/Kolkata"
-    tool_timeout_seconds: float = 10.0
+    # A caller hears silence while a tool runs: give up after this and say so instead.
+    tool_timeout_seconds: float = 3.0
     # OpenAI GPT-5 models think before answering by default; "none" answers at once, "" leaves
     # the model's default (to compare the two).
     llm_reasoning_effort: str = "none"

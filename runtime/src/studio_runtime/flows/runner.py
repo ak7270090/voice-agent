@@ -80,7 +80,7 @@ class FlowRunner:
         parsers: FieldParsers,
         today: date,
         knowledge_tool: BaseTool | None = None,
-        knowledge_rule: str = "",
+        tool_unavailable_line: str = "",
         on_change: Callable[["FlowRunner"], None] | None = None,
     ) -> None:
         self._nodes = {node.id: node for node in flow.nodes}
@@ -89,7 +89,7 @@ class FlowRunner:
         self._parsers = parsers
         self._today = today
         self._knowledge_tool = knowledge_tool
-        self._knowledge_rule = knowledge_rule
+        self._tool_unavailable_line = tool_unavailable_line
         self._on_change = on_change
         self.fields: dict[str, Any] = {}
         self.results: dict[str, Any] = {}
@@ -102,6 +102,8 @@ class FlowRunner:
         self.moved = False
         # A step's "say on entering" line, waiting to be spoken by the graph.
         self.entry_line = ""
+        # Said by the graph when a tool's service gave no answer.
+        self.failure_line = ""
         self._move_targets: dict[str, str] = {}
 
     async def start(self) -> None:
@@ -374,6 +376,10 @@ class FlowRunner:
             }
             result = await call_tool(self._http, node.data, {**self.fields, **given})
             self._record(node, result)
+            if result.unavailable:
+                # Said by code, word for word; the LLM is told not to guess.
+                self.failure_line = self._tool_unavailable_line
+                return prompts.TOOL_UNAVAILABLE.format(name=node.data.name)
             return json.dumps(result.data, default=str)[:MAX_TEXT_RESULT_CHARS]
 
         return StructuredTool.from_function(

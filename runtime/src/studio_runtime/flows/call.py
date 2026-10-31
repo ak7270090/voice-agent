@@ -37,7 +37,7 @@ def create_flow_runner(
     settings: Settings,
     room: rtc.Room,
     knowledge_tool: BaseTool | None,
-    knowledge_rule: str,
+    messages: dict[str, str],
 ) -> FlowRunner:
     return FlowRunner(
         config.flow,
@@ -45,7 +45,7 @@ def create_flow_runner(
         parsers_for(language),
         datetime.now(ZoneInfo(settings.timezone)).date(),
         knowledge_tool=knowledge_tool,
-        knowledge_rule=knowledge_rule,
+        tool_unavailable_line=messages["tool_unavailable"],
         on_change=lambda runner: publish_progress(room, runner),
     )
 

@@ -6,7 +6,8 @@ conversation now is. To keep the caller from waiting in silence:
 - a reply written alongside `save_fields` (nothing moved) is the turn's answer: no second call;
 - a step's "say on entering" line is spoken as soon as the flow arrives there;
 - a slow tool's "say while it runs" line is spoken inside the same reply (a separate
-  `session.say()` dropped replies in clinic-voice-agent).
+  `session.say()` dropped replies in clinic-voice-agent);
+- a tool whose service gives no answer gets a fixed apology from code, never a guess.
 """
 
 import asyncio
@@ -102,6 +103,9 @@ class FlowGraph:
                         filler_said = True
                     result = await task
                 scratch.append(ToolMessage(content=str(result), tool_call_id=call["id"]))
+                if runner.failure_line:
+                    yield spoken(f"{runner.failure_line} ")
+                    runner.failure_line = ""
                 if runner.moved:
                     break
             if runner.moved:
