@@ -1,0 +1,916 @@
+[
+  {
+    "name": "voicemail left",
+    "id": "out-a81f7df9-1",
+    "agent": "Reminder (campaign runs)",
+    "success_rule": "The patient confirmed, asked to move the appointment, or a voicemail was left.",
+    "analysis_fields": [
+      {
+        "name": "will_attend",
+        "type": "yes_no",
+        "description": "Will the patient come to tomorrow's appointment?",
+        "choices": []
+      }
+    ],
+    "outcome": "voicemail_left",
+    "fields": {
+      "caller_number": "+15005550204",
+      "name": "Rohan",
+      "appointment_time": "4 pm"
+    },
+    "tool_calls": [],
+    "transcript": [
+      {
+        "role": "user",
+        "text": "Hi. You've reached Rohan Gupta. I can't take your call right now."
+      },
+      {
+        "role": "user",
+        "text": "Please leave your name and number after the tone."
+      },
+      {
+        "role": "assistant",
+        "text": "Hello Rohan, this is City Hospital reminding you of your appointment tomorrow at 4 pm. Please call us if you need to change it. Goodbye."
+      }
+    ],
+    "expected": {
+      "successful": true,
+      "fields": {
+        "will_attend": null
+      }
+    }
+  },
+  {
+    "name": "asked not to be called",
+    "id": "out-4d274e15-1",
+    "agent": "Reminder (campaign runs)",
+    "success_rule": "The patient confirmed, asked to move the appointment, or a voicemail was left.",
+    "analysis_fields": [
+      {
+        "name": "will_attend",
+        "type": "yes_no",
+        "description": "Will the patient come to tomorrow's appointment?",
+        "choices": []
+      }
+    ],
+    "outcome": "opted_out",
+    "fields": {
+      "caller_number": "+15005550203",
+      "name": "Meena",
+      "appointment_time": "4 pm"
+    },
+    "tool_calls": [],
+    "transcript": [
+      {
+        "role": "user",
+        "text": "Hello?"
+      },
+      {
+        "role": "assistant",
+        "text": "Hello Meena, this is City Hospital calling about your appointment tomorrow at 4 pm. Will you be able to come?"
+      },
+      {
+        "role": "user",
+        "text": "Please do not call me again."
+      },
+      {
+        "role": "assistant",
+        "text": "Understood, we won't call you again. Goodbye."
+      }
+    ],
+    "expected": {
+      "successful": false,
+      "fields": {
+        "will_attend": null
+      }
+    }
+  },
+  {
+    "name": "wants another time",
+    "id": "out-4cb303b1-1",
+    "agent": "Reminder (campaign runs)",
+    "success_rule": "The patient confirmed, asked to move the appointment, or a voicemail was left.",
+    "analysis_fields": [
+      {
+        "name": "will_attend",
+        "type": "yes_no",
+        "description": "Will the patient come to tomorrow's appointment?",
+        "choices": []
+      }
+    ],
+    "outcome": "reschedule_requested",
+    "fields": {
+      "caller_number": "+15005550202",
+      "name": "Ravi",
+      "appointment_time": "4 pm"
+    },
+    "tool_calls": [],
+    "transcript": [
+      {
+        "role": "user",
+        "text": "Hello?"
+      },
+      {
+        "role": "assistant",
+        "text": "Hi, I’m calling to remind you about your appointment tomorrow at four pm. Will you be coming?"
+      },
+      {
+        "role": "user",
+        "text": "I'm sorry. I can't come tomorrow."
+      },
+      {
+        "role": "user",
+        "text": "So please move the appointment."
+      },
+      {
+        "role": "assistant",
+        "text": "No problem. The front desk will call you to find a new time. Goodbye."
+      }
+    ],
+    "expected": {
+      "successful": true,
+      "fields": {
+        "will_attend": false
+      }
+    }
+  },
+  {
+    "name": "will come",
+    "id": "out-b3b01c72-1",
+    "agent": "Reminder (campaign runs)",
+    "success_rule": "The patient confirmed, asked to move the appointment, or a voicemail was left.",
+    "analysis_fields": [
+      {
+        "name": "will_attend",
+        "type": "yes_no",
+        "description": "Will the patient come to tomorrow's appointment?",
+        "choices": []
+      }
+    ],
+    "outcome": "confirmed",
+    "fields": {
+      "caller_number": "+15005550201",
+      "name": "Asha",
+      "appointment_time": "4 pm"
+    },
+    "tool_calls": [],
+    "transcript": [
+      {
+        "role": "user",
+        "text": "Hello."
+      },
+      {
+        "role": "assistant",
+        "text": "Hello Asha, this is City Hospital calling about your appointment tomorrow at 4 pm. Will you be able to come?"
+      },
+      {
+        "role": "user",
+        "text": "Yes. I. Will come."
+      },
+      {
+        "role": "assistant",
+        "text": "Great, see you tomorrow. Goodbye."
+      }
+    ],
+    "expected": {
+      "successful": true,
+      "fields": {
+        "will_attend": true
+      }
+    }
+  },
+  {
+    "name": "question the agent could not answer",
+    "id": "web-4033a77ee6",
+    "agent": "Clinic booking (scenario runs)",
+    "success_rule": "An appointment was booked (the agent gave a booking ID), or the caller's question was answered.",
+    "analysis_fields": [
+      {
+        "name": "reason",
+        "type": "choice",
+        "description": "Why the caller called",
+        "choices": [
+          "book",
+          "question",
+          "change",
+          "other"
+        ]
+      },
+      {
+        "name": "doctor",
+        "type": "choice",
+        "description": "The doctor the appointment or question was about",
+        "choices": [
+          "Dr. Anil Sharma",
+          "Dr. Priya Mehta",
+          "Dr. Ravi Iyer",
+          "Dr. Sana Khan"
+        ]
+      },
+      {
+        "name": "asked_about_fees",
+        "type": "yes_no",
+        "description": "Did the caller ask what a visit costs?",
+        "choices": []
+      }
+    ],
+    "outcome": null,
+    "fields": {
+      "caller_number": ""
+    },
+    "tool_calls": [],
+    "transcript": [
+      {
+        "role": "assistant",
+        "text": "Welcome to City Hospital. How can I help you today?"
+      },
+      {
+        "role": "user",
+        "text": "What are your opening hours?"
+      },
+      {
+        "role": "assistant",
+        "text": "I’m sorry, I don’t have the hospital’s opening hours here. If you’d like, I can help with anything else or connect you with a person."
+      }
+    ],
+    "expected": {
+      "successful": false,
+      "fields": {
+        "reason": "question"
+      }
+    }
+  },
+  {
+    "name": "asked for a person",
+    "id": "web-60bda7fe8b",
+    "agent": "Clinic booking (scenario runs)",
+    "success_rule": "An appointment was booked (the agent gave a booking ID), or the caller's question was answered.",
+    "analysis_fields": [
+      {
+        "name": "reason",
+        "type": "choice",
+        "description": "Why the caller called",
+        "choices": [
+          "book",
+          "question",
+          "change",
+          "other"
+        ]
+      },
+      {
+        "name": "doctor",
+        "type": "choice",
+        "description": "The doctor the appointment or question was about",
+        "choices": [
+          "Dr. Anil Sharma",
+          "Dr. Priya Mehta",
+          "Dr. Ravi Iyer",
+          "Dr. Sana Khan"
+        ]
+      },
+      {
+        "name": "asked_about_fees",
+        "type": "yes_no",
+        "description": "Did the caller ask what a visit costs?",
+        "choices": []
+      }
+    ],
+    "outcome": "transfer_requested",
+    "fields": {
+      "caller_number": ""
+    },
+    "tool_calls": [],
+    "transcript": [
+      {
+        "role": "assistant",
+        "text": "Welcome to City Hospital. How can I help you today?"
+      },
+      {
+        "role": "user",
+        "text": "Can I talk to a person, please?"
+      },
+      {
+        "role": "assistant",
+        "text": "Let me connect you to our front desk."
+      }
+    ],
+    "expected": {
+      "successful": false,
+      "fields": {
+        "reason": "other"
+      }
+    }
+  },
+  {
+    "name": "booked, asked for the afternoon",
+    "id": "web-48cb5c7ab5",
+    "agent": "Clinic booking (scenario runs)",
+    "success_rule": "An appointment was booked (the agent gave a booking ID), or the caller's question was answered.",
+    "analysis_fields": [
+      {
+        "name": "reason",
+        "type": "choice",
+        "description": "Why the caller called",
+        "choices": [
+          "book",
+          "question",
+          "change",
+          "other"
+        ]
+      },
+      {
+        "name": "doctor",
+        "type": "choice",
+        "description": "The doctor the appointment or question was about",
+        "choices": [
+          "Dr. Anil Sharma",
+          "Dr. Priya Mehta",
+          "Dr. Ravi Iyer",
+          "Dr. Sana Khan"
+        ]
+      },
+      {
+        "name": "asked_about_fees",
+        "type": "yes_no",
+        "description": "Did the caller ask what a visit costs?",
+        "choices": []
+      }
+    ],
+    "outcome": "booked",
+    "fields": {
+      "caller_number": "",
+      "doctor": "Dr. Priya Mehta",
+      "patient_name": "Rohan Gupta",
+      "patient_age": 34,
+      "day": "2026-11-04",
+      "time": "13:30"
+    },
+    "tool_calls": [
+      {
+        "name": "check_availability",
+        "ok": true
+      },
+      {
+        "name": "check_availability",
+        "ok": true
+      },
+      {
+        "name": "book_appointment",
+        "ok": true
+      }
+    ],
+    "transcript": [
+      {
+        "role": "assistant",
+        "text": "Welcome to City Hospital. How can I help you today?"
+      },
+      {
+        "role": "user",
+        "text": "I want to book an appointment with the skin doctor."
+      },
+      {
+        "role": "assistant",
+        "text": "Sure, I can help with that. Who is the appointment for?"
+      },
+      {
+        "role": "user",
+        "text": "My name is Rohan Gupta and I am 34 years old."
+      },
+      {
+        "role": "assistant",
+        "text": "Thanks, Mr. Gupta. What day would you like the appointment?"
+      },
+      {
+        "role": "user",
+        "text": "4 November, please."
+      },
+      {
+        "role": "assistant",
+        "text": "Dr. Priya Mehta has one free time on Wednesday, half past one. Would you like that time?"
+      },
+      {
+        "role": "user",
+        "text": "Something in the afternoon, please."
+      },
+      {
+        "role": "assistant",
+        "text": "The only free afternoon time I have on Wednesday is half past one. Would you like to take it?"
+      },
+      {
+        "role": "user",
+        "text": "The earliest of those is fine."
+      },
+      {
+        "role": "assistant",
+        "text": "To confirm: Rohan Gupta, aged 34, with Dr. Priya Mehta on Wednesday 4 November at 13:30. Is that right? "
+      },
+      {
+        "role": "user",
+        "text": "Yes."
+      },
+      {
+        "role": "assistant",
+        "text": "Your appointment with Dr. Priya Mehta is booked for Wednesday at 13:30. Your booking ID is A-1055. Thank you for calling."
+      }
+    ],
+    "expected": {
+      "successful": true,
+      "fields": {
+        "reason": "book",
+        "doctor": "Dr. Priya Mehta"
+      }
+    }
+  },
+  {
+    "name": "booked, doctor not named at first",
+    "id": "web-f568e8509f",
+    "agent": "Clinic booking (scenario runs)",
+    "success_rule": "An appointment was booked (the agent gave a booking ID), or the caller's question was answered.",
+    "analysis_fields": [
+      {
+        "name": "reason",
+        "type": "choice",
+        "description": "Why the caller called",
+        "choices": [
+          "book",
+          "question",
+          "change",
+          "other"
+        ]
+      },
+      {
+        "name": "doctor",
+        "type": "choice",
+        "description": "The doctor the appointment or question was about",
+        "choices": [
+          "Dr. Anil Sharma",
+          "Dr. Priya Mehta",
+          "Dr. Ravi Iyer",
+          "Dr. Sana Khan"
+        ]
+      },
+      {
+        "name": "asked_about_fees",
+        "type": "yes_no",
+        "description": "Did the caller ask what a visit costs?",
+        "choices": []
+      }
+    ],
+    "outcome": "booked",
+    "fields": {
+      "caller_number": "",
+      "patient_name": "Rohan Gupta",
+      "patient_age": 34,
+      "day": "2026-11-02",
+      "doctor": "Dr. Anil Sharma",
+      "time": "11:00"
+    },
+    "tool_calls": [
+      {
+        "name": "check_availability",
+        "ok": true
+      },
+      {
+        "name": "check_availability",
+        "ok": true
+      },
+      {
+        "name": "book_appointment",
+        "ok": true
+      }
+    ],
+    "transcript": [
+      {
+        "role": "assistant",
+        "text": "Welcome to City Hospital. How can I help you today?"
+      },
+      {
+        "role": "user",
+        "text": "I want to book a doctor appointment."
+      },
+      {
+        "role": "assistant",
+        "text": "Sure, I can help with that. Which doctor would you like to see, or what is the problem? You can choose Dr. Anil Sharma, general physician; Dr. Priya Mehta, skin; Dr. Ravi Iyer, children; or Dr. Sana Khan, bones and joints."
+      },
+      {
+        "role": "user",
+        "text": "My name is Rohan Gupta and I am 34 years old."
+      },
+      {
+        "role": "assistant",
+        "text": "Thanks, Rohan Gupta. Which doctor would you like to see, or what is the problem?"
+      },
+      {
+        "role": "user",
+        "text": "2 November, please."
+      },
+      {
+        "role": "assistant",
+        "text": "Thanks, I’ve noted Monday the second of November. Which doctor would you like to see, or what is the problem?"
+      },
+      {
+        "role": "user",
+        "text": "A general physician, please."
+      },
+      {
+        "role": "assistant",
+        "text": "Dr. Anil Sharma has openings on Monday the second of November at eleven, eleven thirty, twelve, and twelve thirty. Which time would you like?"
+      },
+      {
+        "role": "user",
+        "text": "11:00 am works."
+      },
+      {
+        "role": "assistant",
+        "text": "To confirm: Rohan Gupta, aged 34, with Dr. Anil Sharma on Monday 2 November at 11:00. Is that right? "
+      },
+      {
+        "role": "user",
+        "text": "Yes."
+      },
+      {
+        "role": "assistant",
+        "text": "Your appointment with Dr. Anil Sharma is booked for Monday at 11:00. Your booking ID is A-1054. Thank you for calling."
+      }
+    ],
+    "expected": {
+      "successful": true,
+      "fields": {
+        "reason": "book",
+        "doctor": "Dr. Anil Sharma"
+      }
+    }
+  },
+  {
+    "name": "booked after the slot was taken",
+    "id": "web-e176e817ca",
+    "agent": "Clinic booking (scenario runs)",
+    "success_rule": "An appointment was booked (the agent gave a booking ID), or the caller's question was answered.",
+    "analysis_fields": [
+      {
+        "name": "reason",
+        "type": "choice",
+        "description": "Why the caller called",
+        "choices": [
+          "book",
+          "question",
+          "change",
+          "other"
+        ]
+      },
+      {
+        "name": "doctor",
+        "type": "choice",
+        "description": "The doctor the appointment or question was about",
+        "choices": [
+          "Dr. Anil Sharma",
+          "Dr. Priya Mehta",
+          "Dr. Ravi Iyer",
+          "Dr. Sana Khan"
+        ]
+      },
+      {
+        "name": "asked_about_fees",
+        "type": "yes_no",
+        "description": "Did the caller ask what a visit costs?",
+        "choices": []
+      }
+    ],
+    "outcome": "booked",
+    "fields": {
+      "caller_number": "",
+      "doctor": "Dr. Priya Mehta",
+      "patient_name": "Rohan Gupta",
+      "patient_age": 34,
+      "day": "2026-11-23",
+      "time": "13:00"
+    },
+    "tool_calls": [
+      {
+        "name": "check_availability",
+        "ok": true
+      },
+      {
+        "name": "check_availability",
+        "ok": true
+      },
+      {
+        "name": "book_appointment",
+        "ok": false
+      },
+      {
+        "name": "book_appointment",
+        "ok": true
+      }
+    ],
+    "transcript": [
+      {
+        "role": "assistant",
+        "text": "Welcome to City Hospital. How can I help you today?"
+      },
+      {
+        "role": "user",
+        "text": "I want to book an appointment with the skin doctor."
+      },
+      {
+        "role": "assistant",
+        "text": "Sure, I can help with that. Thanks, I’ve noted skin doctor. What’s the patient’s full name?"
+      },
+      {
+        "role": "user",
+        "text": "My name is Rohan Gupta and I am 34 years old."
+      },
+      {
+        "role": "assistant",
+        "text": "Thanks, Rohan Gupta, age thirty-four. What day would you like the appointment?"
+      },
+      {
+        "role": "user",
+        "text": "23 November, please."
+      },
+      {
+        "role": "assistant",
+        "text": "Dr. Priya Mehta has free times on Monday the twenty-third of November at eleven thirty, one o’clock, and half past one. Which time would you like?"
+      },
+      {
+        "role": "user",
+        "text": "12:30 pm please."
+      },
+      {
+        "role": "assistant",
+        "text": "To confirm: Rohan Gupta, aged 34, with Dr. Priya Mehta on Monday 23 November at 12:30. Is that right? "
+      },
+      {
+        "role": "user",
+        "text": "Yes."
+      },
+      {
+        "role": "assistant",
+        "text": "I’m sorry, but that time isn’t available after all. What would you like to do instead?"
+      },
+      {
+        "role": "user",
+        "text": "Then 1:00 pm on the same day."
+      },
+      {
+        "role": "assistant",
+        "text": "To confirm: Rohan Gupta, aged 34, with Dr. Priya Mehta on Monday 23 November at 13:00. Is that right? "
+      },
+      {
+        "role": "user",
+        "text": "Yes."
+      },
+      {
+        "role": "assistant",
+        "text": "Your appointment with Dr. Priya Mehta is booked for Monday at 13:00. Your booking ID is A-1053. Thank you for calling."
+      }
+    ],
+    "expected": {
+      "successful": true,
+      "fields": {
+        "reason": "book",
+        "doctor": "Dr. Priya Mehta"
+      }
+    }
+  },
+  {
+    "name": "booked after changing the time",
+    "id": "web-c45c5ebf9c",
+    "agent": "Clinic booking (scenario runs)",
+    "success_rule": "An appointment was booked (the agent gave a booking ID), or the caller's question was answered.",
+    "analysis_fields": [
+      {
+        "name": "reason",
+        "type": "choice",
+        "description": "Why the caller called",
+        "choices": [
+          "book",
+          "question",
+          "change",
+          "other"
+        ]
+      },
+      {
+        "name": "doctor",
+        "type": "choice",
+        "description": "The doctor the appointment or question was about",
+        "choices": [
+          "Dr. Anil Sharma",
+          "Dr. Priya Mehta",
+          "Dr. Ravi Iyer",
+          "Dr. Sana Khan"
+        ]
+      },
+      {
+        "name": "asked_about_fees",
+        "type": "yes_no",
+        "description": "Did the caller ask what a visit costs?",
+        "choices": []
+      }
+    ],
+    "outcome": "booked",
+    "fields": {
+      "caller_number": "",
+      "doctor": "Dr. Priya Mehta",
+      "patient_name": "Rohan Gupta",
+      "patient_age": 34,
+      "day": "2026-11-23",
+      "time": "12:00"
+    },
+    "tool_calls": [
+      {
+        "name": "check_availability",
+        "ok": true
+      },
+      {
+        "name": "check_availability",
+        "ok": true
+      },
+      {
+        "name": "book_appointment",
+        "ok": true
+      }
+    ],
+    "transcript": [
+      {
+        "role": "assistant",
+        "text": "Welcome to City Hospital. How can I help you today?"
+      },
+      {
+        "role": "user",
+        "text": "I want to book an appointment with the skin doctor."
+      },
+      {
+        "role": "assistant",
+        "text": "Sure, I can help with that. I can help with that. What is the patient’s full name?"
+      },
+      {
+        "role": "user",
+        "text": "My name is Rohan Gupta and I am 34 years old."
+      },
+      {
+        "role": "assistant",
+        "text": "Thanks, Rohan Gupta. What day would you like the appointment?"
+      },
+      {
+        "role": "user",
+        "text": "23 November, please."
+      },
+      {
+        "role": "assistant",
+        "text": "Dr. Priya Mehta has openings on Monday the twenty-third of November at half past eleven, twelve o’clock, one o’clock, and half past one. Which time would you like?"
+      },
+      {
+        "role": "user",
+        "text": "11:30 am works."
+      },
+      {
+        "role": "assistant",
+        "text": "To confirm: Rohan Gupta, aged 34, with Dr. Priya Mehta on Monday 23 November at 11:30. Is that right? "
+      },
+      {
+        "role": "user",
+        "text": "No, I'd like a different time."
+      },
+      {
+        "role": "assistant",
+        "text": "Of course — which time would you like instead?"
+      },
+      {
+        "role": "user",
+        "text": "12:00 pm, please."
+      },
+      {
+        "role": "assistant",
+        "text": "To confirm: Rohan Gupta, aged 34, with Dr. Priya Mehta on Monday 23 November at 12:00. Is that right? "
+      },
+      {
+        "role": "user",
+        "text": "Yes, that's right."
+      },
+      {
+        "role": "assistant",
+        "text": "Your appointment with Dr. Priya Mehta is booked for Monday at 12:00. Your booking ID is A-1052. Thank you for calling."
+      }
+    ],
+    "expected": {
+      "successful": true,
+      "fields": {
+        "reason": "book",
+        "doctor": "Dr. Priya Mehta"
+      }
+    }
+  },
+  {
+    "name": "booked",
+    "id": "web-3da5dd8ba3",
+    "agent": "Clinic booking (scenario runs)",
+    "success_rule": "An appointment was booked (the agent gave a booking ID), or the caller's question was answered.",
+    "analysis_fields": [
+      {
+        "name": "reason",
+        "type": "choice",
+        "description": "Why the caller called",
+        "choices": [
+          "book",
+          "question",
+          "change",
+          "other"
+        ]
+      },
+      {
+        "name": "doctor",
+        "type": "choice",
+        "description": "The doctor the appointment or question was about",
+        "choices": [
+          "Dr. Anil Sharma",
+          "Dr. Priya Mehta",
+          "Dr. Ravi Iyer",
+          "Dr. Sana Khan"
+        ]
+      },
+      {
+        "name": "asked_about_fees",
+        "type": "yes_no",
+        "description": "Did the caller ask what a visit costs?",
+        "choices": []
+      }
+    ],
+    "outcome": "booked",
+    "fields": {
+      "caller_number": "",
+      "doctor": "Dr. Priya Mehta",
+      "patient_name": "Rohan Gupta",
+      "patient_age": 34,
+      "day": "2026-11-23",
+      "time": "11:00"
+    },
+    "tool_calls": [
+      {
+        "name": "check_availability",
+        "ok": true
+      },
+      {
+        "name": "check_availability",
+        "ok": true
+      },
+      {
+        "name": "book_appointment",
+        "ok": true
+      }
+    ],
+    "transcript": [
+      {
+        "role": "assistant",
+        "text": "Welcome to City Hospital. How can I help you today?"
+      },
+      {
+        "role": "user",
+        "text": "I want to book an appointment with the skin doctor."
+      },
+      {
+        "role": "assistant",
+        "text": "Sure, I can help with that. Thanks. What is your full name?"
+      },
+      {
+        "role": "user",
+        "text": "My name is Rohan Gupta and I am 34 years old."
+      },
+      {
+        "role": "assistant",
+        "text": "Thanks, Rohan. What day would you like the appointment?"
+      },
+      {
+        "role": "user",
+        "text": "23 November, please."
+      },
+      {
+        "role": "assistant",
+        "text": "I have Monday the twenty-third of November with Dr. Priya Mehta. Would eleven, eleven thirty, twelve, one, or half past one suit you?"
+      },
+      {
+        "role": "user",
+        "text": "11:00 am works."
+      },
+      {
+        "role": "assistant",
+        "text": "To confirm: Rohan Gupta, aged 34, with Dr. Priya Mehta on Monday 23 November at 11:00. Is that right? "
+      },
+      {
+        "role": "user",
+        "text": "Yes."
+      },
+      {
+        "role": "assistant",
+        "text": "Your appointment with Dr. Priya Mehta is booked for Monday at 11:00. Your booking ID is A-1051. Thank you for calling."
+      }
+    ],
+    "expected": {
+      "successful": true,
+      "fields": {
+        "reason": "book",
+        "doctor": "Dr. Priya Mehta"
+      }
+    }
+  }
+]
