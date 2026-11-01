@@ -75,6 +75,8 @@ def booking_tool(clinic_api_url: str, calcom: CalcomSettings | None) -> ToolData
     common = {
         "name": "book_appointment",
         "description": "Books the appointment and returns the booking ID.",
+        # Cal.com took 2.4 s to book on a live run; silence that long sounds like a dead line.
+        "say_while_running": "One moment while I book that.",
     }
     if calcom is not None:
         return ToolData(kind=CALCOM_BOOKING_TOOL, calcom=calcom, **common)
