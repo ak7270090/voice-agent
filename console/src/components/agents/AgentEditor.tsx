@@ -2,6 +2,7 @@
 
 import { type FormEvent, type ReactNode, useState } from "react";
 
+import { AnalysisSettings } from "@/components/agents/AnalysisSettings";
 import { Button, Card } from "@/components/ui/primitives";
 import type { Agent, AgentUpdate, KnowledgeBase } from "@/lib/api";
 import { STT_CHOICES, VOICE_CHOICES } from "@/lib/constants";
@@ -42,6 +43,8 @@ export function AgentEditor({
   const speech = agent.language_settings[language];
   const [voiceChoice, setVoiceChoice] = useState(voiceKey(speech.tts_model, speech.voice));
   const [sttModel, setSttModel] = useState(speech.stt_model);
+  const [analysisFields, setAnalysisFields] = useState(agent.analysis_fields);
+  const [successRule, setSuccessRule] = useState(agent.success_rule);
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -52,6 +55,8 @@ export function AgentEditor({
       instructions,
       llm_model: llmModel,
       knowledge_base_ids: linkedBases,
+      analysis_fields: analysisFields,
+      success_rule: successRule,
       language_settings: {
         ...agent.language_settings,
         [language]: {
@@ -163,6 +168,12 @@ export function AgentEditor({
             ))}
           </div>
         </Field>
+        <AnalysisSettings
+          fields={analysisFields}
+          successRule={successRule}
+          onFieldsChange={setAnalysisFields}
+          onSuccessRuleChange={setSuccessRule}
+        />
         <div className="flex justify-end">
           <Button type="submit" variant="primary" disabled={saving}>
             {saving ? "Saving…" : "Save changes"}

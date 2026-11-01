@@ -114,7 +114,7 @@ export default function AgentPage({ params }: { params: { id: string } }) {
                 saving={saving}
                 onSave={save}
               />
-              <RecentCalls calls={calls} />
+              <RecentCalls calls={calls} agentId={agent.id} />
             </div>
             <div className="flex flex-col gap-4 self-start xl:sticky xl:top-6">
               <TestCallPanel agentId={agent.id} onCallEnded={onCallEnded} />

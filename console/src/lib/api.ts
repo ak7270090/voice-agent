@@ -20,6 +20,17 @@ export type AgentFields = {
   llm_model: string;
   languages: string[];
   language_settings: Record<string, VoiceSettings>;
+  analysis_fields: AnalysisField[];
+  success_rule: string;
+};
+
+export type AnalysisFieldType = "text" | "choice" | "yes_no" | "number";
+
+export type AnalysisField = {
+  name: string;
+  type: AnalysisFieldType;
+  description: string;
+  choices: string[];
 };
 
 export type AgentStatus = "draft" | "live";
@@ -50,7 +61,37 @@ export type AgentTemplate = {
 
 export type BrowserCall = { url: string; token: string; room: string };
 
-export type TranscriptTurn = { role: "user" | "assistant"; text: string };
+export type TranscriptTurn = { role: "user" | "assistant"; text: string; at: number | null };
+
+export type ToolCall = {
+  name: string;
+  by: "flow" | "llm";
+  at: number;
+  ms: number;
+  ok: boolean;
+  unavailable: boolean;
+  result: string;
+};
+
+export type CallCost = {
+  llm: number;
+  stt: number;
+  tts: number;
+  phone: number;
+  analysis: number;
+  total: number;
+  llm_unpriced: boolean;
+};
+
+export type CallAnalysis = {
+  summary: string;
+  successful: boolean;
+  success_reason: string;
+  sentiment: "positive" | "neutral" | "negative";
+  fields: Record<string, string | number | boolean | null>;
+  qa_score: number;
+  qa_notes: string;
+};
 
 export type Call = {
   id: string;
@@ -59,6 +100,7 @@ export type Call = {
   channel: string;
   direction: "inbound" | "outbound";
   remote_number: string | null;
+  campaign_contact_id: string | null;
   status: "active" | "ended";
   started_at: string;
   ended_at: string | null;
@@ -66,7 +108,46 @@ export type Call = {
   outcome: string | null;
   fields: Record<string, unknown>;
   flow_path: string[];
+  turn_latency_ms: Record<string, number>[];
+  interruptions: number;
+  usage: Record<string, number>;
+  cost: Partial<CallCost>;
+  tool_calls: ToolCall[];
+  analysis_status: "pending" | "done" | "skipped" | "failed" | null;
+  analysis: Partial<CallAnalysis>;
+  langfuse_url: string | null;
+  recording_url: string | null;
 };
+
+export type CallFilters = {
+  agent_id?: string;
+  channel?: string;
+  direction?: string;
+  outcome?: string;
+};
+
+export type Metrics = {
+  days: { day: string; calls: number }[];
+  calls: number;
+  outcomes: Record<string, number>;
+  average_cost: number | null;
+  total_cost: number;
+  average_duration_seconds: number | null;
+  latency_p50_ms: number | null;
+  latency_p95_ms: number | null;
+  agents: { agent_id: string; name: string; calls: number; analysed: number; successful: number }[];
+};
+
+export const listAllCalls = (filters: CallFilters) => {
+  const query = new URLSearchParams(
+    Object.entries(filters).filter(([, value]) => value) as [string, string][],
+  );
+  return request<Call[]>(`/calls?${query}`);
+};
+
+export const getCall = (callId: string) => request<Call>(`/calls/${callId}`);
+
+export const getMetrics = (days: number) => request<Metrics>(`/metrics?days=${days}`);
 
 export class ApiError extends Error {
   constructor(

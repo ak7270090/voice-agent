@@ -43,7 +43,7 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     title: "Monitor",
     items: [
-      { label: "Calls", href: "/calls", icon: List, available: false },
+      { label: "Calls", href: "/calls", icon: List, available: true },
       { label: "Analytics", href: "/analytics", icon: ChartColumn, available: false },
       { label: "Evals", href: "/evals", icon: CircleCheck, available: false },
     ],
