@@ -1,11 +1,12 @@
 import pytest
+from langchain_core.messages import AIMessage
 from langchain_core.runnables import RunnableLambda
 from pydantic import ValidationError
 
 from studio_api.agents.schemas import AnalysisField
 from studio_api.calls.analysis import result_model, run_analysis
 from tests.test_agents import create_agent
-from tests.test_call_records import SPOKEN, end, start
+from tests.test_call_records import SPOKEN, end, priced, start
 
 FIELDS = [
     {"name": "doctor", "type": "text", "description": "Which doctor the caller wanted"},
@@ -69,12 +70,17 @@ async def test_an_agent_rejects_analysis_fields_that_cannot_work(client, field):
 
 
 def fake_model(answer: dict, seen: list):
-    """Stands in for the LLM: records the prompt and answers in the requested shape."""
+    """Stands in for the LLM: records the prompt and answers in the requested shape, with the
+    raw message's token usage, as `with_structured_output(include_raw=True)` does."""
 
     def factory(settings, shape):
         def respond(messages):
             seen.append(messages)
-            return shape.model_validate(answer)
+            raw = AIMessage(
+                content="",
+                usage_metadata={"input_tokens": 2000, "output_tokens": 200, "total_tokens": 2200},
+            )
+            return {"raw": raw, "parsed": shape.model_validate(answer), "parsing_error": None}
 
         return RunnableLambda(respond)
 
@@ -85,7 +91,7 @@ async def analysed_call(client, runtime_headers, factory, **agent_changes) -> di
     agent = await create_agent(client, analysis_fields=FIELDS, **agent_changes)
     call_id = await start(client, runtime_headers, agent["id"], "web-1")
     await end(client, runtime_headers, call_id, transcript=SPOKEN, outcome="booked")
-    await run_analysis(client.app.state.session_factory, None, call_id, factory)
+    await run_analysis(client.app.state.session_factory, priced(), call_id, factory)
     return (await client.get(f"/calls/{call_id}")).json()
 
 
@@ -110,6 +116,25 @@ async def test_the_analysis_is_saved_with_the_agents_fields_and_success_rule(
     assert "Outcome recorded by the flow: booked" in transcript.content
 
 
+async def test_the_analysis_adds_its_own_llm_cost_to_the_calls_total(client, runtime_headers):
+    call = await analysed_call(client, runtime_headers, fake_model(GOOD_ANSWER, []))
+
+    # 2,000 input x $0.75 + 200 output x $4.50, per million tokens, at the analysis model.
+    assert call["cost"]["analysis"] == pytest.approx(0.0024)
+    assert call["cost"]["total"] == pytest.approx(0.0024)
+
+
+async def test_an_answer_that_does_not_fit_the_shape_fails_the_analysis(client, runtime_headers):
+    def unparsed(settings, shape):
+        return RunnableLambda(
+            lambda messages: {"raw": AIMessage(content="?"), "parsed": None, "parsing_error": "x"}
+        )
+
+    call = await analysed_call(client, runtime_headers, unparsed)
+
+    assert call["analysis_status"] == "failed"
+
+
 async def test_an_analysis_that_fails_is_marked_failed_not_retried_forever(client, runtime_headers):
     def broken(settings, shape):
         def respond(messages):
@@ -128,7 +153,7 @@ async def test_an_analysed_call_is_not_analysed_again(client, runtime_headers):
     call = await analysed_call(client, runtime_headers, fake_model(GOOD_ANSWER, seen))
 
     await run_analysis(
-        client.app.state.session_factory, None, call["id"], fake_model(GOOD_ANSWER, seen)
+        client.app.state.session_factory, priced(), call["id"], fake_model(GOOD_ANSWER, seen)
     )
 
     assert len(seen) == 1

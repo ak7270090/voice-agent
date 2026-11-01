@@ -11,21 +11,32 @@ TOKENS_PER_MILLION = 1_000_000
 CHARACTERS_PER_THOUSAND = 1000
 SECONDS_PER_MINUTE = 60
 COST_DECIMALS = 5
+# Added by the post-call analysis job: its own LLM call, priced at the analysis model.
+ANALYSIS_COST_PART = "analysis"
+
+
+def llm_cost(
+    input_tokens: float, cached_tokens: float, output_tokens: float, prices: dict | None
+) -> float:
+    if not prices:
+        return 0.0
+    return (
+        (input_tokens - cached_tokens) * prices["input"]
+        + cached_tokens * prices.get("cached_input", prices["input"])
+        + output_tokens * prices["output"]
+    ) / TOKENS_PER_MILLION
 
 
 def call_cost(
     usage: dict[str, float], llm_model: str, phone_seconds: float, settings: Settings
 ) -> dict[str, float | bool]:
     prices = settings.llm_prices.get(llm_model)
-    cached = usage.get("llm_cached_input_tokens", 0)
-    fresh_input = usage.get("llm_input_tokens", 0) - cached
-    llm = 0.0
-    if prices:
-        llm = (
-            fresh_input * prices["input"]
-            + cached * prices.get("cached_input", prices["input"])
-            + usage.get("llm_output_tokens", 0) * prices["output"]
-        ) / TOKENS_PER_MILLION
+    llm = llm_cost(
+        usage.get("llm_input_tokens", 0),
+        usage.get("llm_cached_input_tokens", 0),
+        usage.get("llm_output_tokens", 0),
+        prices,
+    )
     stt = usage.get("stt_seconds", 0) / SECONDS_PER_MINUTE * settings.stt_price_per_minute
     tts = (
         usage.get("tts_characters", 0)

@@ -31,7 +31,13 @@ CLINIC_ANALYSIS = (
             description="Why the caller called",
             choices=["book", "question", "change", "other"],
         ),
-        AnalysisField(name="doctor", description="The doctor or speciality the caller asked for"),
+        # A choice, not text: as text, "skin doctor" and "Dr. Priya Mehta" were both answers.
+        AnalysisField(
+            name="doctor",
+            type="choice",
+            description="The doctor the appointment or question was about",
+            choices=["Dr. Anil Sharma", "Dr. Priya Mehta", "Dr. Ravi Iyer", "Dr. Sana Khan"],
+        ),
         AnalysisField(
             name="asked_about_fees",
             type="yes_no",

@@ -25,6 +25,7 @@ from studio_api.calls.constants import (
     ANALYSIS_PENDING,
     SENTIMENTS,
 )
+from studio_api.calls.costs import ANALYSIS_COST_PART, llm_cost
 from studio_api.calls.models import Call
 from studio_api.config import Settings
 
@@ -36,6 +37,8 @@ INSTRUCTIONS = """You review a finished phone call between an AI agent and a cal
 Judge only from the transcript and the call's record; never guess what was not said.
 - summary: two short sentences: what the caller wanted, and what happened.
 - successful: true only if this rule is met: {success_rule}
+  Judge by what the caller actually got: saying the information is not available, promising
+  someone will call back, or offering to transfer is not an answer and not a success.
 - sentiment: the caller's mood by the end of the call.
 - fields: answer each one from the call; null when the call does not say.
 - qa_score from 1 to 5 for the agent: did it answer what was asked, confirm details before
@@ -85,19 +88,38 @@ def call_as_text(call: Call) -> str:
 
 
 def create_analysis_model(settings: Settings, shape: type[BaseModel]) -> Runnable:
+    """Answers {"parsed": the analysis, "raw": the model's message}: the raw message carries
+    the token usage, so the analysis is priced like the call."""
     model = init_chat_model(settings.analysis_llm_model, timeout=ANALYSIS_TIMEOUT_SECONDS)
-    return model.with_structured_output(shape)
+    return model.with_structured_output(shape, include_raw=True)
 
 
-async def analyse(model: Runnable, call: Call, agent: Agent) -> dict[str, Any]:
+async def analyse(model: Runnable, call: Call, agent: Agent) -> tuple[dict[str, Any], dict]:
+    """The analysis, and the tokens it used."""
     rule = agent.success_rule or DEFAULT_SUCCESS_RULE
-    result = await model.ainvoke(
+    answer = await model.ainvoke(
         [
             SystemMessage(INSTRUCTIONS.format(success_rule=rule)),
             HumanMessage(call_as_text(call)),
         ]
     )
-    return result.model_dump(mode="json")
+    if answer.get("parsing_error") or answer["parsed"] is None:
+        raise ValueError(f"the analysis did not fit its shape: {answer.get('parsing_error')}")
+    usage = getattr(answer["raw"], "usage_metadata", None) or {}
+    return answer["parsed"].model_dump(mode="json"), usage
+
+
+def with_analysis_cost(cost: dict, usage: dict, settings: Settings) -> dict:
+    """The call's cost with the analysis's own LLM call added as its own part."""
+    cached = (usage.get("input_token_details") or {}).get("cache_read", 0)
+    analysis = llm_cost(
+        usage.get("input_tokens", 0),
+        cached,
+        usage.get("output_tokens", 0),
+        settings.llm_prices.get(settings.analysis_llm_model),
+    )
+    total = cost.get("total", 0) - cost.get(ANALYSIS_COST_PART, 0) + analysis
+    return {**cost, ANALYSIS_COST_PART: round(analysis, 5), "total": round(total, 5)}
 
 
 ModelFactory = Callable[[Settings, type[BaseModel]], Runnable]
@@ -117,7 +139,9 @@ async def run_analysis(
         agent = await session.get(Agent, call.agent_id)
         specs = [AnalysisField.model_validate(spec) for spec in agent.analysis_fields]
         try:
-            call.analysis = await analyse(model_factory(settings, result_model(specs)), call, agent)
+            model = model_factory(settings, result_model(specs))
+            call.analysis, usage = await analyse(model, call, agent)
+            call.cost = with_analysis_cost(call.cost, usage, settings)
             call.analysis_status = ANALYSIS_DONE
         except Exception:
             logger.exception("post-call analysis failed for call %s", call_id)
