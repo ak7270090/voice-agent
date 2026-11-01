@@ -460,8 +460,8 @@ h1 {
 .case-list button {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 16px 18px;
+  gap: 3px;
+  padding: 12px 16px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--surface);
@@ -470,6 +470,15 @@ h1 {
   font: inherit;
   cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.case-list button em {
+  color: var(--accent);
+  font-size: 11.5px;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .case-list button strong {
@@ -487,6 +496,9 @@ h1 {
 }
 
 .case-chat {
+  align-self: start;
+  position: sticky;
+  top: 84px;
   border: 1px solid var(--line);
   border-radius: 18px;
   background: var(--bg-alt);
@@ -609,16 +621,14 @@ h1 {
 }
 
 /* Features */
-.feature-grid,
-.integration-grid {
+.feature-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-top: 32px;
 }
 
-.feature,
-.integration {
+.feature {
   padding: 24px;
   border: 1px solid var(--line);
   border-radius: 14px;
@@ -636,27 +646,62 @@ h1 {
   font-weight: 700;
 }
 
-.feature h3,
-.integration h3 {
+.feature h3 {
   margin: 14px 0 6px;
   font-size: 18px;
 }
 
-.feature p,
-.integration p {
+.feature p {
   margin: 0;
   color: var(--muted);
   font-size: 14.5px;
 }
 
-.integration .tag {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: var(--bg-alt);
+/* Integrations */
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-top: 32px;
+}
+
+.app {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.app:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.app-mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background: var(--mark);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.app b {
+  display: block;
+  font-size: 15px;
+}
+
+.app span:not(.app-mark) {
   color: var(--muted);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
 }
 
 /* Analytics */
@@ -865,9 +910,12 @@ h1 {
     border-top: 1px solid var(--line);
   }
 
-  .feature-grid,
-  .integration-grid {
+  .feature-grid {
     grid-template-columns: 1fr;
+  }
+
+  .app-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 

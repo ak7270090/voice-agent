@@ -4,17 +4,17 @@
 const DEMOS = [
   {
     id: "voice",
-    tab: "Booking by voice",
-    title: "A patient books by voice",
-    text: "The agent understands the request, checks the doctor's free times, reads the details back and books, while the live step lights up in the flow.",
+    tab: "Book an appointment",
+    title: "Book an appointment over a call",
+    text: "The caller asks for the skin doctor. The agent finds her free times, confirms the details and books the slot, all in one call.",
     video: "media/voice-call.mp4",
     poster: "media/voice-call.jpg",
   },
   {
     id: "phone",
-    tab: "Phone call",
-    title: "A real phone call",
-    text: "The phone rings, the agent answers, and the appointment lands in the doctor's calendar.",
+    tab: "Answer the phone",
+    title: "Answers your business line",
+    text: "A customer dials your number and the agent picks up straight away, day or night.",
     video: "media/phone-call.mp4",
     poster: "media/phone-call.jpg",
     // Optional: [{"at": seconds, "role": "agent" | "caller", "text": "..."}], highlighted in time.
@@ -22,70 +22,104 @@ const DEMOS = [
   },
   {
     id: "campaign",
-    tab: "Reminder campaign",
-    title: "Tomorrow's patients, called in minutes",
-    text: "Upload a contact list and start. Each patient ends with an outcome: confirmed, moved, voicemail left, not reached and retried, or skipped without consent.",
+    tab: "Call a contact list",
+    title: "Remind every patient in minutes",
+    text: "Upload tomorrow's list and press start. Each person ends up confirmed, rescheduled, messaged on voicemail or called again later.",
     video: "media/campaign.mp4",
     poster: "media/campaign.jpg",
   },
   {
     id: "build",
     tab: "Build an agent",
-    title: "From a template to a live agent",
-    text: "Pick a template, adjust what it says, add a rule to the flow, publish, and test it on the spot.",
+    title: "Your agent, ready in minutes",
+    text: "Start from a template, change what it says, test it by talking to it, and go live.",
     video: "media/build-agent.mp4",
     poster: "media/build-agent.jpg",
   },
 ];
 
-// Real conversations from the demo workspace, shortened only by leaving lines out.
+// Example conversations for the use-case section.
 const USE_CASES = [
   {
+    industry: "Healthcare",
     tab: "Appointment booking",
-    text: "Answers every call, finds a free slot with the right doctor and books it.",
-    title: "City Hospital receptionist",
-    outcome: "booked",
+    text: "Answers every call and books the right doctor at a free time.",
+    title: "City Hospital",
+    outcome: "Appointment booked",
     lines: [
       ["agent", "Welcome to City Hospital. How can I help you today?"],
-      ["caller", "I want to book an appointment with the skin doctor."],
-      ["agent", "Dr. Priya Mehta has free times on Wednesday: eleven, eleven thirty, twelve, twelve thirty, one, and half past one. Which time would you like?"],
-      ["caller", "1:30 pm works."],
-      ["agent", "To confirm: Test Patient, aged 30, with Dr. Priya Mehta on Wednesday 4 November at 13:30. Is that right?"],
-      ["caller", "Yes."],
-      ["agent", "Your appointment with Dr. Priya Mehta is booked for Wednesday at 13:30. Your booking ID is 27996422. Thank you for calling."],
+      ["caller", "I'd like to see the skin doctor this Wednesday."],
+      ["agent", "Dr. Priya Mehta is free on Wednesday at 11:00, 11:30, 12:00 and 1:30 pm. Which suits you?"],
+      ["caller", "1:30 works."],
+      ["agent", "Booked: Dr. Priya Mehta, Wednesday at 1:30 pm. You'll get a confirmation shortly. Anything else?"],
     ],
   },
   {
-    tab: "Appointment reminders",
-    text: "Calls tomorrow's patients, confirms they are coming, or passes a change to the front desk.",
-    title: "Appointment reminders",
-    outcome: "reschedule requested",
+    industry: "E-commerce",
+    tab: "Abandoned cart recovery",
+    text: "Calls shoppers who left items in their cart and offers a reason to come back.",
+    title: "Urban Threads",
+    outcome: "Coupon accepted",
     lines: [
-      ["caller", "Hello."],
-      ["agent", "Hi Ravi, I'm calling to remind you about your appointment tomorrow at four pm. Will you be coming?"],
-      ["caller", "I can't come tomorrow, so please move the appointment."],
-      ["agent", "No problem. The front desk will call you to find a new time. Goodbye."],
+      ["agent", "Hi Neha, this is Urban Threads. You left the white sneakers in your cart. Can I help you finish the order?"],
+      ["caller", "I was waiting to see if the price drops."],
+      ["agent", "I can give you 10% off right now. Use code COMEBACK10 at checkout, valid until midnight."],
+      ["caller", "Oh nice, I'll order tonight."],
+      ["agent", "Great! The code is already on your account. Enjoy the sneakers."],
     ],
   },
   {
-    tab: "Voicemail",
-    text: "Knows a voicemail greeting from a person and leaves a short message instead.",
-    title: "Appointment reminders",
-    outcome: "voicemail left",
+    industry: "E-commerce",
+    tab: "Cash-on-delivery confirmation",
+    text: "Confirms the order and address before it ships, so fewer parcels come back.",
+    title: "QuickBasket",
+    outcome: "Order confirmed",
     lines: [
-      ["caller", "Hi. You've reached Rohan Gupta. I can't take your call right now. Please leave your name and number after the tone."],
-      ["agent", "Hello Rohan, this is City Hospital reminding you of your appointment tomorrow at 4 pm. Please call us if you need to change it. Goodbye."],
+      ["agent", "Hello Arjun, this is QuickBasket. You ordered a pressure cooker for ₹1,499, cash on delivery. Shall we ship it?"],
+      ["caller", "Yes, please."],
+      ["agent", "Is the address 14 MG Road, Pune still right?"],
+      ["caller", "Yes, that's correct."],
+      ["agent", "Done. It ships today and arrives by Friday. Thank you!"],
     ],
   },
   {
-    tab: "Hand-off to a person",
-    text: "Puts the caller through to your team the moment they ask for a person.",
-    title: "City Hospital receptionist",
-    outcome: "transferred",
+    industry: "Real estate",
+    tab: "Lead qualification",
+    text: "Calls every new enquiry within minutes, asks the right questions and books a visit.",
+    title: "Skyline Homes",
+    outcome: "Site visit booked",
     lines: [
-      ["agent", "Welcome to City Hospital. How can I help you today?"],
-      ["caller", "Can I talk to a person, please?"],
-      ["agent", "Let me connect you to our front desk."],
+      ["agent", "Hi Rahul, you asked about 2 BHK flats in Whitefield. Is this a good time?"],
+      ["caller", "Yes, go ahead."],
+      ["agent", "What budget are you looking at, and when would you like to move?"],
+      ["caller", "Around 80 lakh, in the next three months."],
+      ["agent", "We have two projects that fit. Would Saturday at 11 am work for a site visit?"],
+      ["caller", "Saturday works."],
+    ],
+  },
+  {
+    industry: "Financial services",
+    tab: "Payment reminders",
+    text: "Reminds customers of upcoming dues politely and records when they will pay.",
+    title: "Apex Finance",
+    outcome: "Payment date promised",
+    lines: [
+      ["agent", "Hello Meera, a quick reminder that your EMI of ₹8,200 is due on the 5th. Will you be able to pay on time?"],
+      ["caller", "My salary comes on the 7th."],
+      ["agent", "Understood. I've noted the 7th. Shall I send the payment link that morning?"],
+      ["caller", "Yes, that helps."],
+    ],
+  },
+  {
+    industry: "Hospitality",
+    tab: "Feedback after a stay",
+    text: "Asks guests how it went, and passes unhappy ones straight to a manager.",
+    title: "Bay View Hotel",
+    outcome: "Rated 4 out of 5",
+    lines: [
+      ["agent", "Hi Sameer, thanks for staying at Bay View. How would you rate your stay out of 5?"],
+      ["caller", "I'd say 4. The room was great, breakfast was a bit slow."],
+      ["agent", "Thank you, I'll pass that on to the kitchen team. We hope to see you again!"],
     ],
   },
 ];
@@ -270,7 +304,8 @@ function setUpCases() {
   USE_CASES.forEach((useCase, index) => {
     const button = document.createElement("button");
     button.role = "tab";
-    button.innerHTML = "<strong></strong><span></span>";
+    button.innerHTML = '<em></em><strong></strong><span></span>';
+    button.querySelector("em").textContent = useCase.industry;
     button.querySelector("strong").textContent = useCase.tab;
     button.querySelector("span").textContent = useCase.text;
     button.addEventListener("click", () => show(index));
