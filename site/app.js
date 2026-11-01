@@ -1,5 +1,5 @@
 // The demo player, the use-case conversations, the platform tabs, links from config.js and the
-// light / dark switch, and the current section in the navigation.
+// current section in the navigation.
 
 const DEMOS = [
   {
@@ -314,24 +314,6 @@ function setUpCases() {
   show(0);
 }
 
-function setUpThemes() {
-  const saved = new URLSearchParams(location.search).get("theme");
-  const apply = (theme) => {
-    document.documentElement.dataset.theme = theme;
-    document.querySelectorAll("[data-theme-choice]").forEach((button) => {
-      button.setAttribute("aria-pressed", String(button.dataset.themeChoice === theme));
-    });
-  };
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  apply(saved === "dark" || saved === "light" ? saved : prefersDark ? "dark" : "light");
-  document.querySelectorAll("[data-theme-choice]").forEach((button) => {
-    button.addEventListener("click", () => {
-      apply(button.dataset.themeChoice);
-      history.replaceState(null, "", `?theme=${button.dataset.themeChoice}${location.hash}`);
-    });
-  });
-}
-
 function setUpCurrentSection() {
   const links = new Map(
     [...document.querySelectorAll(".nav-links a")].map((link) => [link.hash.slice(1), link]),
@@ -353,7 +335,6 @@ function setUpCurrentSection() {
 }
 
 setUpLinks();
-setUpThemes();
 setUpCurrentSection();
 setUpPlayer();
 setUpCases();

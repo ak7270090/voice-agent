@@ -1,6 +1,4 @@
-/* Light and dark themes (?theme=light|dark); the layout is shared. */
-:root,
-[data-theme="light"] {
+:root {
   --bg: #ffffff;
   --bg-alt: #f6f7fb;
   --surface: #ffffff;
@@ -15,24 +13,6 @@
   --cta: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
   --heading-font: "Inter", system-ui, sans-serif;
   --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 12px 32px rgba(15, 23, 42, 0.08);
-}
-
-[data-theme="dark"] {
-  --bg: #070b16;
-  --bg-alt: #0b1120;
-  --surface: #0f172a;
-  --ink: #f1f5f9;
-  --muted: #a5b4cb;
-  --faint: #64748b;
-  --line: #1e293b;
-  --accent: #8b5cf6;
-  --accent-ink: #ffffff;
-  --accent-soft: rgba(139, 92, 246, 0.14);
-  --hero: radial-gradient(900px 480px at 20% -10%, rgba(139, 92, 246, 0.35) 0%, rgba(7, 11, 22, 0) 70%),
-    radial-gradient(800px 420px at 85% 0%, rgba(34, 211, 238, 0.22) 0%, rgba(7, 11, 22, 0) 70%);
-  --cta: linear-gradient(135deg, #5b21b6 0%, #0e7490 100%);
-  --heading-font: "Inter", system-ui, sans-serif;
-  --shadow: 0 0 0 1px rgba(148, 163, 184, 0.08), 0 20px 50px rgba(0, 0, 0, 0.45);
 }
 
 * {
@@ -814,39 +794,6 @@ h1 {
   margin: 12px auto 0;
   max-width: 560px;
   color: rgba(255, 255, 255, 0.82);
-}
-
-/* Light / dark switch */
-.theme-switch {
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
-  z-index: 20;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-  box-shadow: var(--shadow);
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.theme-switch button {
-  padding: 6px 10px;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--muted);
-  font: 600 12px "Inter", sans-serif;
-  cursor: pointer;
-}
-
-.theme-switch button[aria-pressed="true"] {
-  background: var(--accent);
-  color: var(--accent-ink);
 }
 
 @media (max-width: 900px) {
