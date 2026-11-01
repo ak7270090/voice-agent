@@ -1,12 +1,16 @@
-"""Background worker: `arq studio_api.worker.WorkerSettings`. Ingests uploaded documents and
-runs the campaign dialler."""
+"""Background worker: `arq studio_api.worker.WorkerSettings`. Ingests uploaded documents, runs
+the campaign dialler, analyses calls and sends their after-call actions."""
 
 from datetime import timedelta
 
+import httpx
 from arq import cron
 from sqlalchemy.ext.asyncio import create_async_engine
 
+from studio_api.after_call.constants import CALL_ANALYSED, DELIVER_JOB
+from studio_api.after_call.service import deliver, schedule_deliveries
 from studio_api.calls.analysis import run_analysis
+from studio_api.calls.models import Call
 from studio_api.campaigns.dialler import run_dialler
 from studio_api.config import export_provider_keys, get_settings
 from studio_api.database import create_session_factory, utc_now
@@ -27,9 +31,11 @@ async def startup(ctx: dict) -> None:
     ctx["file_store"] = create_file_store(settings)
     ctx["embeddings"] = create_embeddings(settings)
     ctx["telephony"] = Telephony(settings)
+    ctx["http"] = httpx.AsyncClient(timeout=settings.delivery_timeout_seconds)
 
 
 async def shutdown(ctx: dict) -> None:
+    await ctx["http"].aclose()
     await ctx["engine"].dispose()
 
 
@@ -51,7 +57,21 @@ async def dial_campaigns_job(ctx: dict) -> None:
 
 
 async def analyse_call_job(ctx: dict, call_id: str) -> None:
-    await run_analysis(ctx["session_factory"], get_settings(), call_id)
+    if not await run_analysis(ctx["session_factory"], get_settings(), call_id):
+        return
+    async with ctx["session_factory"]() as session:
+        call = await session.get(Call, call_id)
+        for delivery_id in await schedule_deliveries(session, call, CALL_ANALYSED):
+            await ctx["redis"].enqueue_job(DELIVER_JOB, delivery_id)
+
+
+async def deliver_job(ctx: dict, delivery_id: str) -> None:
+    """A failed attempt is tried again later as a new job, until the attempts run out."""
+    retry_in = await deliver(ctx["session_factory"], get_settings(), ctx["http"], delivery_id)
+    if retry_in is not None:
+        await ctx["redis"].enqueue_job(
+            DELIVER_JOB, delivery_id, _defer_by=timedelta(seconds=retry_in)
+        )
 
 
 def dialler_seconds() -> set[int]:
@@ -59,7 +79,7 @@ def dialler_seconds() -> set[int]:
 
 
 class WorkerSettings:
-    functions = [ingest_document_job, analyse_call_job]
+    functions = [ingest_document_job, analyse_call_job, deliver_job]
     # unique: one dialler pass at a time, even with several workers.
     cron_jobs = [cron(dial_campaigns_job, second=dialler_seconds(), unique=True)]
     on_startup = startup

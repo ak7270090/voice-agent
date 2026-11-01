@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import create_async_engine
 
+from studio_api.after_call.router import router as after_call_router
 from studio_api.agents.router import router as agents_router
 from studio_api.agents.router import runtime_router as agents_runtime_router
 from studio_api.calls.router import router as calls_router
@@ -77,6 +78,7 @@ def create_app() -> FastAPI:
         agents_runtime_router,
         calls_router,
         calls_runtime_router,
+        after_call_router,
         knowledge_router,
         knowledge_runtime_router,
         flows_router,

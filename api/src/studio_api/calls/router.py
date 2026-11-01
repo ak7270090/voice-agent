@@ -3,9 +3,11 @@ from urllib.parse import quote
 
 from fastapi import APIRouter, HTTPException, Query, Request, status
 
+from studio_api.after_call.constants import CALL_ANALYSED, CALL_ENDED, DELIVER_JOB
+from studio_api.after_call.service import schedule_deliveries
 from studio_api.agents.service import AgentNotFoundError
 from studio_api.calls import service
-from studio_api.calls.constants import ANALYSIS_PENDING
+from studio_api.calls.constants import ANALYSIS_PENDING, ENDED_STATUS
 from studio_api.calls.models import Call
 from studio_api.calls.schemas import CallEnd, CallRead, CallStart, Metrics
 from studio_api.config import Settings, SettingsDep
@@ -99,9 +101,18 @@ async def end_call(
     jobs: JobQueueDep,
 ) -> CallRead:
     try:
+        first_end = (await service.get_call(session, call_id)).status != ENDED_STATUS
         call = await service.end_call(session, call_id, body, settings)
     except service.CallNotFoundError as error:
         raise call_not_found(call_id) from error
     if call.analysis_status == ANALYSIS_PENDING:
         await jobs.enqueue(ANALYSE_CALL_JOB, call.id)
+    if first_end:
+        # A call with nothing to analyse is final now: its "analysed" actions go too.
+        events = [CALL_ENDED] + (
+            [] if call.analysis_status == ANALYSIS_PENDING else [CALL_ANALYSED]
+        )
+        for event in events:
+            for delivery_id in await schedule_deliveries(session, call, event):
+                await jobs.enqueue(DELIVER_JOB, delivery_id)
     return read(call, request, settings)

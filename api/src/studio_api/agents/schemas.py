@@ -2,6 +2,7 @@ from typing import Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from studio_api.after_call.schemas import AfterCallAction
 from studio_api.agents.constants import AGENT_STATUSES, ANALYSIS_FIELD_TYPES, CHOICE_FIELD
 from studio_api.database import UtcDateTime
 from studio_api.flows.schemas import Flow, Identifier
@@ -44,6 +45,7 @@ class AgentFields(BaseModel):
     analysis_fields: list[AnalysisField] = []
     # When a call counts as successful, in plain words; empty: the analysis judges by the goal.
     success_rule: str = ""
+    after_call_actions: list[AfterCallAction] = []
 
     @model_validator(mode="after")
     def every_language_has_voice_settings(self) -> Self:
@@ -70,6 +72,7 @@ class AgentUpdate(BaseModel):
     knowledge_base_ids: list[str] | None = None
     analysis_fields: list[AnalysisField] | None = None
     success_rule: str | None = None
+    after_call_actions: list[AfterCallAction] | None = None
 
 
 class AgentRead(AgentFields):

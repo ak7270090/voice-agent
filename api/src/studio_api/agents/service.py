@@ -6,6 +6,7 @@ from studio_api.agents.schemas import AgentFields, AgentTemplate, AgentUpdate
 from studio_api.flows.schemas import Flow
 from studio_api.knowledge.models import KnowledgeBase
 from studio_api.knowledge.service import KnowledgeBaseNotFoundError
+from studio_api.secrets.service import secret_names
 
 
 class AgentNotFoundError(LookupError):
@@ -14,6 +15,17 @@ class AgentNotFoundError(LookupError):
 
 class TemplateNotFoundError(LookupError):
     pass
+
+
+class SecretsNotSavedError(LookupError):
+    """After-call actions name secrets that are not stored."""
+
+
+async def check_action_secrets(session: AsyncSession, actions: list[dict]) -> None:
+    missing = {action["secret"] for action in actions if action.get("secret")}
+    missing -= await secret_names(session)
+    if missing:
+        raise SecretsNotSavedError(", ".join(sorted(missing)))
 
 
 async def list_agents(session: AsyncSession) -> list[Agent]:
@@ -34,6 +46,7 @@ async def create_agent(
     template: str | None = None,
     flow: Flow | None = None,
 ) -> Agent:
+    await check_action_secrets(session, fields.model_dump()["after_call_actions"])
     agent = Agent(
         **fields.model_dump(),
         template=template,
@@ -64,6 +77,8 @@ async def update_agent(session: AsyncSession, agent_id: str, changes: AgentUpdat
     knowledge_base_ids = changed.pop("knowledge_base_ids", None)
     current = AgentFields.model_validate(agent, from_attributes=True).model_dump()
     checked = AgentFields.model_validate({**current, **changed}).model_dump()
+    if "after_call_actions" in changed:
+        await check_action_secrets(session, checked["after_call_actions"])
     for field, value in changed.items():
         setattr(agent, field, checked.get(field, value))
     if knowledge_base_ids is not None:

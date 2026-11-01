@@ -42,9 +42,18 @@ async def list_agents(session: SessionDep) -> list[AgentRead]:
     return [AgentRead.model_validate(agent) for agent in await service.list_agents(session)]
 
 
+def secrets_not_saved(error: service.SecretsNotSavedError) -> HTTPException:
+    return HTTPException(
+        status.HTTP_422_UNPROCESSABLE_ENTITY, f"secrets not saved: {error} (Settings, Secrets)"
+    )
+
+
 @router.post("/agents", status_code=status.HTTP_201_CREATED)
 async def create_agent(body: AgentCreate, session: SessionDep) -> AgentRead:
-    return AgentRead.model_validate(await service.create_agent(session, body))
+    try:
+        return AgentRead.model_validate(await service.create_agent(session, body))
+    except service.SecretsNotSavedError as error:
+        raise secrets_not_saved(error) from error
 
 
 @router.post("/agents/from-template", status_code=status.HTTP_201_CREATED)
@@ -78,6 +87,8 @@ async def update_agent(agent_id: str, body: AgentUpdate, session: SessionDep) ->
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY, f"knowledge base {error} not found"
         ) from error
+    except service.SecretsNotSavedError as error:
+        raise secrets_not_saved(error) from error
     except ValidationError as error:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY,

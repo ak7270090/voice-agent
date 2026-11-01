@@ -130,12 +130,13 @@ async def run_analysis(
     settings: Settings,
     call_id: str,
     model_factory: ModelFactory = create_analysis_model,
-) -> None:
-    """The background job. A failure is recorded on the call rather than retried forever."""
+) -> bool:
+    """The background job. A failure is recorded on the call rather than retried forever.
+    True when this run settled the analysis (done or failed); False if there was none to do."""
     async with session_factory() as session:
         call = await session.get(Call, call_id)
         if call is None or call.analysis_status != ANALYSIS_PENDING:
-            return
+            return False
         agent = await session.get(Agent, call.agent_id)
         specs = [AnalysisField.model_validate(spec) for spec in agent.analysis_fields]
         try:
@@ -147,3 +148,4 @@ async def run_analysis(
             logger.exception("post-call analysis failed for call %s", call_id)
             call.analysis_status = ANALYSIS_FAILED
         await session.commit()
+    return True

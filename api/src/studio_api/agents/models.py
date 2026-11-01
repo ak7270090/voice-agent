@@ -36,6 +36,8 @@ class Agent(Base):
     # Post-call analysis: [{"name", "type", "description", "choices"}] and a success rule.
     analysis_fields: Mapped[list[dict]] = mapped_column(JSON, default=list)
     success_rule: Mapped[str] = mapped_column(Text, default="")
+    # Where each call's result goes: [{"id", "kind", "event", "url", "secret", ...}].
+    after_call_actions: Mapped[list[dict]] = mapped_column(JSON, default=list)
     # The flow being edited, and the one phone calls run (None: a prompt-only agent).
     flow: Mapped[dict | None] = mapped_column(JSON)
     published_flow: Mapped[dict | None] = mapped_column(JSON)
