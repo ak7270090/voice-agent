@@ -33,7 +33,6 @@ export type ChatMessage = {
   id: string;
   speaker: "agent" | "tester";
   text: string;
-  via?: "typed" | "said";
   interim: boolean;
 };
 
@@ -52,7 +51,16 @@ export function useBrowserCall(agentId: string) {
   const upsertMessage = useCallback((message: ChatMessage) => {
     setMessages((current) => {
       const index = current.findIndex((existing) => existing.id === message.id);
-      if (index === -1) return [...current, message];
+      if (index === -1) {
+        // Turning the mic on speaks the greeting that was only shown so far: the same words
+        // again, so no second bubble. A new reply shows as soon as its words differ.
+        const last = current[current.length - 1];
+        const repeat =
+          message.speaker === "agent" &&
+          last?.speaker === "agent" &&
+          last.text.startsWith(message.text);
+        return repeat ? current : [...current, message];
+      }
       const next = [...current];
       next[index] = message;
       return next;
@@ -68,15 +76,14 @@ export function useBrowserCall(agentId: string) {
       const fromTester = sender.identity === room?.localParticipant.identity;
       const final = reader.info.attributes?.[FINAL_ATTRIBUTE] === "true";
       const speaker = fromTester ? "tester" : "agent";
-      const via = fromTester ? "said" : undefined;
       let text = "";
       try {
         for await (const chunk of reader) {
           text += chunk;
-          upsertMessage({ id, speaker, text, via, interim: fromTester && !final });
+          upsertMessage({ id, speaker, text, interim: fromTester && !final });
         }
       } finally {
-        upsertMessage({ id, speaker, text, via, interim: false });
+        upsertMessage({ id, speaker, text, interim: false });
       }
     },
     [upsertMessage],
@@ -152,7 +159,6 @@ export function useBrowserCall(agentId: string) {
         id: crypto.randomUUID(),
         speaker: "tester",
         text: text.trim(),
-        via: "typed",
         interim: false,
       });
       await room.localParticipant.sendText(text.trim(), { topic: CHAT_TOPIC });

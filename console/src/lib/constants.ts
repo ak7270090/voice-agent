@@ -51,6 +51,7 @@ export const STT_CHOICES = [
 ];
 
 export const TEMPLATE_STYLES: Record<string, { icon: string; tint: string }> = {
+  blank: { icon: "＋", tint: "bg-slate-100 text-slate-700" },
   "clinic-booking": { icon: "✚", tint: "bg-brand-50 text-brand-600" },
   "clinic-booking-calcom": { icon: "◷", tint: "bg-emerald-50 text-emerald-600" },
   "appointment-reminder": { icon: "⏰", tint: "bg-sky-50 text-sky-600" },

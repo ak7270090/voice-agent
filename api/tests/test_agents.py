@@ -155,3 +155,12 @@ async def test_runtime_endpoints_reject_a_missing_or_wrong_token(client):
 
     assert (await client.get(path)).status_code == 401
     assert (await client.get(path, headers={"Authorization": "Bearer wrong"})).status_code == 401
+
+
+async def test_starting_from_scratch_gives_an_agent_with_no_flow(client):
+    response = await client.post("/agents/from-template", json={"template_id": "blank"})
+
+    agent = response.json()
+    assert response.status_code == 201
+    assert agent["has_flow"] is False
+    assert agent["greeting"] == "Hello, how can I help you today?"

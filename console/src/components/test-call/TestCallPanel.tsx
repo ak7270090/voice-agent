@@ -98,7 +98,6 @@ export function TestCallPanel({
               message.interim && "opacity-60",
             )}
           >
-            {message.via === "said" && <span className="mr-1 text-[10px] opacity-70">said</span>}
             {message.text}
           </div>
         ))}

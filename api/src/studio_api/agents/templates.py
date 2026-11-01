@@ -10,6 +10,8 @@ from studio_api.flows.templates import (
     calcom_clinic_settings,
 )
 
+BLANK_INSTRUCTIONS = "You answer phone calls for the business. Be warm and brief."
+
 CLINIC_BOOKING_INSTRUCTIONS = """You are the receptionist of City Hospital.
 Help callers book, move or cancel an appointment, and answer questions about the hospital.
 Be warm and brief."""
@@ -85,6 +87,17 @@ def build_templates(settings: Settings) -> list[AgentTemplate]:
         )
 
     return [
+        AgentTemplate(
+            id="blank",
+            name="Start from scratch",
+            summary="An empty agent: write what it says and draw its conversation yourself.",
+            channel_label="Any",
+            fields=fields(
+                "New agent",
+                BLANK_INSTRUCTIONS,
+                "Hello, how can I help you today?",
+            ),
+        ),
         AgentTemplate(
             id="clinic-booking",
             name="Clinic booking",
