@@ -685,6 +685,17 @@ h1 {
   font-weight: 700;
 }
 
+.app-mark svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Brands whose mark is their name read better wider. */
+.app-mark svg.wordmark {
+  width: 36px;
+  height: 36px;
+}
+
 .app b {
   display: block;
   font-size: 15px;
