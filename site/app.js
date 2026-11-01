@@ -31,8 +31,8 @@ const DEMOS = [
   {
     id: "build",
     tab: "Build an agent",
-    title: "Your agent, ready in minutes",
-    text: "Start from a template, change what it says, test it by talking to it, and go live.",
+    title: "Build an agent from scratch",
+    text: "Give it a name and a job, draw the one step it needs, say how the call ends, then publish and test it.",
     video: "media/build-agent.mp4",
     poster: "media/build-agent.jpg",
   },
