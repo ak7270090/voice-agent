@@ -13,12 +13,14 @@ const FIELD_TYPES: FieldType[] = ["text", "name", "number", "date", "time", "yes
 type Props = {
   node: CanvasNode;
   toolNodes: CanvasNode[];
+  // Every field the flow's steps collect, for tools that read one.
+  fieldNames: string[];
   onChange: (data: FlowNodeData) => void;
   onDelete: () => void;
   onClose: () => void;
 };
 
-export function NodePanel({ node, toolNodes, onChange, onDelete, onClose }: Props) {
+export function NodePanel({ node, toolNodes, fieldNames, onChange, onDelete, onClose }: Props) {
   const { nodeType, data } = node.data;
   const set = (changes: Partial<FlowNodeData>) => onChange({ ...data, ...changes });
 
@@ -114,7 +116,9 @@ export function NodePanel({ node, toolNodes, onChange, onDelete, onClose }: Prop
         </>
       )}
 
-      {nodeType === "tool" && <ToolSettings nodeId={node.id} data={data} set={set} />}
+      {nodeType === "tool" && (
+        <ToolSettings nodeId={node.id} data={data} fieldNames={fieldNames} set={set} />
+      )}
 
       {nodeType === "end" && (
         <>

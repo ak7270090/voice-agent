@@ -6,7 +6,9 @@ import { AfterCallSettings } from "@/components/agents/AfterCallSettings";
 import { AnalysisSettings } from "@/components/agents/AnalysisSettings";
 import { Button, Card } from "@/components/ui/primitives";
 import type { Agent, AgentUpdate, KnowledgeBase } from "@/lib/api";
-import { STT_CHOICES, VOICE_CHOICES } from "@/lib/constants";
+import { LLM_CHOICES, STT_CHOICES, VOICE_CHOICES } from "@/lib/constants";
+
+const OTHER_MODEL = "other";
 
 const voiceKey = (ttsModel: string, voice: string) => `${ttsModel}|${voice}`;
 
@@ -41,6 +43,9 @@ export function AgentEditor({
   const [voicemailMessage, setVoicemailMessage] = useState(agent.voicemail_message);
   const [instructions, setInstructions] = useState(agent.instructions);
   const [llmModel, setLlmModel] = useState(agent.llm_model);
+  const [otherModel, setOtherModel] = useState(
+    !LLM_CHOICES.some((choice) => choice.llm_model === agent.llm_model),
+  );
   const speech = agent.language_settings[language];
   const [voiceChoice, setVoiceChoice] = useState(voiceKey(speech.tts_model, speech.voice));
   const [sttModel, setSttModel] = useState(speech.stt_model);
@@ -78,12 +83,34 @@ export function AgentEditor({
           <Field label="Name">
             <input className={INPUT_CLASS} value={name} onChange={(e) => setName(e.target.value)} />
           </Field>
-          <Field label="LLM" hint="LangChain model string, e.g. openai:gpt-5.4-mini">
-            <input
+          <Field
+            label="Language model"
+            hint={otherModel ? "Any LangChain model string, e.g. groq:llama-3.3-70b" : undefined}
+          >
+            <select
               className={INPUT_CLASS}
-              value={llmModel}
-              onChange={(e) => setLlmModel(e.target.value)}
-            />
+              value={otherModel ? OTHER_MODEL : llmModel}
+              onChange={(e) => {
+                const choice = e.target.value;
+                setOtherModel(choice === OTHER_MODEL);
+                if (choice !== OTHER_MODEL) setLlmModel(choice);
+              }}
+            >
+              {LLM_CHOICES.map((choice) => (
+                <option key={choice.llm_model} value={choice.llm_model}>
+                  {choice.label}
+                </option>
+              ))}
+              <option value={OTHER_MODEL}>Other model…</option>
+            </select>
+            {otherModel && (
+              <input
+                className={`${INPUT_CLASS} font-mono text-xs`}
+                value={llmModel}
+                placeholder="provider:model"
+                onChange={(e) => setLlmModel(e.target.value)}
+              />
+            )}
           </Field>
         </div>
         <Field label="Greeting" hint="The first thing the agent says">

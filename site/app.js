@@ -1,5 +1,5 @@
 // The demo player, the use-case conversations, the platform tabs, links from config.js and the
-// light / dark switch.
+// light / dark switch, and the current section in the navigation.
 
 const DEMOS = [
   {
@@ -332,8 +332,29 @@ function setUpThemes() {
   });
 }
 
+function setUpCurrentSection() {
+  const links = new Map(
+    [...document.querySelectorAll(".nav-links a")].map((link) => [link.hash.slice(1), link]),
+  );
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        links.forEach((link, id) => link.classList.toggle("current", id === entry.target.id));
+      });
+    },
+    // A section counts as current while it crosses the band just below the navigation.
+    { rootMargin: "-80px 0px -60% 0px" },
+  );
+  links.forEach((_, id) => {
+    const section = document.getElementById(id);
+    if (section) observer.observe(section);
+  });
+}
+
 setUpLinks();
 setUpThemes();
+setUpCurrentSection();
 setUpPlayer();
 setUpCases();
 setUpSteps();

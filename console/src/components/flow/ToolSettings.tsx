@@ -11,6 +11,8 @@ import {
   type ToolKind,
 } from "@/lib/api";
 
+import { TimeZoneSelect } from "@/components/ui/TimeZoneSelect";
+
 import { INPUT, JsonEditor, KeyValueEditor, Labelled, ListInput } from "./fields";
 
 const KINDS: { value: ToolKind; label: string }[] = [
@@ -32,10 +34,11 @@ export const DEFAULT_CALCOM: CalcomSettings = {
 type Props = {
   nodeId: string;
   data: FlowNodeData;
+  fieldNames: string[];
   set: (changes: Partial<FlowNodeData>) => void;
 };
 
-export function ToolSettings({ nodeId, data, set }: Props) {
+export function ToolSettings({ nodeId, data, fieldNames, set }: Props) {
   const kind = data.kind ?? "http";
   const [secretNames, setSecretNames] = useState<string[]>([]);
 
@@ -86,6 +89,7 @@ export function ToolSettings({ nodeId, data, set }: Props) {
           booking={kind === "calcom_booking"}
           settings={data.calcom ?? DEFAULT_CALCOM}
           secretNames={secretNames}
+          fieldNames={fieldNames}
           onChange={(calcom) => set({ calcom })}
         />
       )}
@@ -121,7 +125,7 @@ export function ToolSettings({ nodeId, data, set }: Props) {
   );
 }
 
-function HttpRequest({ data, set }: Omit<Props, "nodeId">) {
+function HttpRequest({ data, set }: Omit<Props, "nodeId" | "fieldNames">) {
   return (
     <>
       <div className="grid grid-cols-[90px_1fr] gap-2">
@@ -169,11 +173,13 @@ function Calcom({
   booking,
   settings,
   secretNames,
+  fieldNames,
   onChange,
 }: {
   booking: boolean;
   settings: CalcomSettings;
   secretNames: string[];
+  fieldNames: string[];
   onChange: (settings: CalcomSettings) => void;
 }) {
   const set = (changes: Partial<CalcomSettings>) => onChange({ ...settings, ...changes });
@@ -210,27 +216,27 @@ function Calcom({
       </Labelled>
       <div className="grid grid-cols-2 gap-2">
         <Labelled label="Time zone">
-          <input
+          <TimeZoneSelect
             className={INPUT}
             value={settings.time_zone}
-            onChange={(e) => set({ time_zone: e.target.value })}
+            onChange={(time_zone) => set({ time_zone })}
           />
         </Labelled>
-        <Labelled label="Field naming who" hint="e.g. doctor, stylist">
-          <input
-            className={`${INPUT} font-mono text-xs`}
+        <Labelled label="Who is booked" hint="The field that names them, e.g. doctor">
+          <FieldSelect
             value={settings.resource_field}
-            onChange={(e) => set({ resource_field: e.target.value })}
+            fieldNames={fieldNames}
+            onChange={(resource_field) => set({ resource_field })}
           />
         </Labelled>
       </div>
       {booking && (
         <div className="grid grid-cols-2 gap-2">
-          <Labelled label="Field with the person's name">
-            <input
-              className={`${INPUT} font-mono text-xs`}
+          <Labelled label="Booked under the name in">
+            <FieldSelect
               value={settings.name_field}
-              onChange={(e) => set({ name_field: e.target.value })}
+              fieldNames={fieldNames}
+              onChange={(name_field) => set({ name_field })}
             />
           </Labelled>
           <Labelled label="Attendee email" hint="Empty: the Cal.com account's own email">
@@ -299,5 +305,32 @@ function Calcom({
           : `Reads ${settings.resource_field} and day; answers free_times and next_open_days.`}
       </p>
     </>
+  );
+}
+
+/** One of the flow's fields; a field named earlier but no longer collected stays shown. */
+function FieldSelect({
+  value,
+  fieldNames,
+  onChange,
+}: {
+  value: string;
+  fieldNames: string[];
+  onChange: (name: string) => void;
+}) {
+  const names = [...new Set([value, ...fieldNames])].filter(Boolean);
+  return (
+    <select
+      className={`${INPUT} font-mono text-xs`}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    >
+      {names.map((name) => (
+        <option key={name} value={name}>
+          {name}
+          {fieldNames.includes(name) ? "" : " (not collected by any step)"}
+        </option>
+      ))}
+    </select>
   );
 }

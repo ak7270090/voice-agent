@@ -2,7 +2,13 @@ import Link from "next/link";
 
 import { Card, Chip } from "@/components/ui/primitives";
 import type { Agent, AgentTemplate } from "@/lib/api";
-import { DEFAULT_TEMPLATE_STYLE, LANGUAGE_LABELS, TEMPLATE_STYLES } from "@/lib/constants";
+import {
+  DEFAULT_TEMPLATE_STYLE,
+  LANGUAGE_LABELS,
+  llmLabel,
+  TEMPLATE_STYLES,
+  voiceLabel,
+} from "@/lib/constants";
 
 function TemplateIcon({
   templateId,
@@ -47,7 +53,7 @@ export function TemplateCard({
 }
 
 export function AgentCard({ agent }: { agent: Agent }) {
-  const voice = agent.language_settings[agent.languages[0]]?.voice;
+  const speech = agent.language_settings[agent.languages[0]];
   return (
     <Card className="flex flex-col gap-3 p-4">
       <div className="flex items-center gap-2.5">
@@ -55,7 +61,8 @@ export function AgentCard({ agent }: { agent: Agent }) {
         <div className="min-w-0">
           <div className="truncate text-sm font-semibold">{agent.name}</div>
           <div className="truncate text-[13px] text-slate-500">
-            {agent.llm_model} · voice {voice}
+            {llmLabel(agent.llm_model)} ·{" "}
+            {speech ? voiceLabel(speech.tts_model, speech.voice) : "no voice"}
           </div>
         </div>
         <span className="ml-auto">

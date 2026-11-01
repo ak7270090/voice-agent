@@ -1,3 +1,4 @@
+import { outcomeLabel } from "@/components/calls/format";
 import { CONTACT_STATUS_STYLES } from "@/components/campaigns/CampaignProgress";
 import { Card, Chip } from "@/components/ui/primitives";
 import type { CampaignContact } from "@/lib/api";
@@ -47,7 +48,11 @@ export function ContactTable({ contacts }: { contacts: CampaignContact[] }) {
                     </Chip>
                   </td>
                   <td className="px-4 py-2">
-                    {contact.outcome ? <Chip tone="brand">{contact.outcome}</Chip> : "—"}
+                    {contact.outcome ? (
+                      <Chip tone="brand">{outcomeLabel(contact.outcome)}</Chip>
+                    ) : (
+                      "—"
+                    )}
                   </td>
                   <td className="px-4 py-2 text-right tabular-nums">{contact.attempts}</td>
                   <td className="px-4 py-2 text-xs text-slate-500">

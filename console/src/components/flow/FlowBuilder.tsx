@@ -75,6 +75,9 @@ function Builder({ agent, initial }: { agent: Agent; initial: FlowDraft }) {
   const selectedNode = nodes.find((node) => node.id === selectedNodeId) ?? null;
   const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId) ?? null;
   const toolNodes = nodes.filter((node) => node.data.nodeType === "tool");
+  const fieldNames = [
+    ...new Set(nodes.flatMap((node) => (node.data.data.fields ?? []).map((field) => field.name))),
+  ].filter(Boolean);
 
   const changed = useCallback(() => setDirty(true), []);
 
@@ -309,6 +312,7 @@ function Builder({ agent, initial }: { agent: Agent; initial: FlowDraft }) {
                   key={selectedNode.id}
                   node={selectedNode}
                   toolNodes={toolNodes}
+                  fieldNames={fieldNames}
                   onChange={(data) => updateNodeData(selectedNode.id, data)}
                   onDelete={() => {
                     setNodes((current) => current.filter((n) => n.id !== selectedNode.id));

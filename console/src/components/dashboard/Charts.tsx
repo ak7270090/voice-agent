@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { outcomeLabel } from "@/components/calls/format";
 import { Card } from "@/components/ui/primitives";
 
 // One series per chart, so one hue: the console's brand colour.
@@ -77,9 +78,9 @@ export function OutcomeBars({ outcomes }: { outcomes: Record<string, number> }) 
         <li
           key={outcome}
           className="grid grid-cols-[9rem_1fr_5rem] items-center gap-3 text-xs"
-          title={`${outcome}: ${count} of ${total} calls`}
+          title={`${outcomeLabel(outcome)}: ${count} of ${total} calls`}
         >
-          <span className="truncate text-slate-600">{outcome}</span>
+          <span className="truncate text-slate-600">{outcomeLabel(outcome)}</span>
           <span className="h-3 rounded-r bg-slate-100">
             <span
               className={`block h-3 rounded-r ${BAR}`}

@@ -36,6 +36,8 @@ NO_OUTCOME = "none"
 # Numbers in this range are reserved for tests (no real line has them); others are replaced.
 TEST_NUMBER = re.compile(r"\+1500555\d{4}")
 PHONE_NUMBER = re.compile(r"\+\d{8,15}")
+LOCAL_ADDRESS = re.compile(r"https?://(localhost|127\.0\.0\.1|host\.docker\.internal)[:/]")
+EXAMPLE_WEBHOOK_URL = "https://hooks.example.com/calls"
 PRIVATE_PATTERNS = (
     re.compile(r"cal_live_\w+"),
     re.compile(r"sk-[A-Za-z0-9_-]{20,}"),
@@ -43,6 +45,7 @@ PRIVATE_PATTERNS = (
     re.compile(r"whsec_\w+"),
     re.compile(r"@gmail\.com"),
     re.compile(r"dustin", re.IGNORECASE),
+    LOCAL_ADDRESS,
 )
 
 
@@ -115,6 +118,14 @@ def metrics(calls: list[dict], names: dict[str, str], days: int) -> dict:
     }
 
 
+def public_actions(agent: dict) -> dict:
+    """Webhooks from local test runs point at a neutral address instead."""
+    for action in agent["after_call_actions"]:
+        if LOCAL_ADDRESS.match(action.get("url", "")):
+            action["url"] = EXAMPLE_WEBHOOK_URL
+    return agent
+
+
 def public_call(call: dict) -> dict:
     """No links to private dashboards (Langfuse, LiveKit), and no unended calls."""
     return {**call, "langfuse_url": None, "recording_url": None}
@@ -149,6 +160,7 @@ def main() -> int:
         return 1
     for agent in agents:
         agent["name"] = SHOWCASE_AGENTS[agent["name"]]
+        public_actions(agent)
     names = {agent["id"]: agent["name"] for agent in agents}
     shutil.rmtree(OUT, ignore_errors=True)
 

@@ -28,3 +28,9 @@ export function channelLabel(call: Call): string {
   const arrow = call.direction === "outbound" ? "to" : "from";
   return call.remote_number ? `phone ${arrow} ${call.remote_number}` : "phone";
 }
+
+/** An outcome as people read it: "reschedule_requested" → "Reschedule requested". */
+export function outcomeLabel(outcome: string): string {
+  const words = outcome.replace(/_/g, " ");
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}

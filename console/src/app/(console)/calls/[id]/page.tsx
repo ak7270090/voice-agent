@@ -12,6 +12,7 @@ import {
   formatCost,
   formatSeconds,
   offsetFromStart,
+  outcomeLabel,
 } from "@/components/calls/format";
 import { Card, Chip, PageHeader } from "@/components/ui/primitives";
 import { type Agent, type Call, getAgent, getCall } from "@/lib/api";
@@ -117,7 +118,7 @@ export default function CallPage({ params }: { params: { id: string } }) {
         <span className="font-semibold">
           {call ? new Date(call.started_at).toLocaleString() : "…"}
         </span>
-        {call?.outcome && <Chip tone="brand">{call.outcome}</Chip>}
+        {call?.outcome && <Chip tone="brand">{outcomeLabel(call.outcome)}</Chip>}
         {call && (
           <span className="ml-auto flex items-center gap-3 text-[13px]">
             {call.recording_url && (

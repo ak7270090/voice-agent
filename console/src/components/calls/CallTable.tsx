@@ -1,6 +1,12 @@
 import Link from "next/link";
 
-import { callSeconds, channelLabel, formatCost, formatSeconds } from "@/components/calls/format";
+import {
+  callSeconds,
+  channelLabel,
+  formatCost,
+  formatSeconds,
+  outcomeLabel,
+} from "@/components/calls/format";
 import { Chip } from "@/components/ui/primitives";
 import type { Call } from "@/lib/api";
 
@@ -57,7 +63,7 @@ export function CallTable({
                   live
                 </Chip>
               ) : call.outcome ? (
-                <Chip tone="brand">{call.outcome}</Chip>
+                <Chip tone="brand">{outcomeLabel(call.outcome)}</Chip>
               ) : (
                 "—"
               )}

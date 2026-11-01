@@ -4,6 +4,7 @@ import Link from "next/link";
 import { type FormEvent, type ReactNode, useState } from "react";
 
 import { Button, Card } from "@/components/ui/primitives";
+import { TimeZoneSelect } from "@/components/ui/TimeZoneSelect";
 import type { Agent, CampaignSettings, PhoneNumber } from "@/lib/api";
 
 const INPUT =
@@ -123,10 +124,10 @@ export function CampaignForm({
             />
           </Field>
           <Field label="Time zone">
-            <input
+            <TimeZoneSelect
               className={INPUT}
               value={settings.timezone}
-              onChange={(e) => set({ timezone: e.target.value })}
+              onChange={(timezone) => set({ timezone })}
             />
           </Field>
           <Field label="Calls at once" hint="LiveKit free plan: 5 sessions">

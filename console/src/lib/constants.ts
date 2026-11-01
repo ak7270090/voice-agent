@@ -15,6 +15,36 @@ export const VOICE_CHOICES = [
   })),
 ];
 
+export const voiceLabel = (ttsModel: string, voice: string) =>
+  VOICE_CHOICES.find(
+    (choice) => choice.tts_model === ttsModel && choice.voice === voice,
+  )?.label.replace(/ \(.*\)$/, "") ??
+  (voice || ttsModel);
+
+// LangChain model strings; any other one can still be typed in ("Other model").
+export const LLM_CHOICES = [
+  { label: "OpenAI GPT-5.4 mini (recommended)", llm_model: "openai:gpt-5.4-mini" },
+  { label: "OpenAI GPT-4.1", llm_model: "openai:gpt-4.1" },
+  { label: "OpenAI GPT-4.1 mini", llm_model: "openai:gpt-4.1-mini" },
+  { label: "OpenAI GPT-4.1 nano (fastest)", llm_model: "openai:gpt-4.1-nano" },
+];
+
+export const llmLabel = (model: string) =>
+  LLM_CHOICES.find((choice) => choice.llm_model === model)?.label.replace(/ \(.*\)$/, "") ?? model;
+
+export const TIME_ZONE_CHOICES = [
+  { label: "India (Asia/Kolkata)", value: "Asia/Kolkata" },
+  { label: "UAE (Asia/Dubai)", value: "Asia/Dubai" },
+  { label: "Singapore (Asia/Singapore)", value: "Asia/Singapore" },
+  { label: "UK (Europe/London)", value: "Europe/London" },
+  { label: "Central Europe (Europe/Berlin)", value: "Europe/Berlin" },
+  { label: "US Eastern (America/New_York)", value: "America/New_York" },
+  { label: "US Central (America/Chicago)", value: "America/Chicago" },
+  { label: "US Pacific (America/Los_Angeles)", value: "America/Los_Angeles" },
+  { label: "Australia Eastern (Australia/Sydney)", value: "Australia/Sydney" },
+  { label: "UTC", value: "UTC" },
+];
+
 export const STT_CHOICES = [
   { label: "Deepgram nova-3 (fastest)", stt_model: "deepgram/nova-3" },
   { label: "OpenAI gpt-4o-mini-transcribe", stt_model: "openai/gpt-4o-mini-transcribe" },
