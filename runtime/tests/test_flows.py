@@ -239,6 +239,24 @@ async def test_filling_every_field_books_after_confirmation_and_ends_with_the_bo
     assert runner.path == ["start", "greet", "collect", "confirm", "book", "booked"]
 
 
+async def test_every_tool_call_is_logged_with_who_asked_and_how_it_went():
+    runner = make_runner(FakeClinic())
+    await runner.start()
+    await runner.enter("collect")
+    await runner.save_fields(
+        {"patient_name": "Rohan Gupta", "patient_age": "34", "day": "Saturday", "time": "11"}
+    )
+    await next(t for t in runner.tools() if t.description == "Caller confirms").ainvoke({})
+
+    (booking,) = runner.tool_calls
+
+    assert booking["name"] == "book_appointment"
+    assert booking["by"] == "flow"
+    assert booking["ok"] and not booking["unavailable"]
+    assert '"booking_id": "A-1001"' in booking["result"]
+    assert booking["ms"] >= 0 and booking["at"] > 0
+
+
 async def test_a_failed_booking_goes_back_to_collecting():
     runner = make_runner(FakeClinic(booking_status=409))
     await runner.start()

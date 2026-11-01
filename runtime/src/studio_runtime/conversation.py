@@ -94,7 +94,7 @@ def create_llm(
 
 def build_transcript(history: ChatContext) -> list[TranscriptTurn]:
     return [
-        TranscriptTurn(role=item.role, text=item.text_content)
+        TranscriptTurn(role=item.role, text=item.text_content, at=item.created_at)
         for item in history.items
         if item.type == "message" and item.role in TRANSCRIPT_ROLES and item.text_content
     ]

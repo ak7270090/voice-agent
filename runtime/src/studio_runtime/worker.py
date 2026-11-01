@@ -51,6 +51,7 @@ from studio_runtime.observability import (
     CallTracing,
     LlmCallTracer,
     TurnLatencies,
+    call_usage,
     create_tracer_provider,
 )
 from studio_runtime.phone import (
@@ -210,7 +211,8 @@ async def run_call(ctx: JobContext) -> None:
     tracer_provider = ctx.proc.userdata[TRACER_PROVIDER_USERDATA_KEY]
     if tracer_provider is not None:
         ctx.add_shutdown_callback(CallTracing(tracer_provider, session_id=ctx.room.name).flush)
-    callbacks = [LlmCallTracer()]
+    llm_tracer = LlmCallTracer()
+    callbacks = [llm_tracer]
     await ctx.connect()
     # An incoming caller is already in the room; an outgoing call is rung once the session runs.
     line = PhoneLine(remote_number=metadata.dial_to)
@@ -265,6 +267,8 @@ async def run_call(ctx: JobContext) -> None:
         direction,
         line.remote_number,
         metadata.campaign_contact_id,
+        # The call's page links to LiveKit's recording of this room session.
+        await ctx.room.sid,
     )
     session = build_agent_session(
         config, language, ctx.proc.userdata[VAD_USERDATA_KEY], llm, settings
@@ -277,12 +281,14 @@ async def run_call(ctx: JobContext) -> None:
             transcript=build_transcript(session.history),
             turn_latency_ms=latencies.turns,
             interruptions=latencies.interruptions,
+            usage=call_usage(session.usage.model_usage, llm_tracer),
         )
         if runner is not None:
-            record.outcome, record.fields, record.flow_path = (
+            record.outcome, record.fields, record.flow_path, record.tool_calls = (
                 runner.outcome,
                 runner.fields,
                 runner.path,
+                runner.tool_calls,
             )
         # Ended on the phone side: nobody answered, voicemail, or the transfer.
         record.outcome = line.outcome or record.outcome

@@ -20,6 +20,7 @@ from langchain_core.outputs import LLMResult
 from langfuse import Langfuse
 from livekit.agents import ConversationItemAddedEvent
 from livekit.agents.llm import ChatMessage
+from livekit.agents.metrics import LLMModelUsage, STTModelUsage, TTSModelUsage
 from livekit.agents.telemetry import set_tracer_provider, tracer
 from opentelemetry import propagate
 from opentelemetry.sdk.trace import TracerProvider
@@ -96,6 +97,10 @@ class LlmCallTracer(BaseCallbackHandler):
 
     def __init__(self) -> None:
         self._open_spans: dict[UUID, Span] = {}
+        # The call's LLM tokens, for its cost: LiveKit's own usage counts none through the adapter.
+        self.input_tokens = 0
+        self.cached_input_tokens = 0
+        self.output_tokens = 0
 
     def on_chat_model_start(
         self,
@@ -116,6 +121,7 @@ class LlmCallTracer(BaseCallbackHandler):
         self._open_spans[run_id] = span
 
     def on_llm_end(self, response: LLMResult, *, run_id: UUID, **kwargs: Any) -> None:
+        self._count_tokens(response)
         span = self._open_spans.pop(run_id, None)
         if span is None:
             return
@@ -149,6 +155,17 @@ class LlmCallTracer(BaseCallbackHandler):
 
     def on_tool_error(self, error: BaseException, *, run_id: UUID, **kwargs: Any) -> None:
         self._end_with_error(run_id, error)
+
+    def _count_tokens(self, response: LLMResult) -> None:
+        message = (
+            getattr(response.generations[0][0], "message", None) if response.generations else None
+        )
+        usage = getattr(message, "usage_metadata", None)
+        if not usage:
+            return
+        self.input_tokens += usage["input_tokens"]
+        self.cached_input_tokens += (usage.get("input_token_details") or {}).get("cache_read", 0)
+        self.output_tokens += usage["output_tokens"]
 
     def _end_with_error(self, run_id: UUID, error: BaseException) -> None:
         span = self._open_spans.pop(run_id, None)
@@ -224,6 +241,30 @@ def llm_call_attributes(response: LLMResult) -> dict[str, str | int]:
     output = {"text": message.text, "tool_calls": tool_calls}
     attributes[LANGFUSE_OBSERVATION_OUTPUT] = json.dumps(output, ensure_ascii=False)
     return attributes
+
+
+def call_usage(model_usage: list[Any], llm: LlmCallTracer) -> dict[str, float]:
+    """What the call used, for its cost: LLM tokens (counted from LangChain), seconds of audio
+    sent to speech-to-text and characters spoken (both from LiveKit's usage), plus any LLM use
+    LiveKit counts itself (voicemail detection)."""
+    usage = {
+        "llm_input_tokens": llm.input_tokens,
+        "llm_cached_input_tokens": llm.cached_input_tokens,
+        "llm_output_tokens": llm.output_tokens,
+        "stt_seconds": 0.0,
+        "tts_characters": 0,
+    }
+    for item in model_usage:
+        if isinstance(item, STTModelUsage):
+            usage["stt_seconds"] += item.audio_duration
+        elif isinstance(item, TTSModelUsage):
+            usage["tts_characters"] += item.characters_count
+        elif isinstance(item, LLMModelUsage):
+            usage["llm_input_tokens"] += item.input_tokens
+            usage["llm_cached_input_tokens"] += item.input_cached_tokens
+            usage["llm_output_tokens"] += item.output_tokens
+    usage["stt_seconds"] = round(usage["stt_seconds"], 1)
+    return usage
 
 
 class TurnLatencies:

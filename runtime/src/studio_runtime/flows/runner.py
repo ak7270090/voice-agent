@@ -7,6 +7,7 @@ Moves between steps are made by code: the LLM picks a condition by calling its t
 import asyncio
 import json
 import re
+import time
 from collections.abc import Callable, Coroutine
 from datetime import date
 from typing import Any, TypeVar
@@ -55,6 +56,10 @@ MAX_AUTOMATIC_MOVES = 20
 MOVED_BY_START = "start"
 MOVED_BY_LLM = "llm"
 MOVED_BY_CODE = "code"
+# Who started a tool call, in the call record: a tool node on the path, or the LLM.
+CALLED_BY_FLOW = "flow"
+CALLED_BY_LLM = "llm"
+MAX_LOGGED_RESULT_CHARS = 500
 
 ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 
@@ -122,6 +127,8 @@ class FlowRunner:
         self._on_change = on_change
         # Known before the first step (the caller's number): tools use them like fields.
         self.fields: dict[str, Any] = dict(call_values or {})
+        # Every tool call, in order, for the call record.
+        self.tool_calls: list[dict[str, Any]] = []
         self.results: dict[str, Any] = {}
         self.last_result: tuple[str, Any] | None = None
         self._last_result_for_llm: tuple[str, Any] | None = None
@@ -227,9 +234,7 @@ class FlowRunner:
         """A tool node on the path runs without the LLM, so it gets its tool span here."""
         with flow_span(node.data.name, self.fields) as span:
             span.set_attribute(LANGFUSE_OBSERVATION_TYPE, TOOL_OBSERVATION)
-            result = await call_tool(
-                self._http, node.data, self.fields, self._idempotency_key(node)
-            )
+            result = await self._timed_call(node, self.fields, CALLED_BY_FLOW)
             set_span_output(span, {"ok": result.ok, "result": result.data})
         self._record(node, result)
         wanted = SUCCESS_EDGE if result.ok else FAILURE_EDGE
@@ -441,9 +446,25 @@ class FlowRunner:
         return StructuredTool.from_function(coroutine=move, name=name, description=condition)
 
     async def _call_and_record(self, node: ToolNode, given: dict[str, Any]) -> ToolResult:
-        values = {**self.fields, **given}
-        result = await call_tool(self._http, node.data, values, self._idempotency_key(node))
+        result = await self._timed_call(node, {**self.fields, **given}, CALLED_BY_LLM)
         self._record(node, result)
+        return result
+
+    async def _timed_call(self, node: ToolNode, values: dict[str, Any], by: str) -> ToolResult:
+        """Calls the tool and logs it for the call record: what ran, who asked, how it went."""
+        started_at, started = time.time(), time.perf_counter()
+        result = await call_tool(self._http, node.data, values, self._idempotency_key(node))
+        self.tool_calls.append(
+            {
+                "name": node.data.name,
+                "by": by,
+                "at": started_at,
+                "ms": round((time.perf_counter() - started) * 1000),
+                "ok": result.ok,
+                "unavailable": result.unavailable,
+                "result": json.dumps(result.data, default=str)[:MAX_LOGGED_RESULT_CHARS],
+            }
+        )
         return result
 
     def _attached_tool(self, node: ToolNode) -> BaseTool:

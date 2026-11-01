@@ -77,22 +77,25 @@ async def test_call_is_started_and_ended_with_its_transcript():
     }
     assert requests[1].url.path == "/runtime/calls/call-1/end"
     assert json.loads(requests[1].content) == {
-        "transcript": [{"role": "user", "text": "Hi"}],
+        "transcript": [{"role": "user", "text": "Hi", "at": None}],
         "outcome": "booked",
         "fields": {},
         "flow_path": [],
         "turn_latency_ms": [],
         "interruptions": 0,
+        "usage": {},
+        "tool_calls": [],
     }
 
 
 async def test_a_campaign_call_record_names_its_contact():
     client, requests = client_answering(lambda request: httpx.Response(201, json={"id": "call-2"}))
 
-    await client.start_call("agent-1", "out-1", "phone", "outbound", "+9198", "contact-1")
+    await client.start_call("agent-1", "out-1", "phone", "outbound", "+9198", "contact-1", "RM_abc")
     await client.aclose()
 
     assert json.loads(requests[0].content)["campaign_contact_id"] == "contact-1"
+    assert json.loads(requests[0].content)["room_sid"] == "RM_abc"
 
 
 async def test_the_number_dialled_says_which_agent_answers():

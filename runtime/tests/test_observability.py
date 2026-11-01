@@ -1,16 +1,20 @@
 from types import SimpleNamespace
+from uuid import uuid4
 
 import httpx
 import pytest
 from langchain_core.messages import AIMessage
 from langchain_core.outputs import ChatGeneration, LLMResult
 from livekit.agents.llm import ChatMessage
+from livekit.agents.metrics import LLMModelUsage, STTModelUsage, TTSModelUsage
 from livekit.agents.telemetry import tracer
 
 from studio_runtime.config import Settings
 from studio_runtime.observability import (
+    LlmCallTracer,
     TurnLatencies,
     add_trace_context,
+    call_usage,
     create_tracer_provider,
     llm_call_attributes,
 )
@@ -41,6 +45,38 @@ def test_llm_call_is_priced_from_its_model_and_usage():
         '{"input": 300, "input_cached_tokens": 600, "output": 20}'
     )
     assert '"save_fields"' in attributes["langfuse.observation.output"]
+
+
+def test_a_calls_usage_adds_langchain_tokens_to_livekits_speech_and_voice_counts():
+    tracer_ = LlmCallTracer()
+    for tokens in (900, 400):
+        message = AIMessage(
+            content="Hi",
+            usage_metadata={
+                "input_tokens": tokens,
+                "output_tokens": 10,
+                "total_tokens": tokens + 10,
+                "input_token_details": {"cache_read": 100},
+            },
+        )
+        tracer_.on_llm_end(
+            LLMResult(generations=[[ChatGeneration(message=message)]]), run_id=uuid4()
+        )
+    model_usage = [
+        STTModelUsage(provider="deepgram", model="nova-3", audio_duration=61.24),
+        TTSModelUsage(provider="deepgram", model="aura-2", characters_count=420),
+        LLMModelUsage(provider="livekit", model="gpt-4.1-mini", input_tokens=50, output_tokens=5),
+    ]
+
+    usage = call_usage(model_usage, tracer_)
+
+    assert usage == {
+        "llm_input_tokens": 1350,
+        "llm_cached_input_tokens": 200,
+        "llm_output_tokens": 25,
+        "stt_seconds": 61.2,
+        "tts_characters": 420,
+    }
 
 
 def test_agent_reply_latencies_are_kept_in_milliseconds():

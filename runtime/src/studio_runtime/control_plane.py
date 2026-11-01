@@ -40,6 +40,8 @@ class AgentConfig(BaseModel):
 class TranscriptTurn(BaseModel):
     role: str
     text: str
+    # When it was said (Unix seconds).
+    at: float | None = None
 
 
 class CallRecord(BaseModel):
@@ -50,6 +52,9 @@ class CallRecord(BaseModel):
     turn_latency_ms: list[dict[str, float]] = []
     # Agent replies the caller talked over: a high share means turn-taking cuts in or lags.
     interruptions: int = 0
+    # Tokens, speech-to-text seconds and characters spoken; the API prices them.
+    usage: dict[str, float] = {}
+    tool_calls: list[dict[str, Any]] = []
 
 
 class PhoneNumber(BaseModel):
@@ -86,6 +91,7 @@ class ControlPlaneClient:
         direction: str = INBOUND_DIRECTION,
         remote_number: str | None = None,
         campaign_contact_id: str | None = None,
+        room_sid: str | None = None,
     ) -> str:
         call = {
             "agent_id": agent_id,
@@ -96,6 +102,8 @@ class ControlPlaneClient:
         }
         if campaign_contact_id is not None:
             call["campaign_contact_id"] = campaign_contact_id
+        if room_sid:
+            call["room_sid"] = room_sid
         response = await self._http.post("/runtime/calls", json=call)
         response.raise_for_status()
         return response.json()["id"]
