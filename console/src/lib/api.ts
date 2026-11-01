@@ -22,7 +22,40 @@ export type AgentFields = {
   language_settings: Record<string, VoiceSettings>;
   analysis_fields: AnalysisField[];
   success_rule: string;
+  after_call_actions: AfterCallAction[];
 };
+
+export type AfterCallKind = "webhook" | "slack" | "hubspot" | "google_sheets";
+export type AfterCallEvent = "call.ended" | "call.analysed";
+
+export type AfterCallAction = {
+  id?: string;
+  kind: AfterCallKind;
+  event: AfterCallEvent;
+  enabled: boolean;
+  url: string;
+  secret: string;
+  spreadsheet_id: string;
+  sheet_name: string;
+};
+
+export type DeliveryStatus = "pending" | "sent" | "failed" | "skipped";
+
+export type Delivery = {
+  id: string;
+  call_id: string;
+  action_id: string;
+  kind: AfterCallKind;
+  event: AfterCallEvent;
+  status: DeliveryStatus;
+  attempts: number;
+  response_status: number | null;
+  last_error: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Secret = { name: string; preview: string; created_at: string; updated_at: string };
 
 export type AnalysisFieldType = "text" | "choice" | "yes_no" | "number";
 
@@ -148,6 +181,20 @@ export const listAllCalls = (filters: CallFilters) => {
 export const getCall = (callId: string) => request<Call>(`/calls/${callId}`);
 
 export const getMetrics = (days: number) => request<Metrics>(`/metrics?days=${days}`);
+
+export const listDeliveries = (callId: string) =>
+  request<Delivery[]>(`/calls/${callId}/deliveries`);
+
+export const retryDelivery = (callId: string, deliveryId: string) =>
+  request<Delivery>(`/calls/${callId}/deliveries/${deliveryId}/retry`, { method: "POST" });
+
+export const listSecrets = () => request<Secret[]>("/secrets");
+
+export const saveSecret = (name: string, value: string) =>
+  request<Secret>(`/secrets/${name}`, { method: "PUT", body: JSON.stringify({ value }) });
+
+export const deleteSecret = (name: string) =>
+  request<void>(`/secrets/${name}`, { method: "DELETE" });
 
 export class ApiError extends Error {
   constructor(
@@ -380,12 +427,29 @@ export type StepData = {
   wait_after_enter: boolean;
 };
 
+export type ToolKind = "http" | "calcom_availability" | "calcom_booking";
+
+export type CalcomResource = { name: string; event_type_id: number | null; keywords: string[] };
+
+export type CalcomSettings = {
+  api_key_secret: string;
+  time_zone: string;
+  resources: CalcomResource[];
+  resource_field: string;
+  name_field: string;
+  attendee_email: string;
+  api_url: string;
+};
+
 export type ToolData = {
+  kind: ToolKind;
+  calcom: CalcomSettings | null;
   name: string;
   description: string;
   method: "GET" | "POST";
   url: string;
-  body: Record<string, string>;
+  headers: Record<string, string>;
+  body: Record<string, unknown>;
   say_while_running: string;
   save_to_fields: Record<string, string>;
   result_fields: string[];

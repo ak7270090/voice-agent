@@ -3,7 +3,7 @@
 import { Handle, type NodeProps, Position } from "@xyflow/react";
 import clsx from "clsx";
 
-import { type CanvasNode, NODE_META, nodeTitle } from "./flowModel";
+import { type CanvasNode, NODE_META, nodeTitle, toolLabel } from "./flowModel";
 
 const HANDLE_CLASS = "!h-2.5 !w-2.5 !border-2 !border-slate-400 !bg-white";
 
@@ -40,7 +40,7 @@ export function FlowNodeCard({ data, selected }: NodeProps<CanvasNode>) {
         </div>
         <div className="min-w-0">
           <div className="text-[10px] uppercase tracking-wider text-slate-500">
-            {data.nodeType === "tool" ? `${data.data.method ?? "GET"} · tool` : meta.label}
+            {data.nodeType === "tool" ? toolLabel(data.data) : meta.label}
             {data.data.use_knowledge ? " · knowledge" : ""}
           </div>
           <div className="truncate text-[13px] font-semibold">

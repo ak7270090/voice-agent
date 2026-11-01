@@ -41,8 +41,8 @@ export const NODE_META: Record<
     border: "border-slate-200",
   },
   tool: {
-    label: "HTTP tool",
-    hint: "Call any API",
+    label: "Tool",
+    hint: "Call an API or Cal.com",
     icon: "⇄",
     tint: "bg-sky-50 text-sky-600",
     border: "border-slate-200",
@@ -107,10 +107,13 @@ export function defaultData(type: FlowNodeType): FlowNodeData {
       };
     case "tool":
       return {
+        kind: "http",
+        calcom: null,
         name: "call_api",
         description: "",
         method: "GET",
         url: "https://",
+        headers: {},
         body: {},
         say_while_running: "",
         save_to_fields: {},
@@ -129,10 +132,21 @@ export function defaultData(type: FlowNodeType): FlowNodeData {
 
 export function nodeTitle(type: FlowNodeType, data: FlowNodeData): string {
   if (type === "step" || type === "global") return data.name || NODE_META[type].label;
-  if (type === "tool") return data.name || "HTTP tool";
+  if (type === "tool") return data.name || "Tool";
   if (type === "end") return data.outcome ? `Outcome: ${data.outcome}` : "End";
   if (type === "transfer") return data.message || "Transfer to a person";
   return "Start";
+}
+
+const TOOL_KIND_LABELS = {
+  calcom_availability: "Cal.com · free times",
+  calcom_booking: "Cal.com · book",
+} as const;
+
+/** The small label above a tool's name: its HTTP method, or which Cal.com call it makes. */
+export function toolLabel(data: FlowNodeData): string {
+  if (data.kind && data.kind !== "http") return TOOL_KIND_LABELS[data.kind];
+  return `${data.method ?? "GET"} · tool`;
 }
 
 export function edgeLabel(kind: FlowEdgeKind, condition: string): string {

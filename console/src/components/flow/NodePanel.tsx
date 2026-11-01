@@ -1,12 +1,12 @@
 "use client";
 
 import { Plus, Trash2, X } from "lucide-react";
-import { useState } from "react";
 
 import type { FieldSpec, FieldType, FlowNodeData } from "@/lib/api";
 
 import { INPUT, Labelled } from "./fields";
 import { type CanvasNode, NODE_META } from "./flowModel";
+import { ToolSettings } from "./ToolSettings";
 
 const FIELD_TYPES: FieldType[] = ["text", "name", "number", "date", "time", "yes_no", "phone"];
 
@@ -84,7 +84,7 @@ export function NodePanel({ node, toolNodes, onChange, onDelete, onClose }: Prop
           <div className="flex flex-col gap-1.5">
             <span className="text-xs font-medium text-slate-600">Tools this step may call</span>
             {toolNodes.length === 0 && (
-              <span className="text-[11px] text-slate-400">Add an HTTP tool node first.</span>
+              <span className="text-[11px] text-slate-400">Add a Tool node first.</span>
             )}
             {toolNodes.map((tool) => (
               <label key={tool.id} className="flex items-center gap-2 text-[13px]">
@@ -114,80 +114,7 @@ export function NodePanel({ node, toolNodes, onChange, onDelete, onClose }: Prop
         </>
       )}
 
-      {nodeType === "tool" && (
-        <>
-          <Labelled label="Function name" hint="lowercase_with_underscores; the LLM sees this">
-            <input
-              className={INPUT}
-              value={data.name ?? ""}
-              onChange={(e) => set({ name: e.target.value })}
-            />
-          </Labelled>
-          <Labelled label="Description" hint="When to use it and what it returns">
-            <input
-              className={INPUT}
-              value={data.description ?? ""}
-              onChange={(e) => set({ description: e.target.value })}
-            />
-          </Labelled>
-          <div className="grid grid-cols-[90px_1fr] gap-2">
-            <Labelled label="Method">
-              <select
-                className={INPUT}
-                value={data.method ?? "GET"}
-                onChange={(e) => set({ method: e.target.value as "GET" | "POST" })}
-              >
-                <option>GET</option>
-                <option>POST</option>
-              </select>
-            </Labelled>
-            <Labelled
-              label="URL"
-              hint="{field} placeholders are filled from collected fields; {caller_number} is the phone number on the other end"
-            >
-              <input
-                className={INPUT}
-                value={data.url ?? ""}
-                onChange={(e) => set({ url: e.target.value })}
-              />
-            </Labelled>
-          </div>
-          {data.method === "POST" && (
-            <KeyValueEditor
-              label="JSON body"
-              rows={data.body ?? {}}
-              onChange={(body) => set({ body })}
-            />
-          )}
-          <Labelled
-            label="Say while it runs (optional)"
-            hint="Spoken only if the call takes more than a moment"
-          >
-            <input
-              className={INPUT}
-              value={data.say_while_running ?? ""}
-              placeholder="e.g. One moment, let me check."
-              onChange={(e) => set({ say_while_running: e.target.value })}
-            />
-          </Labelled>
-          <KeyValueEditor
-            label="Save to fields (field ← path in the JSON result)"
-            rows={data.save_to_fields ?? {}}
-            onChange={(save_to_fields) => set({ save_to_fields })}
-          />
-          <Labelled
-            label="Show the LLM only (optional)"
-            hint="Paths in the JSON result, comma-separated; empty shows all of it"
-          >
-            <ListInput
-              key={node.id}
-              values={data.result_fields ?? []}
-              placeholder="e.g. doctor, free_times"
-              onChange={(result_fields) => set({ result_fields })}
-            />
-          </Labelled>
-        </>
-      )}
+      {nodeType === "tool" && <ToolSettings nodeId={node.id} data={data} set={set} />}
 
       {nodeType === "end" && (
         <>
@@ -312,78 +239,6 @@ function FieldsEditor({
         className="flex items-center gap-1 self-start text-xs font-medium text-brand-700"
       >
         <Plus size={13} /> Add field
-      </button>
-    </div>
-  );
-}
-
-/** A comma-separated list, kept as typed until the input loses focus. */
-function ListInput({
-  values,
-  placeholder,
-  onChange,
-}: {
-  values: string[];
-  placeholder: string;
-  onChange: (values: string[]) => void;
-}) {
-  const [text, setText] = useState(values.join(", "));
-  return (
-    <input
-      className={`${INPUT} font-mono text-xs`}
-      value={text}
-      placeholder={placeholder}
-      onChange={(e) => setText(e.target.value)}
-      onBlur={() =>
-        onChange(
-          text
-            .split(",")
-            .map((value) => value.trim())
-            .filter(Boolean),
-        )
-      }
-    />
-  );
-}
-
-function KeyValueEditor({
-  label,
-  rows,
-  onChange,
-}: {
-  label: string;
-  rows: Record<string, string>;
-  onChange: (b: Record<string, string>) => void;
-}) {
-  const entries = Object.entries(rows);
-  const rebuild = (rows: [string, string][]) => onChange(Object.fromEntries(rows));
-  return (
-    <div className="flex flex-col gap-1.5">
-      <span className="text-xs font-medium text-slate-600">{label}</span>
-      {entries.map(([key, value], index) => (
-        <div key={index} className="flex gap-1.5">
-          <input
-            className={`${INPUT} font-mono text-xs`}
-            value={key}
-            onChange={(e) =>
-              rebuild(entries.map((entry, i) => (i === index ? [e.target.value, entry[1]] : entry)))
-            }
-          />
-          <input
-            className={`${INPUT} font-mono text-xs`}
-            value={value}
-            onChange={(e) =>
-              rebuild(entries.map((entry, i) => (i === index ? [entry[0], e.target.value] : entry)))
-            }
-          />
-        </div>
-      ))}
-      <button
-        type="button"
-        onClick={() => rebuild([...entries, [`key_${entries.length + 1}`, ""]])}
-        className="flex items-center gap-1 self-start text-xs font-medium text-brand-700"
-      >
-        <Plus size={13} /> Add key
       </button>
     </div>
   );

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { type ReactNode, useEffect, useState } from "react";
 
 import { SuccessChip } from "@/components/calls/CallTable";
+import { Deliveries } from "@/components/calls/Deliveries";
 import {
   callSeconds,
   channelLabel,
@@ -225,6 +226,7 @@ export default function CallPage({ params }: { params: { id: string } }) {
                 </Section>
               </div>
               <div className="flex flex-col gap-4">
+                <Deliveries callId={call.id} />
                 <Section title="Cost">
                   <dl className="grid grid-cols-[1fr_max-content] gap-y-1">
                     {COST_PARTS.map(([key, label]) => (

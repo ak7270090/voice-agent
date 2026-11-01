@@ -2,6 +2,7 @@
 
 import { type FormEvent, type ReactNode, useState } from "react";
 
+import { AfterCallSettings } from "@/components/agents/AfterCallSettings";
 import { AnalysisSettings } from "@/components/agents/AnalysisSettings";
 import { Button, Card } from "@/components/ui/primitives";
 import type { Agent, AgentUpdate, KnowledgeBase } from "@/lib/api";
@@ -45,6 +46,7 @@ export function AgentEditor({
   const [sttModel, setSttModel] = useState(speech.stt_model);
   const [analysisFields, setAnalysisFields] = useState(agent.analysis_fields);
   const [successRule, setSuccessRule] = useState(agent.success_rule);
+  const [afterCallActions, setAfterCallActions] = useState(agent.after_call_actions);
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -57,6 +59,7 @@ export function AgentEditor({
       knowledge_base_ids: linkedBases,
       analysis_fields: analysisFields,
       success_rule: successRule,
+      after_call_actions: afterCallActions,
       language_settings: {
         ...agent.language_settings,
         [language]: {
@@ -174,6 +177,7 @@ export function AgentEditor({
           onFieldsChange={setAnalysisFields}
           onSuccessRuleChange={setSuccessRule}
         />
+        <AfterCallSettings actions={afterCallActions} onChange={setAfterCallActions} />
         <div className="flex justify-end">
           <Button type="submit" variant="primary" disabled={saving}>
             {saving ? "Saving…" : "Save changes"}
