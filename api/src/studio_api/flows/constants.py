@@ -24,6 +24,19 @@ ALLOWED_EDGE_KINDS = {
 FIELD_TYPES = ("text", "name", "number", "date", "time", "yes_no", "phone")
 HTTP_METHODS = ("GET", "POST")
 
+# Tool kinds: any HTTP API, or a ready-made Cal.com call (free times; book) that answers in the
+# same shape as the demo clinic, so a booking flow works with either.
+HTTP_TOOL = "http"
+CALCOM_AVAILABILITY_TOOL = "calcom_availability"
+CALCOM_BOOKING_TOOL = "calcom_booking"
+TOOL_KINDS = (HTTP_TOOL, CALCOM_AVAILABILITY_TOOL, CALCOM_BOOKING_TOOL)
+CALCOM_TOOLS = (CALCOM_AVAILABILITY_TOOL, CALCOM_BOOKING_TOOL)
+CALCOM_API_URL = "https://api.cal.com/v2"
+# The fields a Cal.com tool reads, besides the resource (doctor) and the name it books under.
+DAY_FIELD = "day"
+TIME_FIELD = "time"
+EMAIL_FIELD = "email"
+
 IDENTIFIER_PATTERN = r"^[a-z][a-z0-9_]*$"
 # {field} placeholders in tool URLs, headers, bodies and end messages.
 PLACEHOLDER_PATTERN = r"\{([a-z][a-z0-9_]*)\}"

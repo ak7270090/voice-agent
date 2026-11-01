@@ -23,11 +23,30 @@ class StepData(BaseModel):
     wait_after_enter: bool = False
 
 
+class CalcomResource(BaseModel):
+    name: str
+    event_type_id: int | None = None
+    keywords: list[str] = []
+
+
+class CalcomSettings(BaseModel):
+    api_key_secret: str = ""
+    time_zone: str = "Asia/Kolkata"
+    resources: list[CalcomResource] = []
+    resource_field: str = "doctor"
+    name_field: str = "patient_name"
+    # Empty: the Cal.com account's own email.
+    attendee_email: str = ""
+    api_url: str = "https://api.cal.com/v2"
+
+
 class ToolData(BaseModel):
+    kind: str = "http"
     name: str
     description: str = ""
+    calcom: CalcomSettings | None = None
     method: str = "GET"
-    url: str
+    url: str = ""
     headers: dict[str, str] = {}
     body: dict[str, Any] = {}
     say_while_running: str = ""

@@ -3,21 +3,35 @@
 import re
 from collections import defaultdict
 from typing import Any
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from studio_api.flows.constants import (
     ALLOWED_EDGE_KINDS,
+    CALCOM_BOOKING_TOOL,
+    CALCOM_TOOLS,
     CALL_VALUES,
     CONDITION_EDGE,
+    DAY_FIELD,
     FIELDS_COMPLETE_EDGE,
     GLOBAL_NODE,
+    HTTP_TOOL,
     PLACEHOLDER_PATTERN,
     SECRET_PLACEHOLDER_PATTERN,
     START_NODE,
     STEP_NODE,
+    TIME_FIELD,
     TOOL_NODE,
     TRANSFER_DESTINATION_PATTERN,
 )
-from studio_api.flows.schemas import Flow, FlowIssue, StepNode, ToolData, ToolNode, TransferNode
+from studio_api.flows.schemas import (
+    CalcomSettings,
+    Flow,
+    FlowIssue,
+    StepNode,
+    ToolData,
+    ToolNode,
+    TransferNode,
+)
 
 PLACEHOLDER = re.compile(PLACEHOLDER_PATTERN)
 SECRET_PLACEHOLDER = re.compile(SECRET_PLACEHOLDER_PATTERN)
@@ -44,14 +58,31 @@ def tool_templates(tool: ToolData) -> list[str]:
     return [tool.url, *tool.headers.values(), *strings_in(tool.body)]
 
 
+def tool_inputs(tool: ToolData) -> set[str]:
+    """The fields a tool reads: its placeholders, or a Cal.com tool's fixed inputs."""
+    if tool.kind == HTTP_TOOL:
+        return {name for text in tool_templates(tool) for name in PLACEHOLDER.findall(text)}
+    calcom = tool.calcom or CalcomSettings()
+    inputs = {calcom.resource_field, DAY_FIELD}
+    if tool.kind == CALCOM_BOOKING_TOOL:
+        inputs |= {TIME_FIELD, calcom.name_field}
+    return inputs
+
+
+def tool_secrets(tool: ToolData) -> set[str]:
+    names = {name for text in tool_templates(tool) for name in SECRET_PLACEHOLDER.findall(text)}
+    if tool.kind in CALCOM_TOOLS and tool.calcom and tool.calcom.api_key_secret:
+        names.add(tool.calcom.api_key_secret)
+    return names
+
+
 def referenced_secrets(flow: Flow) -> set[str]:
     """The secrets the flow's tools send: the runtime gets these values, and only these."""
     return {
         name
         for node in flow.nodes
         if isinstance(node, ToolNode)
-        for text in tool_templates(node.data)
-        for name in SECRET_PLACEHOLDER.findall(text)
+        for name in tool_secrets(node.data)
     }
 
 
@@ -134,14 +165,13 @@ def _check_steps_and_tools(flow: Flow, nodes: dict) -> list[FlowIssue]:
                     issues.append(FlowIssue(message=message, node_id=node.id))
         if isinstance(node, ToolNode):
             tool_names[node.data.name] += 1
-            if not node.data.url.startswith(("http://", "https://")):
+            if node.data.kind == HTTP_TOOL and not node.data.url.startswith(
+                ("http://", "https://")
+            ):
                 issues.append(FlowIssue(message="Tool needs an http(s) URL", node_id=node.id))
-            templates = tool_templates(node.data)
-            unknown = (
-                {name for text in templates for name in PLACEHOLDER.findall(text)}
-                - field_names
-                - set(CALL_VALUES)
-            )
+            if node.data.kind in CALCOM_TOOLS:
+                issues += _check_calcom(node)
+            unknown = tool_inputs(node.data) - field_names - set(CALL_VALUES)
             if unknown and not _attached_anywhere(flow, node.id):
                 message = f"Placeholders {sorted(unknown)} are not fields of any step"
                 issues.append(FlowIssue(message=message, node_id=node.id))
@@ -158,6 +188,28 @@ def _check_steps_and_tools(flow: Flow, nodes: dict) -> list[FlowIssue]:
         if count > 1:
             issues.append(FlowIssue(message=f"Two tools are named '{name}'"))
     return issues
+
+
+def _check_calcom(node: ToolNode) -> list[FlowIssue]:
+    calcom = node.data.calcom
+    if calcom is None:
+        return [FlowIssue(message="Set up the Cal.com settings", node_id=node.id)]
+    messages = []
+    if not calcom.api_key_secret:
+        messages.append("Choose the secret that holds the Cal.com API key")
+    if not calcom.resources:
+        messages.append(f"Add at least one {calcom.resource_field} and its Cal.com event type")
+    names = [resource.name.lower() for resource in calcom.resources]
+    if len(names) != len(set(names)):
+        messages.append(f"Two entries share a {calcom.resource_field} name")
+    missing = [resource.name for resource in calcom.resources if resource.event_type_id is None]
+    if missing:
+        messages.append(f"Set the Cal.com event type for {', '.join(missing)}")
+    try:
+        ZoneInfo(calcom.time_zone)
+    except (ZoneInfoNotFoundError, ValueError):
+        messages.append(f"'{calcom.time_zone}' is not a time zone, e.g. Asia/Kolkata")
+    return [FlowIssue(message=message, node_id=node.id) for message in messages]
 
 
 def _attached_anywhere(flow: Flow, tool_id: str) -> bool:

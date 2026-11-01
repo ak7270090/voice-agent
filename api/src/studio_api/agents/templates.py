@@ -7,6 +7,7 @@ from studio_api.flows.templates import (
     build_clinic_booking_flow,
     build_lead_qualifier_flow,
     build_reminder_flow,
+    calcom_clinic_settings,
 )
 
 CLINIC_BOOKING_INSTRUCTIONS = """You are the receptionist of City Hospital.
@@ -96,6 +97,22 @@ def build_templates(settings: Settings) -> list[AgentTemplate]:
                 CLINIC_ANALYSIS,
             ),
             flow=build_clinic_booking_flow(settings.demo_clinic_api_url),
+        ),
+        AgentTemplate(
+            id="clinic-booking-calcom",
+            name="Clinic booking (Cal.com)",
+            summary="Books into each doctor's Cal.com calendar: save your Cal.com key as "
+            "CALCOM_KEY, then set each doctor's event type.",
+            channel_label="Inbound",
+            fields=fields(
+                "Clinic receptionist (Cal.com)",
+                CLINIC_BOOKING_INSTRUCTIONS,
+                "Welcome to City Hospital. How can I help you today?",
+                CLINIC_ANALYSIS,
+            ),
+            flow=build_clinic_booking_flow(
+                settings.demo_clinic_api_url, calcom=calcom_clinic_settings()
+            ),
         ),
         AgentTemplate(
             id="appointment-reminder",

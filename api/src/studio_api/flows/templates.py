@@ -1,7 +1,11 @@
 """Ready-made flows for the agent templates. The clinic one rebuilds clinic-voice-agent's
 booking form as nodes: collect, check free times, read back, book, give the booking ID."""
 
+from studio_api.demo_clinic.constants import DOCTORS
+from studio_api.flows.constants import CALCOM_AVAILABILITY_TOOL, CALCOM_BOOKING_TOOL
 from studio_api.flows.schemas import (
+    CalcomResource,
+    CalcomSettings,
     EndData,
     EndNode,
     FieldSpec,
@@ -38,7 +42,58 @@ def edge(source: str, target: str, kind: str = "condition", condition: str = "")
     )
 
 
-def build_clinic_booking_flow(clinic_api_url: str) -> Flow:
+def calcom_clinic_settings() -> CalcomSettings:
+    """The demo clinic's doctors as Cal.com resources; each event type ID is set by the user
+    (it is their own Cal.com account), so a new agent shows that as an issue to fix."""
+    return CalcomSettings(
+        api_key_secret="CALCOM_KEY",
+        resources=[
+            CalcomResource(name=doctor.name, keywords=[doctor.speciality, *doctor.keywords])
+            for doctor in DOCTORS
+        ],
+    )
+
+
+def availability_tool(clinic_api_url: str, calcom: CalcomSettings | None) -> ToolData:
+    common = {
+        "name": "check_availability",
+        "description": "Free times for a doctor (name or speciality) on a day (YYYY-MM-DD).",
+        "say_while_running": "One moment, let me check.",
+        # The clinic's own spelling, and the day it checked (a new day the caller picked
+        # replaces the old one).
+        "save_to_fields": {"doctor": "doctor", "day": "day"},
+        "result_fields": ["doctor", "weekday", "free_times", "next_open_days"],
+    }
+    if calcom is not None:
+        return ToolData(kind=CALCOM_AVAILABILITY_TOOL, calcom=calcom, **common)
+    return ToolData(
+        url=f"{clinic_api_url}/demo-clinic/availability?doctor={{doctor}}&day={{day}}", **common
+    )
+
+
+def booking_tool(clinic_api_url: str, calcom: CalcomSettings | None) -> ToolData:
+    common = {
+        "name": "book_appointment",
+        "description": "Books the appointment and returns the booking ID.",
+    }
+    if calcom is not None:
+        return ToolData(kind=CALCOM_BOOKING_TOOL, calcom=calcom, **common)
+    return ToolData(
+        method="POST",
+        url=f"{clinic_api_url}/demo-clinic/appointments",
+        body={
+            "patient_name": "{patient_name}",
+            "patient_age": "{patient_age}",
+            "doctor": "{doctor}",
+            "day": "{day}",
+            "time": "{time}",
+        },
+        **common,
+    )
+
+
+def build_clinic_booking_flow(clinic_api_url: str, calcom: CalcomSettings | None = None) -> Flow:
+    """Books through the demo clinic's API, or into Cal.com when `calcom` is given."""
     nodes = [
         StartNode(id="start", type="start", position=at(1, 0)),
         StepNode(
@@ -137,34 +192,13 @@ def build_clinic_booking_flow(clinic_api_url: str) -> Flow:
             id="check_availability",
             type="tool",
             position=at(-1, 2),
-            data=ToolData(
-                name="check_availability",
-                description="Free times for a doctor (name or speciality) on a day (YYYY-MM-DD).",
-                url=f"{clinic_api_url}/demo-clinic/availability?doctor={{doctor}}&day={{day}}",
-                say_while_running="One moment, let me check.",
-                # The clinic's own spelling, and the day it checked (a new day the caller
-                # picked replaces the old one).
-                save_to_fields={"doctor": "doctor", "day": "day"},
-                result_fields=["doctor", "weekday", "free_times", "next_open_days"],
-            ),
+            data=availability_tool(clinic_api_url, calcom),
         ),
         ToolNode(
             id="book",
             type="tool",
             position=at(0, 4),
-            data=ToolData(
-                name="book_appointment",
-                description="Books the appointment and returns the booking ID.",
-                method="POST",
-                url=f"{clinic_api_url}/demo-clinic/appointments",
-                body={
-                    "patient_name": "{patient_name}",
-                    "patient_age": "{patient_age}",
-                    "doctor": "{doctor}",
-                    "day": "{day}",
-                    "time": "{time}",
-                },
-            ),
+            data=booking_tool(clinic_api_url, calcom),
         ),
         EndNode(
             id="booked",

@@ -16,12 +16,13 @@ import httpx
 from langchain_core.tools import BaseTool, StructuredTool
 from pydantic import Field, create_model
 
-from studio_runtime.flows import prompts
+from studio_runtime.flows import calcom, prompts
 from studio_runtime.flows.http_tools import (
     MAX_TEXT_RESULT_CHARS,
     ToolResult,
     call_tool,
     fill_leniently,
+    mask_secrets,
     placeholders,
 )
 from studio_runtime.flows.schema import (
@@ -455,9 +456,15 @@ class FlowRunner:
     async def _timed_call(self, node: ToolNode, values: dict[str, Any], by: str) -> ToolResult:
         """Calls the tool and logs it for the call record: what ran, who asked, how it went."""
         started_at, started = time.time(), time.perf_counter()
-        result = await call_tool(
-            self._http, node.data, values, self._idempotency_key(node), self._secrets
-        )
+        if node.data.kind in calcom.KINDS:
+            found = await calcom.call_calcom(self._http, node.data, values, self._secrets)
+            result = ToolResult(
+                found.ok, mask_secrets(found.data, self._secrets), found.unavailable
+            )
+        else:
+            result = await call_tool(
+                self._http, node.data, values, self._idempotency_key(node), self._secrets
+            )
         self.tool_calls.append(
             {
                 "name": node.data.name,
@@ -472,7 +479,10 @@ class FlowRunner:
         return result
 
     def _attached_tool(self, node: ToolNode) -> BaseTool:
-        arguments = {name: (str | None, Field(default=None)) for name in placeholders(node.data)}
+        names = (
+            calcom.inputs(node.data) if node.data.kind in calcom.KINDS else placeholders(node.data)
+        )
+        arguments = {name: (str | None, Field(default=None)) for name in names}
         schema = create_model(f"{node.data.name}_args", **arguments)
 
         async def run(**values: Any) -> str:

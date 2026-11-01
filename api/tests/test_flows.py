@@ -7,6 +7,7 @@ from studio_api.flows.templates import (
     build_clinic_booking_flow,
     build_lead_qualifier_flow,
     build_reminder_flow,
+    calcom_clinic_settings,
 )
 from studio_api.flows.validation import validate_flow
 from tests.test_agents import create_agent
@@ -196,6 +197,58 @@ async def test_clinic_template_creates_an_agent_with_its_flow(client):
     assert response.json()["has_flow"]
     assert flow["issues"] == []
     assert get_settings().demo_clinic_api_url in str(flow["flow"])
+
+
+async def test_cal_com_clinic_template_asks_for_the_key_and_each_event_type(client):
+    response = await client.post(
+        "/agents/from-template", json={"template_id": "clinic-booking-calcom"}
+    )
+
+    draft = (await client.get(f"/agents/{response.json()['id']}/flow")).json()
+
+    messages = {issue["message"] for issue in draft["issues"]}
+    assert "Secret CALCOM_KEY is not saved (add it under Settings, Secrets)" in messages
+    assert (
+        "Set the Cal.com event type for Dr. Anil Sharma, Dr. Priya Mehta, Dr. Ravi Iyer, "
+        "Dr. Sana Khan" in messages
+    )
+
+
+async def test_cal_com_clinic_flow_publishes_once_the_key_and_event_types_are_set(client):
+    calcom = calcom_clinic_settings()
+    for number, resource in enumerate(calcom.resources, start=1):
+        resource.event_type_id = number
+    flow = build_clinic_booking_flow("http://api:8000", calcom=calcom).model_dump(mode="json")
+    agent = await create_agent(client)
+    await client.put("/secrets/CALCOM_KEY", json={"value": "cal_live_0123456789abcdef"})
+    await client.put(f"/agents/{agent['id']}/flow", json=flow)
+
+    published = await client.post(f"/agents/{agent['id']}/flow/publish")
+
+    assert published.status_code == 200, published.text
+
+
+@pytest.mark.parametrize(
+    ("change", "message"),
+    [
+        ({"calcom": None}, "Set up the Cal.com settings"),
+        ({"api_key_secret": ""}, "Choose the secret that holds the Cal.com API key"),
+        ({"resources": []}, "Add at least one doctor and its Cal.com event type"),
+        ({"time_zone": "India"}, "'India' is not a time zone, e.g. Asia/Kolkata"),
+    ],
+)
+def test_cal_com_tools_need_their_settings(change, message):
+    calcom = {
+        "api_key_secret": "CALCOM_KEY",
+        "resources": [{"name": "Dr. Priya Mehta", "event_type_id": 7}],
+    }
+    data = {"kind": "calcom_booking", "name": "book", "calcom": {**calcom, **change}}
+    if change == {"calcom": None}:
+        data["calcom"] = None
+    nodes = [*SMALL_FLOW["nodes"], {"id": "book", "type": "tool", "data": data}]
+    nodes[1] = {**nodes[1], "data": {**nodes[1]["data"], "tools": ["book"]}}
+
+    assert message in issues_of({**SMALL_FLOW, "nodes": nodes})
 
 
 @pytest.mark.parametrize("method", ["get", "put", "delete"])

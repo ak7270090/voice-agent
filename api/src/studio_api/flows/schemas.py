@@ -5,7 +5,14 @@ from typing import Annotated, Any, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from studio_api.database import UtcDateTime
-from studio_api.flows.constants import FIELD_TYPES, HTTP_METHODS, IDENTIFIER_PATTERN
+from studio_api.flows.constants import (
+    CALCOM_API_URL,
+    FIELD_TYPES,
+    HTTP_METHODS,
+    HTTP_TOOL,
+    IDENTIFIER_PATTERN,
+    TOOL_KINDS,
+)
 
 Identifier = Annotated[str, Field(pattern=IDENTIFIER_PATTERN, max_length=60)]
 
@@ -36,9 +43,35 @@ class StepData(BaseModel):
     wait_after_enter: bool = False
 
 
+class CalcomResource(BaseModel):
+    """One bookable person, e.g. a doctor, and their Cal.com event type."""
+
+    name: str = Field(min_length=1, max_length=120)
+    # From the event type's page in Cal.com (app.cal.com/event-types/<id>); None until set.
+    event_type_id: int | None = Field(default=None, ge=1)
+    # Words a caller may use instead of the name ("skin", "rash").
+    keywords: list[str] = []
+
+
+class CalcomSettings(BaseModel):
+    api_key_secret: str = Field(default="", pattern=r"^([A-Z][A-Z0-9_]*)?$")
+    time_zone: str = "Asia/Kolkata"
+    resources: list[CalcomResource] = []
+    # The fields that name the resource and the person booked, e.g. "doctor", "patient_name".
+    resource_field: Identifier = "doctor"
+    name_field: Identifier = "patient_name"
+    # The booking's attendee email when no "email" field was collected; empty: the Cal.com
+    # account's own email (Cal.com refuses addresses that cannot receive mail).
+    attendee_email: str = ""
+    api_url: str = CALCOM_API_URL
+
+
 class ToolData(BaseModel):
+    kind: Literal[TOOL_KINDS] = HTTP_TOOL
     name: Identifier = "call_api"
     description: str = ""
+    # Cal.com tools only.
+    calcom: CalcomSettings | None = None
     method: Literal[HTTP_METHODS] = "GET"
     # {field} placeholders are filled from collected fields (or the LLM's arguments), and
     # {secret.NAME} from stored secrets, in the URL, header values and body strings.
