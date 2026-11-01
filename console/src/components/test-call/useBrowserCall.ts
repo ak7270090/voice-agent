@@ -14,7 +14,7 @@ import {
 } from "livekit-client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { startBrowserCall } from "@/lib/api";
+import { isReadOnlyError, startBrowserCall } from "@/lib/api";
 
 const CHAT_TOPIC = "lk.chat";
 const TRANSCRIPTION_TOPIC = "lk.transcription";
@@ -132,7 +132,11 @@ export function useBrowserCall(agentId: string) {
       await room.connect(url, token);
       setStatus("connected");
     } catch (cause) {
-      setError(`Could not connect: ${(cause as Error).message}. Is the runtime running?`);
+      setError(
+        isReadOnlyError(cause)
+          ? (cause as Error).message
+          : `Could not connect: ${(cause as Error).message}. Is the runtime running?`,
+      );
       roomRef.current?.disconnect();
       cleanUp();
     }

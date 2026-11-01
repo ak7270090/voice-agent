@@ -1,3 +1,5 @@
+import { DEMO_MODE, demoGet, demoHealth, READ_ONLY_MESSAGE, READ_ONLY_STATUS } from "@/lib/demo";
+
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 export type HealthReport = {
@@ -205,7 +207,22 @@ export class ApiError extends Error {
   }
 }
 
+export function readOnlyError(): ApiError {
+  return new ApiError(READ_ONLY_STATUS, READ_ONLY_MESSAGE);
+}
+
+export const isReadOnlyError = (cause: unknown) =>
+  cause instanceof ApiError && DEMO_MODE && cause.status === READ_ONLY_STATUS;
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  if (DEMO_MODE) {
+    if ((init?.method ?? "GET") !== "GET") throw readOnlyError();
+    try {
+      return (await demoGet(path)) as T;
+    } catch (cause) {
+      throw new ApiError(404, (cause as Error).message);
+    }
+  }
   const response = await fetch(`${API_URL}${path}`, {
     cache: "no-store",
     ...init,
@@ -220,6 +237,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export async function fetchHealth(): Promise<HealthReport> {
+  if (DEMO_MODE) return demoHealth;
   const response = await fetch(`${API_URL}/health`, { cache: "no-store" });
   if (!response.ok && response.status !== 503) {
     throw new Error(`Health check failed with HTTP ${response.status}`);
@@ -357,6 +375,7 @@ export const listCampaignContacts = (campaignId: string) =>
   request<CampaignContact[]>(`/campaigns/${campaignId}/contacts`);
 
 export async function importContacts(campaignId: string, file: File) {
+  if (DEMO_MODE) throw readOnlyError();
   const form = new FormData();
   form.append("file", file);
   // No JSON content type: the browser sets the multipart boundary itself.
@@ -511,6 +530,7 @@ export const listDocuments = (knowledgeBaseId: string) =>
   request<KnowledgeDocument[]>(`/knowledge-bases/${knowledgeBaseId}/documents`);
 
 export async function uploadDocument(knowledgeBaseId: string, file: File) {
+  if (DEMO_MODE) throw readOnlyError();
   const form = new FormData();
   form.append("file", file);
   // No JSON content type: the browser sets the multipart boundary itself.

@@ -26,3 +26,9 @@ next-env.d.ts
 .idea/
 .DS_Store
 Thumbs.db
+
+# Read-only demo: its build folder, data exported from real runs, and the site's videos
+# (regenerate with tools/showcase/export_fixtures.py and tools/demo/record_showcase.py).
+.next-demo/
+console/public/demo-data/
+site/media/

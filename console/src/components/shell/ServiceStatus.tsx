@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { useEffect, useState } from "react";
 
 import { fetchHealth, type HealthReport } from "@/lib/api";
+import { DEMO_MODE } from "@/lib/demo";
 
 const REFRESH_INTERVAL_MS = 10_000;
 const HEALTHY = "ok";
@@ -28,7 +29,9 @@ export function ServiceStatus() {
 
   const rows: [string, string][] = error
     ? [["api", error]]
-    : [["api", HEALTHY], ...Object.entries(report?.dependencies ?? {})];
+    : DEMO_MODE
+      ? Object.entries(report?.dependencies ?? {})
+      : [["api", HEALTHY], ...Object.entries(report?.dependencies ?? {})];
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white">
