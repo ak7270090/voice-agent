@@ -3,16 +3,16 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Voice Agent Studio: build, test and run AI phone agents</title>
+    <title>Voice Agent Studio: AI voice agents for phone calls</title>
     <meta
       name="description"
-      content="An open-source, self-hosted voice AI platform: flow builder, phone numbers, campaigns, post-call analysis, cost per call and integrations, built end to end."
+      content="Design AI voice agents visually, connect them to your calendar and CRM, put them on a phone number or a contact list, and review every call with its outcome, summary and cost."
     />
     <link rel="icon" href="media/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
@@ -23,15 +23,14 @@
       <div class="wrap nav-inner">
         <a class="brand" href="#top"><span class="logo">VS</span>Voice Agent Studio</a>
         <nav class="nav-links">
-          <a href="#demo">Demo</a>
-          <a href="#how">How it works</a>
-          <a href="#features">Features</a>
-          <a href="#architecture">Architecture</a>
-          <a href="#engineering">Engineering</a>
+          <a href="#use-cases">Use cases</a>
+          <a href="#platform">Platform</a>
+          <a href="#integrations">Integrations</a>
+          <a href="#faq">FAQ</a>
         </nav>
         <div class="nav-actions">
-          <a class="button ghost" data-link="repository">Source</a>
-          <a class="button primary" data-link="console">Open the console</a>
+          <a class="button ghost" href="#demo">Watch demo</a>
+          <a class="button primary" data-link="console">Try the demo workspace</a>
         </div>
       </div>
     </header>
@@ -39,21 +38,23 @@
     <main id="top">
       <section class="hero">
         <div class="wrap hero-inner">
-          <p class="eyebrow">Open-source voice AI platform · portfolio project</p>
-          <h1>Build, test and run <span class="accent">AI phone agents</span>.</h1>
+          <p class="eyebrow">AI voice agents for phone calls</p>
+          <h1>Phone calls that <span class="accent">answer, book and follow up</span> on their own.</h1>
           <p class="lede">
-            A self-hosted platform in the style of Retell and Ringg, built end to end: draw the
-            conversation, give the agent a phone number or a contact list, and see every call's
-            transcript, outcome, reply delay and cost.
+            Design a voice agent visually, connect it to your calendar and CRM, give it a phone
+            number or a contact list, and review every conversation with its outcome, summary and
+            cost.
           </p>
           <div class="hero-actions">
-            <a class="button primary large" href="#demo">▶ Watch a real call</a>
-            <a class="button secondary large" data-link="console">Explore the console</a>
+            <a class="button primary large" href="#demo">▶ Watch it take a call</a>
+            <a class="button secondary large" data-link="console">Try the demo workspace</a>
           </div>
-          <p class="hero-note">
-            The console link opens a read-only copy with data from real runs. Nothing on this page
-            costs a call.
-          </p>
+          <ul class="hero-points">
+            <li>Inbound and outbound calls</li>
+            <li>Campaigns from a contact list</li>
+            <li>Books into your calendar</li>
+            <li>Every call summarised</li>
+          </ul>
         </div>
       </section>
 
@@ -63,12 +64,7 @@
             <div class="player-tabs" role="tablist"></div>
             <div class="player-body">
               <div class="player-stage">
-                <video
-                  class="player-video"
-                  controls
-                  playsinline
-                  preload="metadata"
-                ></video>
+                <video class="player-video" controls playsinline preload="metadata"></video>
                 <div class="player-missing" hidden></div>
               </div>
               <aside class="player-side">
@@ -81,24 +77,40 @@
         </div>
       </section>
 
-      <section class="section numbers">
+      <section class="works-with">
         <div class="wrap">
-          <h2 class="section-title">Measured on real runs, not claimed</h2>
-          <div class="stat-grid">
-            <div class="stat"><b>2.3 s</b><span>typical reply on voice calls (p50): caller stops → agent speaks</span></div>
-            <div class="stat"><b>$0.006</b><span>a typed booking call end to end: LLM, tools and analysis</span></div>
-            <div class="stat"><b>6 / 6</b><span>campaign contacts ended as expected, agent-to-agent calls</span></div>
-            <div class="stat"><b>33 / 33</b><span>post-call analysis answers right on 11 real transcripts</span></div>
-            <div class="stat"><b>7 / 7</b><span>typed call scenarios with the real LLM: bookings, changes, a taken slot, a transfer</span></div>
-            <div class="stat"><b>300+</b><span>automated tests across API and runtime</span></div>
+          <p>Works with the tools you already use</p>
+          <div class="marks">
+            <span>OpenAI</span><span>Deepgram</span><span>LiveKit</span><span>Cal.com</span>
+            <span>HubSpot</span><span>Slack</span><span>Google Sheets</span><span>Any SIP trunk</span>
           </div>
         </div>
       </section>
 
-      <section id="how" class="section">
+      <section id="use-cases" class="section">
         <div class="wrap">
-          <h2 class="section-title">From an idea to a phone call</h2>
-          <p class="section-lede">The same four steps as the commercial platforms, each one a screen in the console.</p>
+          <p class="kicker">Use cases</p>
+          <h2 class="section-title">One agent per job, each with its own script</h2>
+          <p class="section-lede">These are real conversations from the demo workspace.</p>
+          <div class="cases" data-cases>
+            <div class="case-list" role="tablist"></div>
+            <div class="case-chat">
+              <div class="chat-head">
+                <span class="chat-dot"></span>
+                <span class="chat-title"></span>
+                <span class="chat-outcome"></span>
+              </div>
+              <ol class="chat-lines"></ol>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="platform" class="section alt">
+        <div class="wrap">
+          <p class="kicker">Platform</p>
+          <h2 class="section-title">From an idea to a live phone line</h2>
+          <p class="section-lede">Build, test, deploy and monitor in one place, without writing code.</p>
           <div class="steps" data-steps>
             <div class="step-tabs" role="tablist"></div>
             <div class="step-body">
@@ -112,112 +124,175 @@
         </div>
       </section>
 
-      <section id="features" class="section alt">
+      <section class="section">
         <div class="wrap">
-          <h2 class="section-title">What it does</h2>
+          <p class="kicker">Why teams use it</p>
+          <h2 class="section-title">Built for calls that have to go right</h2>
           <div class="feature-grid">
             <article class="feature">
               <span class="icon">◆</span>
-              <h3>Visual flow builder</h3>
-              <p>Steps that talk and collect fields, tools, transfers and global rules. Code moves between steps; the LLM only talks inside one.</p>
+              <h3>Scripts it can't skip</h3>
+              <p>Each step collects what it needs before the call moves on, so details are always confirmed before anything is booked.</p>
             </article>
             <article class="feature">
               <span class="icon">☏</span>
-              <h3>Phone numbers</h3>
-              <p>Inbound and outbound calls over LiveKit SIP trunks, voicemail detection, transfer to a person, the caller's number in the flow.</p>
+              <h3>Your numbers, in and out</h3>
+              <p>Answer on your own numbers or call out from them. Voicemail is detected and a message left; a person can take over any time.</p>
             </article>
             <article class="feature">
               <span class="icon">⇶</span>
-              <h3>Campaigns</h3>
-              <p>A CSV of contacts, calling windows in their time zone, a limit on calls at once, retries, consent and opt-outs.</p>
+              <h3>Campaigns that respect people</h3>
+              <p>Upload a contact list and set calling hours in each contact's time zone. Only contacts who agreed are called, and opt-outs are never called again.</p>
             </article>
             <article class="feature">
               <span class="icon">✎</span>
-              <h3>Post-call analysis</h3>
-              <p>Summary, success by the agent's own rule, sentiment, custom fields and a QA score, checked against real transcripts.</p>
+              <h3>Answers from your documents</h3>
+              <p>Upload timetables, price lists and policies. The agent answers from them and says so when something isn't covered.</p>
             </article>
             <article class="feature">
-              <span class="icon">$</span>
-              <h3>Cost and latency per call</h3>
-              <p>Tokens, speech seconds and characters priced per call; reply delay per turn; a dashboard of outcomes and success.</p>
+              <span class="icon">◷</span>
+              <h3>Real bookings, not promises</h3>
+              <p>The agent checks live availability and books the slot during the call, then reads the confirmation back.</p>
             </article>
             <article class="feature">
-              <span class="icon">⇄</span>
-              <h3>Integrations</h3>
-              <p>Books into each doctor's Cal.com calendar during the call; sends results to signed webhooks, Slack, HubSpot and Google Sheets.</p>
+              <span class="icon">✱</span>
+              <h3>Keys stay secret</h3>
+              <p>API keys are stored encrypted and never shown to the model, the transcript or the logs.</p>
             </article>
-          </div>
-          <div class="chips">
-            <span>LiveKit Agents</span><span>LiveKit SIP</span><span>LangChain</span><span>OpenAI</span>
-            <span>Deepgram</span><span>FastAPI</span><span>Postgres + pgvector</span><span>Redis + arq</span>
-            <span>Next.js</span><span>React Flow</span><span>Langfuse</span><span>Cal.com</span>
-            <span>HubSpot</span><span>Slack</span><span>Google Sheets</span>
           </div>
         </div>
       </section>
 
-      <section id="architecture" class="section">
-        <div class="wrap arch">
+      <section class="section alt">
+        <div class="wrap split">
           <div>
-            <h2 class="section-title">How a call runs</h2>
-            <ul class="arch-points">
-              <li><b>An agent is data, not code.</b> The runtime loads instructions, voice and the published flow from the API when a call starts.</li>
-              <li><b>The API never sits in the audio path.</b> Audio goes browser or phone ⇄ LiveKit ⇄ runtime; the API is asked only at start, end and for tools.</li>
-              <li><b>One process per call.</b> Speech-to-text, the LLM and the voice all stream, so the agent starts speaking before it has finished writing.</li>
-              <li><b>Slow work runs in a worker.</b> Document ingestion, the campaign dialler, post-call analysis and after-call deliveries are background jobs.</li>
+            <p class="kicker">Analytics</p>
+            <h2 class="section-title">Every call, accounted for</h2>
+            <p class="section-lede">Know what happened on each call without listening to it.</p>
+            <ul class="check-list">
+              <li><b>Outcome and summary:</b> booked, confirmed, moved, voicemail, not reached</li>
+              <li><b>Success by your own rule,</b> with the caller's sentiment and a quality score</li>
+              <li><b>The fields you care about,</b> such as which doctor or whether fees came up</li>
+              <li><b>Cost per call,</b> split into model, speech and phone time</li>
+              <li><b>Reply speed per turn,</b> to spot slow moments</li>
             </ul>
           </div>
-          <figure class="arch-figure"><img src="media/architecture.png" alt="Architecture: console, API, worker, runtime, LiveKit Cloud, providers" loading="lazy" /></figure>
+          <figure class="shot"><img src="media/overview.png" alt="The dashboard: calls per day, outcomes, average cost and length, reply speed, and success by agent" loading="lazy" /></figure>
         </div>
       </section>
 
-      <section id="engineering" class="section alt">
+      <section id="integrations" class="section">
         <div class="wrap">
-          <h2 class="section-title">What broke in real calls, and the fix</h2>
-          <p class="section-lede">Every one of these was found by calling the agent, not by reading the code.</p>
-          <div class="card-grid">
-            <article class="card">
-              <h3>"Afternoon" booked at noon</h3>
-              <p>The time parser matched "noon" inside "afternoon". Word boundaries fixed it, and a test case keeps it fixed.</p>
+          <p class="kicker">Integrations</p>
+          <h2 class="section-title">Acts in your systems, during and after the call</h2>
+          <div class="integration-grid">
+            <article class="integration">
+              <span class="tag">During the call</span>
+              <h3>Cal.com</h3>
+              <p>Live free times and bookings for each doctor or staff member.</p>
             </article>
-            <article class="card">
-              <h3>Phone calls dropped after 20 seconds</h3>
-              <p>The softphone offered encrypted media that the SIP trunk refused. Allowing SRTP on both trunks fixed inbound and outbound.</p>
+            <article class="integration">
+              <span class="tag">During the call</span>
+              <h3>Your own API</h3>
+              <p>Look up a caller by number, check stock or an order, with your keys kept secret.</p>
             </article>
-            <article class="card">
-              <h3>A voicemail greeting taken for a person</h3>
-              <p>"Hi, you've reached Rohan" sounded human to the detector. Examples of voicemail openings in its prompt fixed it.</p>
+            <article class="integration">
+              <span class="tag">After the call</span>
+              <h3>Webhooks</h3>
+              <p>Signed events to n8n, Zapier, Make or your own service, retried if it is down.</p>
             </article>
-            <article class="card">
-              <h3>Cal.com refused the booking</h3>
-              <p>It rejects attendee emails that cannot receive mail. Callers rarely give one, so bookings now use the clinic's own address.</p>
+            <article class="integration">
+              <span class="tag">After the call</span>
+              <h3>HubSpot</h3>
+              <p>Finds or creates the contact and adds the call summary as a note.</p>
+            </article>
+            <article class="integration">
+              <span class="tag">After the call</span>
+              <h3>Slack</h3>
+              <p>A message for every call: who, how it ended, and a link to the details.</p>
+            </article>
+            <article class="integration">
+              <span class="tag">After the call</span>
+              <h3>Google Sheets</h3>
+              <p>A new row per call, ready for reports and follow-ups.</p>
             </article>
           </div>
         </div>
       </section>
 
-      <section class="section run">
-        <div class="wrap run-inner">
+      <section id="faq" class="section alt">
+        <div class="wrap faq-wrap">
           <div>
-            <h2 class="section-title">Run it yourself</h2>
-            <p class="section-lede">Docker Compose starts the API, worker, runtime, console, Postgres, Redis and storage. Media goes through LiveKit Cloud's free plan.</p>
+            <p class="kicker">FAQ</p>
+            <h2 class="section-title">Questions teams ask first</h2>
           </div>
-          <pre class="code"><code>cp .env.example .env.local   # LiveKit, OpenAI, Deepgram keys
-docker compose up -d --build
-open http://localhost:3000   # the console</code></pre>
+          <div class="faq">
+            <details>
+              <summary>Can I use my own phone numbers?</summary>
+              <p>Yes. Any SIP trunk works for incoming and outgoing calls, whether from a carrier or your own phone system.</p>
+            </details>
+            <details>
+              <summary>Which AI models does it use?</summary>
+              <p>The language model, speech recognition and voice are settings on each agent. You can switch provider without changing the agent.</p>
+            </details>
+            <details>
+              <summary>Can it book into our calendar?</summary>
+              <p>Yes. Cal.com is built in, with an event type per doctor or staff member. Your own booking system can be connected the same way.</p>
+            </details>
+            <details>
+              <summary>What if a caller needs a person?</summary>
+              <p>A hand-off step transfers the caller to your front desk, and a rule can trigger it from any point in the call.</p>
+            </details>
+            <details>
+              <summary>How are outbound campaigns kept polite?</summary>
+              <p>Calls go out only within your calling hours in each contact's time zone, only to contacts who agreed, and never again after someone asks to stop.</p>
+            </details>
+            <details>
+              <summary>Which languages does it speak?</summary>
+              <p>English today. Hindi and other Indian languages are next.</p>
+            </details>
+            <details>
+              <summary>Where is our data kept?</summary>
+              <p>It runs on your own servers: calls, transcripts and keys stay in your database, and keys are stored encrypted.</p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <section class="cta">
+        <div class="wrap cta-inner">
+          <h2>Hear it handle a real call</h2>
+          <p>Watch a booking from the first hello to the confirmation, then explore the workspace behind it.</p>
+          <div class="hero-actions">
+            <a class="button inverse large" href="#demo">▶ Watch the demo</a>
+            <a class="button outline large" data-link="console">Try the demo workspace</a>
+          </div>
         </div>
       </section>
     </main>
 
     <footer class="footer">
       <div class="wrap footer-inner">
-        <span><span class="logo small">VS</span> Voice Agent Studio, a portfolio project by Aman Kumar</span>
-        <span class="footer-links">
-          <a data-link="console">Console demo</a>
-          <a data-link="repository">Source code</a>
-          <a href="#top">Back to top</a>
-        </span>
+        <div>
+          <a class="brand" href="#top"><span class="logo small">VS</span>Voice Agent Studio</a>
+          <p class="footer-note">AI voice agents for phone calls.</p>
+        </div>
+        <div class="footer-cols">
+          <div>
+            <h4>Product</h4>
+            <a href="#use-cases">Use cases</a>
+            <a href="#platform">Platform</a>
+            <a href="#integrations">Integrations</a>
+          </div>
+          <div>
+            <h4>See it</h4>
+            <a href="#demo">Watch demo</a>
+            <a data-link="console">Demo workspace</a>
+            <a data-link="repository">GitHub</a>
+          </div>
+        </div>
       </div>
+      <div class="wrap footer-bottom">© 2026 Voice Agent Studio</div>
     </footer>
 
     <div class="theme-switch" aria-label="Preview a theme">

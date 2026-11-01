@@ -8,7 +8,7 @@
 export const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 export const READ_ONLY_STATUS = 403;
 export const READ_ONLY_MESSAGE =
-  "This is a read-only demo with data from real runs: nothing can be changed and no calls are placed. Watch the videos on the project page, or run it yourself.";
+  "This is a demo workspace: changes and calls are turned off. Watch a call on the website.";
 export const PROJECT_URL = process.env.NEXT_PUBLIC_PROJECT_URL ?? "";
 export const REPOSITORY_URL = process.env.NEXT_PUBLIC_REPOSITORY_URL ?? "";
 

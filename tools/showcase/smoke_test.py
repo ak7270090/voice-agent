@@ -13,7 +13,7 @@ from pathlib import Path
 from playwright.sync_api import Page, sync_playwright
 
 DATA = Path(__file__).parents[2] / "console" / "public" / "demo-data"
-READ_ONLY = "This is a read-only demo"
+READ_ONLY = "This is a demo workspace"
 PAGE_TIMEOUT_MS = 20_000
 
 
@@ -47,7 +47,7 @@ def check(page: Page, base: str, shots: Path | None) -> list[str]:
         page.goto(f"{base}{path}")
         try:
             page.get_by_text(marker).first.wait_for(timeout=PAGE_TIMEOUT_MS)
-            page.get_by_text("Read-only demo").first.wait_for(timeout=PAGE_TIMEOUT_MS)
+            page.get_by_text("Demo workspace").first.wait_for(timeout=PAGE_TIMEOUT_MS)
         except Exception:
             problems.append(f"{path}: '{marker}' or the demo banner never appeared")
         if page.get_by_text("not in the demo data").count():

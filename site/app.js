@@ -1,11 +1,12 @@
-// The recorded-call player, the how-it-works tabs, links from config.js and the theme preview.
+// The demo player, the use-case conversations, the platform tabs, links from config.js and the
+// theme preview.
 
 const DEMOS = [
   {
     id: "voice",
-    tab: "Voice call",
-    title: "A booking by voice, in the browser",
-    text: "The caller speaks; the agent hears, checks the doctor's free times, reads the details back and books. The live step lights up in the flow.",
+    tab: "Booking by voice",
+    title: "A patient books by voice",
+    text: "The agent understands the request, checks the doctor's free times, reads the details back and books, while the live step lights up in the flow.",
     video: "media/voice-call.mp4",
     poster: "media/voice-call.jpg",
   },
@@ -13,7 +14,7 @@ const DEMOS = [
     id: "phone",
     tab: "Phone call",
     title: "A real phone call",
-    text: "A phone rings through a SIP trunk; the same agent answers and books the appointment into Cal.com.",
+    text: "The phone rings, the agent answers, and the appointment lands in the doctor's calendar.",
     video: "media/phone-call.mp4",
     poster: "media/phone-call.jpg",
     // Optional: [{"at": seconds, "role": "agent" | "caller", "text": "..."}], highlighted in time.
@@ -21,61 +22,113 @@ const DEMOS = [
   },
   {
     id: "campaign",
-    tab: "Campaign",
-    title: "A reminder campaign from a CSV",
-    text: "Upload contacts, start, and watch each one move to its outcome: confirmed, reschedule, voicemail, not answered and retried, or no consent.",
+    tab: "Reminder campaign",
+    title: "Tomorrow's patients, called in minutes",
+    text: "Upload a contact list and start. Each patient ends with an outcome: confirmed, moved, voicemail left, not reached and retried, or skipped without consent.",
     video: "media/campaign.mp4",
     poster: "media/campaign.jpg",
   },
   {
     id: "build",
     tab: "Build an agent",
-    title: "From a template to a published flow",
-    text: "Pick a template, edit it, drag a rule into the flow, publish, and test it right there.",
+    title: "From a template to a live agent",
+    text: "Pick a template, adjust what it says, add a rule to the flow, publish, and test it on the spot.",
     video: "media/build-agent.mp4",
     poster: "media/build-agent.jpg",
+  },
+];
+
+// Real conversations from the demo workspace, shortened only by leaving lines out.
+const USE_CASES = [
+  {
+    tab: "Appointment booking",
+    text: "Answers every call, finds a free slot with the right doctor and books it.",
+    title: "City Hospital receptionist",
+    outcome: "booked",
+    lines: [
+      ["agent", "Welcome to City Hospital. How can I help you today?"],
+      ["caller", "I want to book an appointment with the skin doctor."],
+      ["agent", "Dr. Priya Mehta has free times on Wednesday: eleven, eleven thirty, twelve, twelve thirty, one, and half past one. Which time would you like?"],
+      ["caller", "1:30 pm works."],
+      ["agent", "To confirm: Test Patient, aged 30, with Dr. Priya Mehta on Wednesday 4 November at 13:30. Is that right?"],
+      ["caller", "Yes."],
+      ["agent", "Your appointment with Dr. Priya Mehta is booked for Wednesday at 13:30. Your booking ID is 27996422. Thank you for calling."],
+    ],
+  },
+  {
+    tab: "Appointment reminders",
+    text: "Calls tomorrow's patients, confirms they are coming, or passes a change to the front desk.",
+    title: "Appointment reminders",
+    outcome: "reschedule requested",
+    lines: [
+      ["caller", "Hello."],
+      ["agent", "Hi Ravi, I'm calling to remind you about your appointment tomorrow at four pm. Will you be coming?"],
+      ["caller", "I can't come tomorrow, so please move the appointment."],
+      ["agent", "No problem. The front desk will call you to find a new time. Goodbye."],
+    ],
+  },
+  {
+    tab: "Voicemail",
+    text: "Knows a voicemail greeting from a person and leaves a short message instead.",
+    title: "Appointment reminders",
+    outcome: "voicemail left",
+    lines: [
+      ["caller", "Hi. You've reached Rohan Gupta. I can't take your call right now. Please leave your name and number after the tone."],
+      ["agent", "Hello Rohan, this is City Hospital reminding you of your appointment tomorrow at 4 pm. Please call us if you need to change it. Goodbye."],
+    ],
+  },
+  {
+    tab: "Hand-off to a person",
+    text: "Puts the caller through to your team the moment they ask for a person.",
+    title: "City Hospital receptionist",
+    outcome: "transferred",
+    lines: [
+      ["agent", "Welcome to City Hospital. How can I help you today?"],
+      ["caller", "Can I talk to a person, please?"],
+      ["agent", "Let me connect you to our front desk."],
+    ],
   },
 ];
 
 const STEPS = [
   {
     tab: "Build",
-    title: "Draw the conversation",
+    title: "Design the conversation",
     points: [
-      "Start from a template: clinic booking, reminders, lead qualification",
-      "Steps collect fields; tools check free times and book",
-      "A Cal.com tool books into each doctor's own calendar",
-      "Publishing checks the flow and keeps every version",
+      "Start from a template: booking, reminders, lead qualification",
+      "Each step collects what it needs before moving on",
+      "Connect a calendar so each doctor's real availability is used",
+      "Publish when it's ready; every version is kept",
     ],
     image: "media/step-build.png",
   },
   {
     tab: "Test",
-    title: "Talk to it before anyone else does",
+    title: "Talk to it before your callers do",
     points: [
-      "Type or speak to the agent from the flow builder",
-      "The live step lights up as the call moves",
-      "Scenario runs replay real conversations with the real LLM",
+      "Type or speak to the agent right inside the builder",
+      "Watch the live step light up as the call moves",
+      "Fix a step and try again in seconds",
     ],
     image: "media/step-test.png",
   },
   {
     tab: "Deploy",
-    title: "Give it a number or a list",
+    title: "Put it on a number or a list",
     points: [
-      "Inbound and outbound numbers over SIP trunks",
-      "Campaigns from a CSV with calling windows, retries and consent",
-      "Voicemail detection and transfer to a person",
+      "Answer on your own numbers, or call out from them",
+      "Run campaigns from a contact list with calling hours and retries",
+      "Voicemail handled, and a person one step away",
     ],
     image: "media/step-deploy.png",
   },
   {
     tab: "Monitor",
-    title: "See every call",
+    title: "See what happened on every call",
     points: [
-      "Transcript, collected fields, tool calls and reply delay per turn",
-      "Summary, success and a QA score from post-call analysis",
-      "Cost per call, and what was sent to Slack, HubSpot or a webhook",
+      "Transcript, collected details and every action the agent took",
+      "Summary, success and quality score after each call",
+      "Cost per call, and what was sent to your other tools",
     ],
     image: "media/step-monitor.png",
   },
@@ -192,6 +245,40 @@ function setUpSteps() {
   show(0);
 }
 
+function setUpCases() {
+  const root = document.querySelector("[data-cases]");
+  const list = root.querySelector(".case-list");
+  const title = root.querySelector(".chat-title");
+  const outcome = root.querySelector(".chat-outcome");
+  const lines = root.querySelector(".chat-lines");
+
+  function show(index) {
+    const useCase = USE_CASES[index];
+    [...list.children].forEach((button, n) => button.setAttribute("aria-selected", String(n === index)));
+    title.textContent = useCase.title;
+    outcome.textContent = useCase.outcome;
+    lines.replaceChildren(
+      ...useCase.lines.map(([role, said]) => {
+        const item = document.createElement("li");
+        item.className = role;
+        item.textContent = said;
+        return item;
+      }),
+    );
+  }
+
+  USE_CASES.forEach((useCase, index) => {
+    const button = document.createElement("button");
+    button.role = "tab";
+    button.innerHTML = "<strong></strong><span></span>";
+    button.querySelector("strong").textContent = useCase.tab;
+    button.querySelector("span").textContent = useCase.text;
+    button.addEventListener("click", () => show(index));
+    list.append(button);
+  });
+  show(0);
+}
+
 function setUpThemes() {
   const saved = new URLSearchParams(location.search).get("theme");
   const apply = (theme) => {
@@ -212,4 +299,5 @@ function setUpThemes() {
 setUpLinks();
 setUpThemes();
 setUpPlayer();
+setUpCases();
 setUpSteps();
