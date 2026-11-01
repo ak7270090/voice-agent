@@ -1,7 +1,7 @@
 """Starting points for new agents: settings, plus a flow where the job has fixed steps."""
 
 from studio_api.agents.constants import ENGLISH
-from studio_api.agents.schemas import AgentFields, AgentTemplate, VoiceSettings
+from studio_api.agents.schemas import AgentFields, AgentTemplate, AnalysisField, VoiceSettings
 from studio_api.config import Settings
 from studio_api.flows.templates import (
     build_clinic_booking_flow,
@@ -22,6 +22,36 @@ Find out what they need, their budget and their timeline, and offer a meeting wi
 DELIVERY_FOLLOW_UP_INSTRUCTIONS = """You call customers about a delivery.
 Confirm the address and a delivery slot that suits them."""
 
+# Post-call analysis: (fields, success rule).
+CLINIC_ANALYSIS = (
+    [
+        AnalysisField(
+            name="reason",
+            type="choice",
+            description="Why the caller called",
+            choices=["book", "question", "change", "other"],
+        ),
+        AnalysisField(name="doctor", description="The doctor or speciality the caller asked for"),
+        AnalysisField(
+            name="asked_about_fees",
+            type="yes_no",
+            description="Did the caller ask what a visit costs?",
+        ),
+    ],
+    "An appointment was booked (the agent gave a booking ID), or the caller's question was "
+    "answered.",
+)
+REMINDER_ANALYSIS = (
+    [
+        AnalysisField(
+            name="will_attend",
+            type="yes_no",
+            description="Will the patient come to tomorrow's appointment?",
+        ),
+    ],
+    "The patient confirmed, asked to move the appointment, or a voicemail was left.",
+)
+
 
 def build_templates(settings: Settings) -> list[AgentTemplate]:
     voice = VoiceSettings(
@@ -30,7 +60,12 @@ def build_templates(settings: Settings) -> list[AgentTemplate]:
         voice=settings.default_voice,
     )
 
-    def fields(name: str, instructions: str, greeting: str) -> AgentFields:
+    def fields(
+        name: str,
+        instructions: str,
+        greeting: str,
+        analysis: tuple[list[AnalysisField], str] = ([], ""),
+    ) -> AgentFields:
         return AgentFields(
             name=name,
             instructions=instructions,
@@ -38,6 +73,8 @@ def build_templates(settings: Settings) -> list[AgentTemplate]:
             llm_model=settings.default_llm_model,
             languages=[ENGLISH],
             language_settings={ENGLISH: voice},
+            analysis_fields=analysis[0],
+            success_rule=analysis[1],
         )
 
     return [
@@ -50,6 +87,7 @@ def build_templates(settings: Settings) -> list[AgentTemplate]:
                 "Clinic receptionist",
                 CLINIC_BOOKING_INSTRUCTIONS,
                 "Welcome to City Hospital. How can I help you today?",
+                CLINIC_ANALYSIS,
             ),
             flow=build_clinic_booking_flow(settings.demo_clinic_api_url),
         ),
@@ -62,6 +100,7 @@ def build_templates(settings: Settings) -> list[AgentTemplate]:
                 "Appointment reminder",
                 REMINDER_INSTRUCTIONS,
                 "Hello, this is City Hospital calling about your appointment tomorrow.",
+                REMINDER_ANALYSIS,
             ),
             flow=build_reminder_flow(),
         ),

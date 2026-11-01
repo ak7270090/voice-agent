@@ -35,6 +35,7 @@ from studio_api.campaigns.schemas import (
     ContactImport,
     RejectedRow,
 )
+from studio_api.database import utc_now
 from studio_api.numbers.service import CannotCallOutError, get_number
 
 # Which status a campaign may move to from which.
@@ -120,12 +121,16 @@ async def add_contacts(
     campaign = await get_campaign(session, campaign_id)
     if campaign.status == COMPLETED:
         raise CampaignStateError("a completed campaign takes no new contacts")
-    for contact in contacts:
+    # One microsecond apart: contacts keep their list order (and are dialled in it), even
+    # where the clock gives a whole import the same time.
+    added_at = utc_now()
+    for position, contact in enumerate(contacts):
         session.add(
             CampaignContact(
                 campaign_id=campaign_id,
                 **contact.model_dump(),
                 status=PENDING if contact.consent else SKIPPED,
+                created_at=added_at + timedelta(microseconds=position),
             )
         )
     await session.commit()

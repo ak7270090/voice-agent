@@ -6,6 +6,7 @@ from datetime import timedelta
 from arq import cron
 from sqlalchemy.ext.asyncio import create_async_engine
 
+from studio_api.calls.analysis import run_analysis
 from studio_api.campaigns.dialler import run_dialler
 from studio_api.config import export_provider_keys, get_settings
 from studio_api.database import create_session_factory, utc_now
@@ -49,12 +50,16 @@ async def dial_campaigns_job(ctx: dict) -> None:
         )
 
 
+async def analyse_call_job(ctx: dict, call_id: str) -> None:
+    await run_analysis(ctx["session_factory"], get_settings(), call_id)
+
+
 def dialler_seconds() -> set[int]:
     return set(range(0, SECONDS_PER_MINUTE, get_settings().dialler_interval_seconds))
 
 
 class WorkerSettings:
-    functions = [ingest_document_job]
+    functions = [ingest_document_job, analyse_call_job]
     # unique: one dialler pass at a time, even with several workers.
     cron_jobs = [cron(dial_campaigns_job, second=dialler_seconds(), unique=True)]
     on_startup = startup

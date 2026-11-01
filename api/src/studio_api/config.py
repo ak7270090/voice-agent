@@ -46,6 +46,23 @@ class Settings(BaseSettings):
     # Where the runtime reaches the demo clinic API used by the clinic template's tools.
     demo_clinic_api_url: str = "http://api:8000"
 
+    # Call costs in US dollars, from each call's usage. Check them against the providers'
+    # pricing pages (31 October 2026: OpenAI gpt-5.4-mini; Deepgram's Nova-3 streaming rate is
+    # marked as a limited-time one). LLM prices are per million tokens, by agent model string.
+    llm_prices: dict[str, dict[str, float]] = {
+        "openai:gpt-5.4-mini": {"input": 0.75, "cached_input": 0.075, "output": 4.50},
+    }
+    stt_price_per_minute: float = 0.0048
+    tts_price_per_1k_characters: float = 0.030
+    # Carrier and LiveKit SIP minutes; 0 on LiveKit's free plan with no carrier.
+    phone_price_per_minute: float = 0.0
+    # Post-call analysis (summary, success, sentiment, the agent's own fields, QA score).
+    analysis_llm_model: str = "openai:gpt-5.4-mini"
+    # Links on a call's page. The Langfuse project is looked up from the keys when empty; the
+    # LiveKit session link is "" (none) until set, e.g. ".../sessions/{room_sid}".
+    langfuse_project_id: str = ""
+    livekit_session_url_template: str = ""
+
     # Campaigns: how often the dialler looks for contacts to call, and how long a call may stay
     # "calling" before it counts as not answered (a runtime that never reported back).
     dialler_interval_seconds: int = 10

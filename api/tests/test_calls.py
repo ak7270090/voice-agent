@@ -15,8 +15,8 @@ async def test_started_call_is_active_until_the_runtime_ends_it(client, runtime_
     agent = await create_agent(client)
     call = await start_call(client, runtime_headers, agent["id"])
     transcript = [
-        {"role": "assistant", "text": "Hello, how can I help?"},
-        {"role": "user", "text": "When do you open?"},
+        {"role": "assistant", "text": "Hello, how can I help?", "at": 1793500000.0},
+        {"role": "user", "text": "When do you open?", "at": 1793500003.5},
     ]
 
     latency = [{"e2e_latency": 1840, "llm_node_ttft": 610}]

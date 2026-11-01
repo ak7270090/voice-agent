@@ -30,7 +30,7 @@ from studio_api.numbers.router import router as numbers_router
 from studio_api.numbers.router import runtime_router as numbers_runtime_router
 from studio_api.numbers.telephony import Telephony
 from studio_api.storage import create_file_store
-from studio_api.tracing import create_tracer_provider, trace_requests
+from studio_api.tracing import create_tracer_provider, find_langfuse_project, trace_requests
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +54,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.embeddings = create_embeddings(settings)
     app.state.job_queue = await create_job_queue(settings)
     app.state.telephony = Telephony(settings)
+    app.state.langfuse_project_id = await find_langfuse_project(settings, http)
     yield
     await app.state.job_queue.aclose()
     await http.aclose()

@@ -34,3 +34,13 @@ class Call(Base):
     turn_latency_ms: Mapped[list[dict]] = mapped_column(JSON, default=list)
     # Agent replies the caller talked over.
     interruptions: Mapped[int] = mapped_column(Integer, default=0)
+    # LiveKit's id of the room session: the link to its recording in LiveKit Cloud.
+    room_sid: Mapped[str | None] = mapped_column(String(40))
+    # Tokens, speech-to-text seconds, characters spoken; and the cost in dollars per part.
+    usage: Mapped[dict] = mapped_column(JSON, default=dict)
+    cost: Mapped[dict] = mapped_column(JSON, default=dict)
+    # [{"name", "by", "at", "ms", "ok", "unavailable", "result"}]
+    tool_calls: Mapped[list[dict]] = mapped_column(JSON, default=list)
+    # Post-call analysis: pending, done, skipped (the caller never spoke) or failed.
+    analysis_status: Mapped[str | None] = mapped_column(String(20))
+    analysis: Mapped[dict] = mapped_column(JSON, default=dict)
