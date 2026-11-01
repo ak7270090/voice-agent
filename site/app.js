@@ -1,5 +1,5 @@
 // The demo player, the use-case conversations, the platform tabs, links from config.js and the
-// theme preview.
+// light / dark switch.
 
 const DEMOS = [
   {
@@ -322,7 +322,8 @@ function setUpThemes() {
       button.setAttribute("aria-pressed", String(button.dataset.themeChoice === theme));
     });
   };
-  apply(saved ?? "studio");
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  apply(saved === "dark" || saved === "light" ? saved : prefersDark ? "dark" : "light");
   document.querySelectorAll("[data-theme-choice]").forEach((button) => {
     button.addEventListener("click", () => {
       apply(button.dataset.themeChoice);

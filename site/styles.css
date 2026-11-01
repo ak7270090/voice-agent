@@ -1,6 +1,6 @@
-/* Three themes to choose from (?theme=studio|midnight|paper); the layout is shared. */
+/* Light and dark themes (?theme=light|dark); the layout is shared. */
 :root,
-[data-theme="studio"] {
+[data-theme="light"] {
   --bg: #ffffff;
   --bg-alt: #f6f7fb;
   --surface: #ffffff;
@@ -17,7 +17,7 @@
   --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 12px 32px rgba(15, 23, 42, 0.08);
 }
 
-[data-theme="midnight"] {
+[data-theme="dark"] {
   --bg: #070b16;
   --bg-alt: #0b1120;
   --surface: #0f172a;
@@ -33,23 +33,6 @@
   --cta: linear-gradient(135deg, #5b21b6 0%, #0e7490 100%);
   --heading-font: "Inter", system-ui, sans-serif;
   --shadow: 0 0 0 1px rgba(148, 163, 184, 0.08), 0 20px 50px rgba(0, 0, 0, 0.45);
-}
-
-[data-theme="paper"] {
-  --bg: #faf7f0;
-  --bg-alt: #f3eee3;
-  --surface: #fffdf8;
-  --ink: #1c1917;
-  --muted: #57534e;
-  --faint: #a8a29e;
-  --line: #e7e0d2;
-  --accent: #c2410c;
-  --accent-ink: #ffffff;
-  --accent-soft: #fdebdc;
-  --hero: none;
-  --cta: linear-gradient(135deg, #9a3412 0%, #c2410c 100%);
-  --heading-font: "Fraunces", Georgia, serif;
-  --shadow: 0 1px 0 #e7e0d2, 0 10px 30px rgba(28, 25, 23, 0.07);
 }
 
 * {
@@ -810,55 +793,7 @@ h1 {
   color: rgba(255, 255, 255, 0.82);
 }
 
-/* Footer */
-.footer {
-  border-top: 1px solid var(--line);
-  padding: 44px 0 90px;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.footer-inner {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 32px;
-  justify-content: space-between;
-}
-
-.footer-note {
-  margin: 10px 0 0;
-}
-
-.footer-cols {
-  display: flex;
-  gap: 64px;
-}
-
-.footer-cols h4 {
-  margin: 0 0 10px;
-  color: var(--ink);
-  font-size: 13px;
-}
-
-.footer-cols a {
-  display: block;
-  margin: 6px 0;
-  text-decoration: none;
-}
-
-.footer-cols a:hover {
-  color: var(--ink);
-}
-
-.footer-bottom {
-  margin-top: 32px;
-  padding-top: 20px;
-  border-top: 1px solid var(--line);
-  color: var(--faint);
-  font-size: 13px;
-}
-
-/* Theme preview (removed once a theme is chosen) */
+/* Light / dark switch */
 .theme-switch {
   position: fixed;
   right: 18px;
@@ -874,10 +809,6 @@ h1 {
   box-shadow: var(--shadow);
   font-size: 12px;
   color: var(--muted);
-}
-
-.theme-switch span {
-  padding: 0 6px;
 }
 
 .theme-switch button {
