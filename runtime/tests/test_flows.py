@@ -442,6 +442,108 @@ async def test_call_values_are_known_before_the_first_step_and_fill_tool_urls():
     assert runner.fields["caller_number"] == "+919876543210"
 
 
+CRM_KEY = "pat-na1-0123456789abcdef"
+
+
+def crm_lookup_flow(headers: dict[str, str]) -> Flow:
+    """A HubSpot-style contact search: a secret header and a nested JSON body."""
+    body = {
+        "filterGroups": [
+            {"filters": [{"propertyName": "phone", "operator": "EQ", "value": "{caller_number}"}]}
+        ],
+        "limit": 1,
+    }
+    lookup = {
+        "name": "find_caller",
+        "method": "POST",
+        "url": "https://crm.example/contacts/search",
+        "headers": headers,
+        "body": body,
+    }
+    return Flow.model_validate(
+        {
+            "nodes": [
+                {"id": "start", "type": "start"},
+                {"id": "find", "type": "tool", "data": lookup},
+                {"id": "done", "type": "end", "data": {"message": "Hello {name}."}},
+                {"id": "unknown", "type": "end", "data": {"outcome": "lookup_failed"}},
+            ],
+            "edges": [
+                {"id": "e1", "source": "start", "target": "find", "kind": "always"},
+                {"id": "e2", "source": "find", "target": "done", "kind": "success"},
+                {"id": "e3", "source": "find", "target": "unknown", "kind": "failure"},
+            ],
+        }
+    )
+
+
+async def test_tool_headers_fill_secrets_and_a_nested_body_keeps_its_shape():
+    requests: list[httpx.Request] = []
+
+    def crm(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        # A careless service echoing the key back.
+        return httpx.Response(200, json={"name": "Rohan", "debug": f"auth {CRM_KEY}"})
+
+    runner = FlowRunner(
+        crm_lookup_flow({"Authorization": "Bearer {secret.CRM_TOKEN}"}),
+        httpx.AsyncClient(transport=httpx.MockTransport(crm)),
+        parsers_for("en"),
+        FRIDAY,
+        call_values={"caller_number": "+919876543210"},
+        secrets={"CRM_TOKEN": CRM_KEY},
+    )
+
+    await runner.start()
+
+    assert requests[0].headers["Authorization"] == f"Bearer {CRM_KEY}"
+    sent = json.loads(requests[0].content)
+    assert sent["filterGroups"][0]["filters"][0]["value"] == "+919876543210"
+    assert sent["limit"] == 1
+    assert runner.final_message == "Hello Rohan."
+    # The key never reaches the call record, the LLM or the trace.
+    assert CRM_KEY not in json.dumps(runner.tool_calls)
+    assert runner.results["find_caller"]["debug"] == "auth [secret]"
+
+
+async def test_a_secret_that_is_not_set_fails_the_tool_without_sending_a_request():
+    requests: list[httpx.Request] = []
+    runner = FlowRunner(
+        crm_lookup_flow({"Authorization": "Bearer {secret.CRM_TOKEN}"}),
+        httpx.AsyncClient(transport=httpx.MockTransport(lambda r: requests.append(r))),
+        parsers_for("en"),
+        FRIDAY,
+        call_values={"caller_number": "+919876543210"},
+    )
+
+    await runner.start()
+
+    assert requests == []
+    assert runner.outcome == "lookup_failed"
+    assert runner.results["find_caller"] == {"error": "secret CRM_TOKEN is not set"}
+
+
+async def test_a_caller_saying_a_secret_placeholder_does_not_make_the_tool_send_it():
+    requests: list[httpx.Request] = []
+
+    def crm(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(200, json={"name": "Rohan"})
+
+    runner = FlowRunner(
+        crm_lookup_flow({"Authorization": "Bearer {secret.CRM_TOKEN}", "X-Note": "{note}"}),
+        httpx.AsyncClient(transport=httpx.MockTransport(crm)),
+        parsers_for("en"),
+        FRIDAY,
+        call_values={"caller_number": "+919876543210", "note": "{secret.CRM_TOKEN}"},
+        secrets={"CRM_TOKEN": CRM_KEY},
+    )
+
+    await runner.start()
+
+    assert requests[0].headers["X-Note"] == "{secret.CRM_TOKEN}"
+
+
 class FlakyModel(ScriptedModel):
     failures: int = 1
 

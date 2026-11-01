@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     langfuse_base_url: str = "https://cloud.langfuse.com"
     runtime_api_token: str = ""
     browser_call_token_ttl_minutes: int = 30
+    # Fernet key that encrypts stored secrets (API keys tools send). Make one with
+    # `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`;
+    # changing it makes every stored secret unreadable.
+    secrets_key: str = ""
 
     # Starting values for new agents; each agent keeps its own copy.
     # Deepgram for both: in the voice demo it cut transcription from ~960 to ~450 ms and the

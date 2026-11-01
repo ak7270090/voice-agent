@@ -29,6 +29,7 @@ from studio_api.knowledge.router import runtime_router as knowledge_runtime_rout
 from studio_api.numbers.router import router as numbers_router
 from studio_api.numbers.router import runtime_router as numbers_runtime_router
 from studio_api.numbers.telephony import Telephony
+from studio_api.secrets.router import router as secrets_router
 from studio_api.storage import create_file_store
 from studio_api.tracing import create_tracer_provider, find_langfuse_project, trace_requests
 
@@ -82,6 +83,7 @@ def create_app() -> FastAPI:
         numbers_router,
         numbers_runtime_router,
         campaigns_router,
+        secrets_router,
         demo_clinic_router,
     ):
         app.include_router(router)

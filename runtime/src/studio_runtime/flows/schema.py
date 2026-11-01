@@ -1,7 +1,7 @@
 """The flow format as the runtime reads it. The API validates flows before they are published
 (studio_api.flows); these models only parse what running a flow needs."""
 
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -28,7 +28,8 @@ class ToolData(BaseModel):
     description: str = ""
     method: str = "GET"
     url: str
-    body: dict[str, str] = {}
+    headers: dict[str, str] = {}
+    body: dict[str, Any] = {}
     say_while_running: str = ""
     save_to_fields: dict[str, str] = {}
     result_fields: list[str] = []

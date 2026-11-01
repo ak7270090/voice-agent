@@ -15,6 +15,7 @@ from studio_api.database import Base
 from studio_api.demo_clinic import models as demo_clinic_models  # noqa: F401
 from studio_api.flows import models as flow_models  # noqa: F401
 from studio_api.numbers import models as number_models  # noqa: F401
+from studio_api.secrets import models as secret_models  # noqa: F401
 
 if context.config.config_file_name is not None:
     fileConfig(context.config.config_file_name)

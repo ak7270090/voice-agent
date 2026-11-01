@@ -2,6 +2,7 @@
 
 import re
 from collections import defaultdict
+from typing import Any
 
 from studio_api.flows.constants import (
     ALLOWED_EDGE_KINDS,
@@ -10,14 +11,16 @@ from studio_api.flows.constants import (
     FIELDS_COMPLETE_EDGE,
     GLOBAL_NODE,
     PLACEHOLDER_PATTERN,
+    SECRET_PLACEHOLDER_PATTERN,
     START_NODE,
     STEP_NODE,
     TOOL_NODE,
     TRANSFER_DESTINATION_PATTERN,
 )
-from studio_api.flows.schemas import Flow, FlowIssue, StepNode, ToolNode, TransferNode
+from studio_api.flows.schemas import Flow, FlowIssue, StepNode, ToolData, ToolNode, TransferNode
 
 PLACEHOLDER = re.compile(PLACEHOLDER_PATTERN)
+SECRET_PLACEHOLDER = re.compile(SECRET_PLACEHOLDER_PATTERN)
 TRANSFER_DESTINATION = re.compile(TRANSFER_DESTINATION_PATTERN)
 
 
@@ -25,7 +28,35 @@ def article(word: str) -> str:
     return "An" if word[0] in "aeiou" else "A"
 
 
-def validate_flow(flow: Flow) -> list[FlowIssue]:
+def strings_in(value: Any) -> list[str]:
+    """Every string in a JSON value (a body's nested objects and lists included)."""
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, dict):
+        return [text for item in value.values() for text in strings_in(item)]
+    if isinstance(value, list):
+        return [text for item in value for text in strings_in(item)]
+    return []
+
+
+def tool_templates(tool: ToolData) -> list[str]:
+    """The texts of a tool's request that may hold placeholders."""
+    return [tool.url, *tool.headers.values(), *strings_in(tool.body)]
+
+
+def referenced_secrets(flow: Flow) -> set[str]:
+    """The secrets the flow's tools send: the runtime gets these values, and only these."""
+    return {
+        name
+        for node in flow.nodes
+        if isinstance(node, ToolNode)
+        for text in tool_templates(node.data)
+        for name in SECRET_PLACEHOLDER.findall(text)
+    }
+
+
+def validate_flow(flow: Flow, secret_names: set[str] | None = None) -> list[FlowIssue]:
+    """`secret_names` are the stored secrets; None skips the check (no database at hand)."""
     issues: list[FlowIssue] = []
     nodes = {node.id: node for node in flow.nodes}
     if len(nodes) != len(flow.nodes):
@@ -45,6 +76,10 @@ def validate_flow(flow: Flow) -> list[FlowIssue]:
     for node in flow.nodes:
         issues += _check_edges(node, outgoing[node.id], incoming[node.id])
     issues += _check_steps_and_tools(flow, nodes)
+    if secret_names is not None:
+        for name in sorted(referenced_secrets(flow) - secret_names):
+            message = f"Secret {name} is not saved (add it under Settings, Secrets)"
+            issues.append(FlowIssue(message=message))
     if len(starts) == 1:
         issues += _check_reachable(flow, starts[0].id, outgoing, nodes)
     return issues
@@ -101,7 +136,7 @@ def _check_steps_and_tools(flow: Flow, nodes: dict) -> list[FlowIssue]:
             tool_names[node.data.name] += 1
             if not node.data.url.startswith(("http://", "https://")):
                 issues.append(FlowIssue(message="Tool needs an http(s) URL", node_id=node.id))
-            templates = [node.data.url, *node.data.body.values()]
+            templates = tool_templates(node.data)
             unknown = (
                 {name for text in templates for name in PLACEHOLDER.findall(text)}
                 - field_names

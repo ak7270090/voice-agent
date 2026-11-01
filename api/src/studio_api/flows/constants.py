@@ -25,8 +25,11 @@ FIELD_TYPES = ("text", "name", "number", "date", "time", "yes_no", "phone")
 HTTP_METHODS = ("GET", "POST")
 
 IDENTIFIER_PATTERN = r"^[a-z][a-z0-9_]*$"
-# {field} placeholders in tool URLs, bodies and end messages.
+# {field} placeholders in tool URLs, headers, bodies and end messages.
 PLACEHOLDER_PATTERN = r"\{([a-z][a-z0-9_]*)\}"
+# {secret.NAME} in a tool's URL, headers or body: filled by the runtime from stored secrets,
+# never shown to the LLM or written to the call record.
+SECRET_PLACEHOLDER_PATTERN = r"\{secret\.([A-Z][A-Z0-9_]*)\}"
 # Filled by the runtime before the first step, so tools can use them like fields (a phone
 # call's number for a customer lookup; empty on browser test calls).
 CALL_VALUES = ("caller_number",)

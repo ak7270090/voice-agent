@@ -52,6 +52,7 @@ def create_flow_runner(
         idempotency_prefix=room.name,
         on_change=lambda runner: publish_progress(room, runner),
         call_values=call_values,
+        secrets=config.secrets,
     )
 
 

@@ -31,6 +31,8 @@ class AgentConfig(BaseModel):
     knowledge_base_ids: list[str] = []
     flow: Flow | None = None
     flow_version: int | None = None
+    # Values for the flow's {secret.NAME} placeholders; kept in memory for the call only.
+    secrets: dict[str, str] = {}
 
     @property
     def starting_language(self) -> str:

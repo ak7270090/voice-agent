@@ -5,6 +5,7 @@ from collections.abc import AsyncIterator
 
 import httpx
 import pytest
+from cryptography.fernet import Fernet
 from langchain_core.embeddings import Embeddings
 from livekit import api
 from sqlalchemy import text
@@ -21,6 +22,7 @@ from studio_api.flows import models as flow_models  # noqa: F401
 from studio_api.knowledge.constants import EMBEDDING_DIMENSIONS
 from studio_api.main import create_app
 from studio_api.numbers import models as number_models  # noqa: F401
+from studio_api.secrets import models as secret_models  # noqa: F401
 
 RUNTIME_TOKEN = "test-runtime-token"
 TEST_DATABASE = "studio_test"
@@ -117,6 +119,7 @@ def settings(monkeypatch):
     monkeypatch.setattr(settings, "livekit_api_key", "test-key")
     monkeypatch.setattr(settings, "livekit_api_secret", "test-secret-that-is-long-enough-for-hs256")
     monkeypatch.setattr(settings, "langfuse_public_key", "")
+    monkeypatch.setattr(settings, "secrets_key", Fernet.generate_key().decode())
     return settings
 
 

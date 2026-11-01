@@ -1,6 +1,6 @@
 """The flow format. The console edits it, the API validates it, the runtime runs it."""
 
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -40,9 +40,12 @@ class ToolData(BaseModel):
     name: Identifier = "call_api"
     description: str = ""
     method: Literal[HTTP_METHODS] = "GET"
-    # {field} placeholders are filled from collected fields (or the LLM's arguments).
+    # {field} placeholders are filled from collected fields (or the LLM's arguments), and
+    # {secret.NAME} from stored secrets, in the URL, header values and body strings.
     url: str = ""
-    body: dict[str, str] = {}
+    headers: dict[str, str] = {}
+    # JSON; a string that is exactly "{field}" keeps the field's type (an age stays a number).
+    body: dict[str, Any] = {}
     # Spoken if the call is still running after a moment (empty: silent).
     say_while_running: str = ""
     # field name -> dot path in the JSON result, e.g. {"doctor": "doctor"}; copied on success.

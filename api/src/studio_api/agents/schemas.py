@@ -122,3 +122,5 @@ class RuntimeAgentConfig(BaseModel):
     # The draft for console test calls, the published flow otherwise; None for prompt-only.
     flow: Flow | None = None
     flow_version: int | None = None
+    # Values of the secrets the flow's tools name ({secret.NAME}); no others.
+    secrets: dict[str, str] = {}

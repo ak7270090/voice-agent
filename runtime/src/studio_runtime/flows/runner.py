@@ -115,8 +115,10 @@ class FlowRunner:
         idempotency_prefix: str = "",
         on_change: Callable[["FlowRunner"], None] | None = None,
         call_values: dict[str, Any] | None = None,
+        secrets: dict[str, str] | None = None,
     ) -> None:
         self._idempotency_prefix = idempotency_prefix
+        self._secrets = secrets or {}
         self._nodes = {node.id: node for node in flow.nodes}
         self._edges = flow.edges
         self._http = http
@@ -453,7 +455,9 @@ class FlowRunner:
     async def _timed_call(self, node: ToolNode, values: dict[str, Any], by: str) -> ToolResult:
         """Calls the tool and logs it for the call record: what ran, who asked, how it went."""
         started_at, started = time.time(), time.perf_counter()
-        result = await call_tool(self._http, node.data, values, self._idempotency_key(node))
+        result = await call_tool(
+            self._http, node.data, values, self._idempotency_key(node), self._secrets
+        )
         self.tool_calls.append(
             {
                 "name": node.data.name,
