@@ -1,4 +1,5 @@
 :root {
+  --wire: #c7cdda;
   --bg: #ffffff;
   --bg-alt: #f6f7fb;
   --surface: #ffffff;
@@ -17,6 +18,17 @@
 
 * {
   box-sizing: border-box;
+}
+
+.scroll-progress {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 100;
+  height: 2px;
+  background: linear-gradient(90deg, #4338ca, #7c3aed);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  pointer-events: none;
 }
 
 html {
@@ -88,7 +100,7 @@ h3 {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: color-mix(in srgb, var(--bg) 85%, transparent);
+  background: color-mix(in srgb, var(--bg) 97%, transparent);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
 }
@@ -100,8 +112,13 @@ h3 {
   height: 64px;
 }
 
+.nav .button {
+  white-space: nowrap;
+}
+
 .brand {
   display: flex;
+  white-space: nowrap;
   align-items: center;
   gap: 10px;
   font-weight: 700;
@@ -182,15 +199,6 @@ h3 {
   color: var(--accent-ink);
 }
 
-.button.secondary {
-  background: var(--surface);
-  border-color: var(--line);
-}
-
-.button.ghost {
-  color: var(--muted);
-}
-
 .button.inverse {
   background: #ffffff;
   color: #1e1b4b;
@@ -204,13 +212,13 @@ h3 {
 /* Hero */
 .hero {
   background: var(--hero);
-  padding: 96px 0 36px;
+  padding: 40px 0 20px;
   text-align: center;
 }
 
 .eyebrow {
   display: inline-block;
-  margin: 0 0 18px;
+  margin: 0 0 14px;
   padding: 5px 12px;
   border-radius: 999px;
   background: var(--accent-soft);
@@ -222,7 +230,7 @@ h3 {
 h1 {
   max-width: 920px;
   margin: 0 auto;
-  font-size: clamp(40px, 6vw, 66px);
+  font-size: clamp(38px, 5.2vw, 58px);
   line-height: 1.06;
   font-weight: 700;
 }
@@ -233,7 +241,7 @@ h1 {
 
 .lede {
   max-width: 700px;
-  margin: 22px auto 0;
+  margin: 16px auto 0;
   font-size: 19px;
   color: var(--muted);
 }
@@ -243,26 +251,7 @@ h1 {
   justify-content: center;
   flex-wrap: wrap;
   gap: 12px;
-  margin-top: 34px;
-}
-
-.hero-points {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px 22px;
-  margin: 26px 0 0;
-  padding: 0;
-  list-style: none;
-  font-size: 14px;
-  color: var(--muted);
-}
-
-.hero-points li::before {
-  content: "✓";
-  margin-right: 7px;
-  color: var(--accent);
-  font-weight: 700;
+  margin-top: 24px;
 }
 
 /* Sections */
@@ -299,8 +288,7 @@ h1 {
 }
 
 /* Demo player */
-.player,
-.steps {
+.player {
   border: 1px solid var(--line);
   border-radius: 18px;
   background: var(--surface);
@@ -308,8 +296,7 @@ h1 {
   overflow: hidden;
 }
 
-.player-tabs,
-.step-tabs {
+.player-tabs {
   display: flex;
   gap: 6px;
   padding: 10px;
@@ -317,9 +304,9 @@ h1 {
   overflow-x: auto;
 }
 
-.player-tabs button,
-.step-tabs button {
+.player-tabs button {
   display: inline-flex;
+  min-height: 40px;
   align-items: center;
   gap: 8px;
   padding: 8px 14px;
@@ -332,8 +319,7 @@ h1 {
   cursor: pointer;
 }
 
-.player-tabs button[aria-selected="true"],
-.step-tabs button[aria-selected="true"] {
+.player-tabs button[aria-selected="true"] {
   background: var(--accent-soft);
   color: var(--accent);
 }
@@ -413,36 +399,133 @@ h1 {
 }
 
 /* Works with */
-.works-with {
-  padding: 8px 0 40px;
-  text-align: center;
-}
-
-.works-with p {
-  margin: 0 0 18px;
-  color: var(--faint);
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.marks {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 14px 40px;
-  color: var(--muted);
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  opacity: 0.8;
-}
-
 /* Use cases */
 .cases {
   display: grid;
   grid-template-columns: 380px minmax(0, 1fr);
   gap: 24px;
   margin-top: 32px;
+}
+
+.case-note {
+  display: none;
+}
+
+/* The call in a phone: the most characteristic thing on the page, so the panel around it is quiet. */
+.case-stage {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  border-radius: 20px;
+  background: var(--accent-soft);
+}
+
+.phone {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 310px);
+  height: 500px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 38px;
+  background: var(--surface);
+  box-shadow: 0 0 0 4px #ffffff, 0 0 0 5px var(--line), 0 24px 48px rgba(49, 46, 129, 0.14);
+}
+
+.phone-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 12px 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.phone-avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.phone-head strong {
+  display: block;
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.phone-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.phone-status::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+}
+
+.phone.ended .phone-status::before {
+  background: var(--faint);
+}
+
+.phone-foot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  margin: 0 4px 4px;
+  border-radius: 999px;
+  background: var(--bg-alt);
+}
+
+.voice-bars {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 18px;
+}
+
+.voice-bars i {
+  width: 3px;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent);
+  transform-origin: center;
+  animation: voice 0.9s ease-in-out infinite alternate;
+}
+
+.voice-bars i:nth-child(2) { animation-delay: -0.5s; }
+.voice-bars i:nth-child(3) { animation-delay: -0.2s; }
+.voice-bars i:nth-child(4) { animation-delay: -0.7s; }
+.voice-bars i:nth-child(5) { animation-delay: -0.35s; }
+
+@keyframes voice {
+  from { transform: scaleY(0.25); }
+}
+
+.phone.ended .voice-bars {
+  display: none;
+}
+
+.chat-outcome {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.phone.ended .chat-outcome::before {
+  content: "✓ ";
 }
 
 .case-list {
@@ -452,12 +535,13 @@ h1 {
 }
 
 .case-list button {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
   padding: 12px 16px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface);
   color: var(--ink);
   text-align: left;
@@ -466,20 +550,42 @@ h1 {
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
+.case-list button:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+}
+
+.case-list button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .case-list button em {
-  color: var(--accent);
-  font-size: 13px;
+  grid-column: 2;
+  grid-row: 1;
+  color: var(--muted);
+  font-size: 12.5px;
   font-style: normal;
-  font-weight: 600;
 }
 
 .case-list button strong {
-  font-size: 16px;
+  grid-column: 1;
+  grid-row: 1;
+  font-size: 15px;
 }
 
 .case-list button span {
+  display: none;
+  grid-column: 1 / -1;
   color: var(--muted);
   font-size: 14px;
+}
+
+.case-list button[aria-selected="true"] span {
+  display: block;
+}
+
+.case-list button[aria-selected="true"] em {
+  color: var(--accent);
 }
 
 .case-list button[aria-selected="true"] {
@@ -487,58 +593,39 @@ h1 {
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
-.case-chat {
-  align-self: start;
-  position: sticky;
-  top: 84px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: var(--bg-alt);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-}
-
-.chat-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--line);
-  background: var(--surface);
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.chat-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: #10b981;
-}
-
-.chat-outcome {
-  margin-left: auto;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-size: 12px;
-}
-
 .chat-lines {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
+  min-height: 0;
   margin: 0;
-  padding: 20px;
+  padding: 14px 14px 20px;
+  overflow-y: auto;
   list-style: none;
-  font-size: 14.5px;
+  font-size: 13px;
+  line-height: 1.45;
+  scrollbar-width: none;
+  /* Lines fade at the edges, so it is clear there is more to scroll to. */
+  -webkit-mask-image: linear-gradient(transparent, #000 14px, #000 calc(100% - 18px), transparent);
+  mask-image: linear-gradient(transparent, #000 14px, #000 calc(100% - 18px), transparent);
+}
+
+.chat-lines::-webkit-scrollbar {
+  display: none;
+}
+
+.chat-lines:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
 }
 
 .chat-lines li {
-  max-width: 78%;
-  padding: 10px 14px;
-  border-radius: 14px;
+  flex: none;
+  max-width: 84%;
+  padding: 8px 11px;
+  border-radius: 13px;
+  animation: line-in 0.28s ease both;
 }
 
 .chat-lines .agent {
@@ -555,93 +642,361 @@ h1 {
   border-bottom-right-radius: 4px;
 }
 
-/* Platform tabs */
-.steps {
-  margin-top: 32px;
+@keyframes line-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
 }
 
-.step-number {
-  display: inline-grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--line);
-  font-size: 11px;
-}
-
-.step-body {
+/* Platform: the flow scrolls past a pinned side, on a canvas like the builder's. */
+.flow-layout {
   display: grid;
-  grid-template-columns: 340px minmax(0, 1fr);
+  grid-template-columns: 380px minmax(0, 1fr);
+  gap: 48px;
+  align-items: start;
 }
 
-.step-copy {
-  padding: 28px;
+.flow-side {
+  position: sticky;
+  top: 96px;
 }
 
-.step-copy h3 {
-  margin: 0 0 14px;
-  font-size: 22px;
-}
-
-.step-copy p {
-  margin: 0;
-  color: var(--muted);
-}
-
-.step-shot {
-  margin: 0;
-  padding: 20px 20px 0;
-  background: var(--bg-alt);
-  border-left: 1px solid var(--line);
-}
-
-.step-shot img,
-
-.step-shot img {
-  border-radius: 10px 10px 0 0;
-  border-bottom: 0;
-}
-
-/* Features */
-.feature-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 22px 28px;
-  margin-top: 36px;
-}
-
-.feature {
+.flow-tabs {
   display: flex;
-  gap: 12px;
+  gap: 8px;
+  margin-top: 24px;
 }
 
-.feature .icon {
-  flex: none;
-  display: inline-grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
-  background: var(--accent-soft);
-  color: var(--accent);
+.flow-tabs button {
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font: 600 14px "Inter", sans-serif;
+  cursor: pointer;
 }
 
-.feature .icon svg {
-  width: 16px;
-  height: 16px;
+.flow-tabs button[aria-selected="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 
-.feature h3 {
-  margin: 0 0 2px;
+.flow-tabs button:focus-visible,
+.flow-open:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.flow-note {
+  min-height: 116px;
+  margin-top: 24px;
+  padding-left: 14px;
+  border-left: 2px solid var(--accent);
+}
+
+.flow-note strong {
+  display: block;
   font-size: 15px;
 }
 
-.feature p {
-  margin: 0;
+.flow-note p {
+  margin: 4px 0 0;
   color: var(--muted);
+  font-size: 14.5px;
+}
+
+.button.outline-dark {
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.flow-canvas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background-color: var(--surface);
+  background-image: radial-gradient(#d7dce6 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+.flow-card {
+  width: min(100%, 420px);
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.flow-card.active,
+.flow-branches.active .flow-card {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.flow-card-head h3 {
+  margin: 8px 0 0;
+  font-size: 15.5px;
+}
+
+.flow-kind {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* The same colours the builder gives each kind of node. */
+.flow-card.step .flow-kind { background: #eef2ff; color: #4f46e5; }
+.flow-card.tool .flow-kind { background: #f0f9ff; color: #0284c7; }
+.flow-card.end .flow-kind { background: #f1f5f9; color: #475569; }
+.flow-card.campaign .flow-kind { background: #ecfdf5; color: #059669; }
+.flow-card.after .flow-kind { background: #ecfdf5; color: #059669; }
+
+.flow-says {
+  margin: 10px 0 0;
+  padding: 8px 11px;
+  border-radius: 10px;
+  background: var(--bg-alt);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.flow-value {
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.flow-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.flow-fields li {
+  padding: 3px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 12.5px;
+}
+
+.flow-rows {
+  margin: 10px 0 0;
   font-size: 13.5px;
 }
+
+.flow-rows div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 5px 0;
+  border-top: 1px solid var(--line);
+}
+
+.flow-rows dt {
+  flex: none;
+  color: var(--muted);
+}
+
+.flow-rows dd {
+  margin: 0;
+  text-align: right;
+}
+
+.flow-moves {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+
+.flow-moves li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+  border-top: 1px solid var(--line);
+}
+
+.flow-moves span {
+  color: var(--muted);
+}
+
+.flow-moves b {
+  font-weight: 600;
+  text-align: right;
+}
+
+.flow-link {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 36px;
+}
+
+.flow-link::before {
+  content: "";
+  position: absolute;
+  inset: 0 50%;
+  width: 2px;
+  background: var(--wire);
+}
+
+.flow-link span {
+  position: relative;
+  margin: 6px 0;
+  padding: 2px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* Branches: one line splits to each arm, and the arms that carry on join up again. */
+.flow-branches {
+  display: grid;
+  grid-template-columns: repeat(var(--count), minmax(0, 1fr));
+  width: 100%;
+}
+
+.flow-branches.active {
+  --wire: var(--accent);
+}
+
+.flow-arm {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 0 6px;
+}
+
+.arm-in,
+.arm-out {
+  position: relative;
+  margin: 0 -6px;
+}
+
+.arm-in {
+  display: grid;
+  place-items: center;
+  height: 56px;
+}
+
+.arm-out {
+  flex: none;
+  height: 20px;
+}
+
+.arm-in::before,
+.arm-in::after,
+.arm-out::before,
+.arm-out::after {
+  content: "";
+  position: absolute;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+/* A straight run across for arms in the middle, plus a line down. */
+.arm-in::before {
+  inset: 0 0 auto;
+  border-top: 2px solid var(--wire);
+}
+
+.arm-in::after,
+.arm-out::after {
+  top: 0;
+  bottom: 0;
+  left: calc(50% - 1px);
+  width: 2px;
+  background: var(--wire);
+}
+
+.arm-out::before {
+  inset: auto 0 0;
+  border-bottom: 2px solid var(--wire);
+}
+
+/* The outer arms turn a rounded corner instead. */
+.flow-arm:first-child .arm-in::before {
+  inset: 0 0 0 calc(50% - 1px);
+  border-left: 2px solid var(--wire);
+  border-top-left-radius: 14px;
+}
+
+.flow-arm:last-child .arm-in::before {
+  inset: 0 calc(50% - 1px) 0 0;
+  border-right: 2px solid var(--wire);
+  border-top-right-radius: 14px;
+}
+
+.flow-arm:first-child .arm-out::before {
+  inset: 0 0 0 calc(50% - 1px);
+  border-left: 2px solid var(--wire);
+  border-bottom-left-radius: 14px;
+}
+
+.flow-arm:last-child .arm-out::before {
+  inset: 0 calc(50% - 1px) 0 0;
+  border-right: 2px solid var(--wire);
+  border-bottom-right-radius: 14px;
+}
+
+.flow-arm:first-child .arm-in::after,
+.flow-arm:last-child .arm-in::after,
+.flow-arm:first-child .arm-out::after,
+.flow-arm:last-child .arm-out::after {
+  display: none;
+}
+
+.arm-in span {
+  position: relative;
+  z-index: 1;
+  padding: 2px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.flow-arm .flow-card {
+  flex: 1;
+  width: 100%;
+}
+
+.flow-loop {
+  margin: 10px 0 0;
+  color: var(--accent);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+/* Beside the flow the note says this; on a phone each card carries its own. */
+.flow-why {
+  display: none;
+}
+
+/* Platform tabs */
 
 /* Integrations */
 .app-grid {
@@ -656,6 +1011,16 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--surface);
+}
+
+.app-grid.waiting .app {
+  opacity: 0;
+  transform: translateY(18px);
+}
+
+.app-grid.rising .app {
+  transition: opacity 0.45s ease, transform 0.45s ease;
+  transition-delay: calc(var(--order) * 70ms);
 }
 
 .app-mark {
@@ -693,18 +1058,21 @@ h1 {
 
 /* FAQ */
 .faq-wrap {
-  display: grid;
-  grid-template-columns: 360px minmax(0, 1fr);
-  gap: 48px;
+  max-width: 780px;
+}
+
+.faq-wrap .section-title {
+  margin-bottom: 20px;
+  text-align: center;
 }
 
 .faq details {
   border-bottom: 1px solid var(--line);
-  padding: 18px 0;
 }
 
 .faq summary {
   display: flex;
+  padding: 18px 0;
   justify-content: space-between;
   gap: 16px;
   font-weight: 600;
@@ -728,7 +1096,8 @@ h1 {
 }
 
 .faq p {
-  margin: 10px 0 0;
+  margin: 0;
+  padding-bottom: 18px;
   color: var(--muted);
 }
 
@@ -752,26 +1121,183 @@ h1 {
 }
 
 @media (max-width: 900px) {
-  .nav-links,
-  .nav-actions .ghost {
+  .nav-links {
     display: none;
   }
 
+  .nav-inner {
+    justify-content: space-between;
+  }
+
+  .section {
+    padding: 56px 0;
+  }
+
+  /* The use cases sit above the call as a compact grid, so nothing needs a long scroll. */
+  .case-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .case-list button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 58px;
+    padding: 8px 10px;
+    text-align: center;
+  }
+
+  .case-list button strong {
+    font-size: 13.5px;
+    line-height: 1.3;
+  }
+
+  .case-list button em,
+  .case-list button span,
+  .case-list button[aria-selected="true"] span {
+    display: none;
+  }
+
+  .case-note {
+    display: block;
+    margin: 12px 2px 0;
+    color: var(--muted);
+    font-size: 14.5px;
+  }
+
+  .case-stage {
+    padding: 20px 12px;
+  }
+
   .player-body,
-  .step-body,
-  .cases,
-  .faq-wrap {
+  .cases {
     grid-template-columns: 1fr;
   }
 
-  .player-side,
-  .step-shot {
+  .player-side {
     border-left: 0;
     border-top: 1px solid var(--line);
   }
 
-  .feature-grid {
-    grid-template-columns: 1fr;
+  .flow-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .flow-side {
+    position: static;
+  }
+
+  .flow-note {
+    display: none;
+  }
+
+  /* A long flow scrolls in its own panel here, so the page stays short. */
+  .flow-canvas {
+    max-height: 620px;
+    padding: 20px 12px;
+    overflow-y: auto;
+    background-attachment: local;
+    scrollbar-width: thin;
+  }
+
+  .flow-canvas > * {
+    flex: none;
+  }
+
+  .flow-why {
+    display: block;
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+
+  .flow-branch-why {
+    margin-top: 12px;
+    padding: 0 4px;
+  }
+
+  /* Stacked arms hang off a line down the left, so each still reads as one branch. */
+  .flow-branches {
+    position: relative;
+    grid-template-columns: minmax(0, 1fr);
+    padding-left: 22px;
+  }
+
+  .flow-branches::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: calc(50% - 1px);
+    left: 8px;
+    height: 16px;
+    border-top: 2px solid var(--wire);
+    border-left: 2px solid var(--wire);
+    border-right: 2px solid transparent;
+    border-top-left-radius: 12px;
+  }
+
+  .flow-arm {
+    padding: 0 0 10px;
+  }
+
+  .flow-arm::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -14px;
+    width: 2px;
+    background: var(--wire);
+  }
+
+  .flow-arm:last-child::before {
+    bottom: auto;
+    height: 18px;
+  }
+
+  .flow-arm:first-child::before {
+    top: 14px;
+  }
+
+  .flow-arm:first-child {
+    padding-top: 14px;
+  }
+
+  .arm-in,
+  .flow-arm:first-child .arm-in,
+  .flow-arm:last-child .arm-in {
+    place-items: center start;
+    height: 36px;
+    margin: 0;
+  }
+
+  /* The short turn from the line to each arm's label. */
+  .arm-in::before,
+  .flow-arm:first-child .arm-in::before,
+  .flow-arm:last-child .arm-in::before {
+    inset: 0 auto auto -14px;
+    width: 14px;
+    height: 18px;
+    border: 0;
+    border-left: 2px solid var(--wire);
+    border-bottom: 2px solid var(--wire);
+    border-radius: 0 0 0 10px;
+  }
+
+  .arm-in::after,
+  .arm-out {
+    display: none;
+  }
+
+  /* The next card follows the note on a phone, not a line from the last arm. */
+  .flow-branch-why + .flow-link {
+    display: none;
+  }
+
+  .flow-branch-why + .flow-link + .flow-card {
+    margin-top: 14px;
   }
 
   .app-grid {
@@ -779,9 +1305,70 @@ h1 {
   }
 }
 
+/* On a phone every tab is on screen: no hidden tabs to scroll sideways to. */
+@media (max-width: 600px) {
+  .player-tabs {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 4px;
+    overflow: visible;
+    padding: 8px;
+  }
+
+  .player-tabs button {
+    justify-content: center;
+    min-height: 44px;
+    padding: 6px 4px;
+    font-size: 13px;
+    line-height: 1.25;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .button.large {
+    width: min(100%, 300px);
+    justify-content: center;
+  }
+}
+
+/* A headline on two or three lines leaves the player in view on a phone. */
+@media (max-width: 480px) {
+  h1 {
+    font-size: 32px;
+  }
+
+  .lede {
+    font-size: 17px;
+  }
+}
+
+@media (max-width: 360px) {
+  .nav-inner {
+    gap: 10px;
+  }
+
+  .nav .button {
+    padding: 8px 12px;
+    font-size: 13.5px;
+  }
+
+  .brand {
+    font-size: 14px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  .voice-bars i {
+    animation: none;
+  }
+
+  .chat-lines li {
+    animation: none;
   }
 
   .button {

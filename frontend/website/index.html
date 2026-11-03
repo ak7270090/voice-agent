@@ -19,6 +19,7 @@
     <script src="config.js"></script>
   </head>
   <body>
+    <div class="scroll-progress" aria-hidden="true"></div>
     <header class="nav">
       <div class="wrap nav-inner">
         <a class="brand" href="#top"><span class="logo">VS</span>Voice Agent Studio</a>
@@ -29,8 +30,7 @@
           <a href="#faq">FAQ</a>
         </nav>
         <div class="nav-actions">
-          <a class="button ghost" href="#demo">Watch demo</a>
-          <a class="button primary" data-link="console">Try the demo workspace</a>
+          <a class="button primary" data-link="console">Try the demo</a>
         </div>
       </div>
     </header>
@@ -41,19 +41,12 @@
           <p class="eyebrow">AI voice agents for phone calls</p>
           <h1>AI agents that <span class="accent">answer, book and follow up</span> on every call.</h1>
           <p class="lede">
-            Put an AI agent on your business number. It answers customers, books appointments,
-            confirms orders and follows up on leads, then tells you how every call went.
+            Put an AI agent on your business number. It answers customers, books appointments
+            and follows up on leads, then tells you how every call went.
           </p>
           <div class="hero-actions">
             <a class="button primary large" href="#demo">▶ Watch it take a call</a>
-            <a class="button secondary large" data-link="console">Try the demo workspace</a>
           </div>
-          <ul class="hero-points">
-            <li>Inbound and outbound calls</li>
-            <li>Campaigns from a contact list</li>
-            <li>Books into your calendar</li>
-            <li>Every call summarised</li>
-          </ul>
         </div>
       </section>
 
@@ -76,16 +69,6 @@
         </div>
       </section>
 
-      <section class="works-with">
-        <div class="wrap">
-          <p>Built for teams that live on the phone</p>
-          <div class="marks">
-            <span>Healthcare</span><span>E-commerce</span><span>Real estate</span>
-            <span>Financial services</span><span>Hospitality</span><span>Education</span>
-          </div>
-        </div>
-      </section>
-
       <section id="use-cases" class="section">
         <div class="wrap">
           <p class="kicker">Use cases</p>
@@ -95,14 +78,25 @@
             abandoned cart.
           </p>
           <div class="cases" data-cases>
-            <div class="case-list" role="tablist"></div>
-            <div class="case-chat">
-              <div class="chat-head">
-                <span class="chat-dot"></span>
-                <span class="chat-title"></span>
-                <span class="chat-outcome"></span>
+            <div class="case-side">
+              <div class="case-list" role="tablist"></div>
+              <p class="case-note"></p>
+            </div>
+            <div class="case-stage">
+              <div class="phone">
+                <div class="phone-head">
+                  <span class="phone-avatar" aria-hidden="true"></span>
+                  <div>
+                    <strong class="chat-title"></strong>
+                    <span class="phone-status"></span>
+                  </div>
+                </div>
+                <ol class="chat-lines" tabindex="0" aria-label="The conversation"></ol>
+                <div class="phone-foot">
+                  <span class="voice-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+                  <span class="chat-outcome"></span>
+                </div>
               </div>
-              <ol class="chat-lines"></ol>
             </div>
           </div>
         </div>
@@ -110,62 +104,21 @@
 
       <section id="platform" class="section alt">
         <div class="wrap">
-          <p class="kicker">Platform</p>
-          <h2 class="section-title">From an idea to a live phone line</h2>
-          <p class="section-lede">Build, test, deploy and monitor in one place, without writing code.</p>
-          <div class="steps" data-steps>
-            <div class="step-tabs" role="tablist"></div>
-            <div class="step-body">
-              <div class="step-copy">
-                <h3></h3>
+          <div class="flow-layout" data-flow>
+            <div class="flow-side">
+              <p class="kicker">Platform</p>
+              <h2 class="section-title">From an idea to a live phone line</h2>
+              <p class="section-lede">
+                Draw the conversation, talk to it to test it, then put it on a number. No code.
+              </p>
+              <div class="flow-tabs" role="tablist" aria-label="Example flows"></div>
+              <div class="flow-note" aria-live="polite">
+                <strong></strong>
                 <p></p>
               </div>
-              <figure class="step-shot"><img alt="" loading="lazy" /></figure>
+              <a class="button outline-dark flow-open" data-flow-open></a>
             </div>
-          </div>
-          <div class="feature-grid">
-            <article class="feature">
-              <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
-              <div>
-                <h3>Stays on script</h3>
-                <p>Follows your steps and confirms details before it books.</p>
-              </div>
-            </article>
-            <article class="feature">
-              <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg></span>
-              <div>
-                <h3>Sounds natural</h3>
-                <p>Waits for callers to finish and lets them interrupt.</p>
-              </div>
-            </article>
-            <article class="feature">
-              <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
-              <div>
-                <h3>Knows your business</h3>
-                <p>Answers from your documents, and says when it doesn't know.</p>
-              </div>
-            </article>
-            <article class="feature">
-              <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M9 16l2 2 4-4"/></svg></span>
-              <div>
-                <h3>Books for real</h3>
-                <p>Checks live availability and books while the caller waits.</p>
-              </div>
-            </article>
-            <article class="feature">
-              <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
-              <div>
-                <h3>Calls politely</h3>
-                <p>Keeps to calling hours, retries, and respects anyone who says stop.</p>
-              </div>
-            </article>
-            <article class="feature">
-              <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
-              <div>
-                <h3>A person when it matters</h3>
-                <p>Puts callers through to your team when they ask.</p>
-              </div>
-            </article>
+            <div class="flow-canvas"></div>
           </div>
         </div>
       </section>
@@ -193,11 +146,7 @@
 
       <section id="faq" class="section alt">
         <div class="wrap faq-wrap">
-          <div>
-            <p class="kicker">FAQ</p>
-            <h2 class="section-title">Frequently asked questions</h2>
-            <p class="section-lede">Anything else? Try the demo workspace and see it for yourself.</p>
-          </div>
+          <h2 class="section-title">Frequently asked questions</h2>
           <div class="faq">
             <details open>
               <summary>What is an AI voice agent?</summary>
