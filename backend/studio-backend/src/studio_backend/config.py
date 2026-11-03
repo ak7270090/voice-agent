@@ -1,4 +1,4 @@
-"""API settings, read from the environment and `.env.local` (repository root or `api/`)."""
+"""API settings, read from the environment and `.env.local` (repository root or this folder)."""
 
 from functools import lru_cache
 from typing import Annotated
@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from fastapi import Depends
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-ENV_FILES = ("../.env.local", ".env.local")
+ENV_FILES = ("../../.env.local", ".env.local")
 
 
 class Settings(BaseSettings):

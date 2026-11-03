@@ -1,4 +1,4 @@
-"""Runtime settings, read from the environment and `.env.local` (repository root or `runtime/`).
+"""Runtime settings, read from the environment and `.env.local` (repository root or this folder).
 
 LiveKit and model-provider keys (LIVEKIT_*, OPENAI_API_KEY) are read by their SDKs directly.
 """
@@ -9,7 +9,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=("../.env.local", ".env.local"), extra="ignore")
+    model_config = SettingsConfigDict(env_file=("../../.env.local", ".env.local"), extra="ignore")
 
     agent_name: str = "studio-agent"
     health_port: int = 8081
