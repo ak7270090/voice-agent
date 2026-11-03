@@ -1,5 +1,5 @@
 # Full local stack: docker compose up -d --build
-#   dashboard http://localhost:3000 · API http://localhost:8000/health · storage console http://localhost:9001
+#   website http://localhost:3000 · dashboard http://localhost:3000/dashboard · API http://localhost:8000/health · storage console http://localhost:9001
 services:
   postgres:
     image: pgvector/pgvector:pg16
@@ -87,9 +87,9 @@ services:
     ports:
       - "8100:8100"
 
-  dashboard:
+  frontend:
     build:
-      context: ./frontend/dashboard
+      context: ./frontend
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
     ports:
