@@ -9,7 +9,7 @@ import {
   TEMPLATE_STYLES,
   voiceLabel,
 } from "@/lib/constants";
-import { dashboardPath } from "@/lib/navigation";
+import { dashboardPath } from "@/lib/paths";
 
 function TemplateIcon({
   templateId,

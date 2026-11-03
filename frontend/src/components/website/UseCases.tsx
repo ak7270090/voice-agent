@@ -57,7 +57,8 @@ export function UseCases() {
     let timer: ReturnType<typeof setTimeout>;
     const showNext = (count: number) => {
       setShown(count);
-      if (count < all.length) timer = setTimeout(() => showNext(count + 1), pauseAfter(all[count - 1]?.[1] ?? ""));
+      if (count < all.length)
+        timer = setTimeout(() => showNext(count + 1), pauseAfter(all[count - 1]?.[1] ?? ""));
     };
     showNext(1);
     return () => clearTimeout(timer);

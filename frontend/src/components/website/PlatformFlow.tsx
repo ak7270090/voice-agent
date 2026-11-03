@@ -48,7 +48,10 @@ function FlowCard({
   const details = node as FlowNode;
   const loopsBack = (node as FlowBranch).loopsBack;
   return (
-    <article className={`flow-card ${kind}${active ? " active" : ""}`} data-stop={why ? "" : undefined}>
+    <article
+      className={`flow-card ${kind}${active ? " active" : ""}`}
+      data-stop={why ? "" : undefined}
+    >
       <div className="flow-card-head">
         <span className="flow-kind">{`${meta.icon} ${meta.label}`}</span>
         <h3>{node.name}</h3>
@@ -183,7 +186,9 @@ export function PlatformFlow() {
           <p>{activeNode.why}</p>
         </div>
         <a className="button outline-dark flow-open" href={dashboardPath(flow.demoPath)}>
-          {flow.demoPath.endsWith("/flow") ? "Open this flow in the demo" : "Open the demo workspace"}
+          {flow.demoPath.endsWith("/flow")
+            ? "Open this flow in the demo"
+            : "Open the demo workspace"}
         </a>
       </div>
       <div className="flow-main" ref={main}>
@@ -201,12 +206,7 @@ export function PlatformFlow() {
             );
           })}
         </div>
-        <button
-          className="flow-more"
-          type="button"
-          aria-expanded={!folded}
-          onClick={toggleFold}
-        >
+        <button className="flow-more" type="button" aria-expanded={!folded} onClick={toggleFold}>
           {folded ? "Show the whole flow" : "Show less"}
         </button>
       </div>

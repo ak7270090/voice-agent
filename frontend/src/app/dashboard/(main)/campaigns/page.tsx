@@ -17,7 +17,7 @@ import {
   listPhoneNumbers,
   type PhoneNumber,
 } from "@/lib/api";
-import { dashboardPath } from "@/lib/navigation";
+import { dashboardPath } from "@/lib/paths";
 
 export default function CampaignsPage() {
   const router = useRouter();

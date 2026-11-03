@@ -17,7 +17,7 @@ import {
   pauseCampaign,
   startCampaign,
 } from "@/lib/api";
-import { dashboardPath } from "@/lib/navigation";
+import { dashboardPath } from "@/lib/paths";
 
 // The dialler places calls every few seconds; refresh as often while the campaign runs.
 const REFRESH_MS = 3000;

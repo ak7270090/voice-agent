@@ -6,7 +6,7 @@ import { type FormEvent, useEffect, useState } from "react";
 
 import { Button, Card } from "@/components/ui/primitives";
 import { listPhoneNumbers, type PhoneNumber, startPhoneCall } from "@/lib/api";
-import { dashboardPath } from "@/lib/navigation";
+import { dashboardPath } from "@/lib/paths";
 
 const INPUT =
   "w-full rounded-lg border border-slate-200 px-3 py-1.5 text-[13px] outline-none focus:border-brand-500";

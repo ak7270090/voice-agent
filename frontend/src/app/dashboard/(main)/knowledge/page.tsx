@@ -5,7 +5,7 @@ import { type FormEvent, useEffect, useState } from "react";
 
 import { Button, Card, Chip, PageHeader } from "@/components/ui/primitives";
 import { createKnowledgeBase, type KnowledgeBase, listKnowledgeBases } from "@/lib/api";
-import { dashboardPath } from "@/lib/navigation";
+import { dashboardPath } from "@/lib/paths";
 
 export default function KnowledgePage() {
   const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBase[] | null>(null);

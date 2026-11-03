@@ -4,7 +4,8 @@ import clsx from "clsx";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { DASHBOARD_ROOT, NAV_SECTIONS } from "@/lib/navigation";
+import { NAV_SECTIONS } from "@/lib/navigation";
+import { DASHBOARD_ROOT } from "@/lib/paths";
 
 export function Sidebar() {
   const pathname = usePathname();

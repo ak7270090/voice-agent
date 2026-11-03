@@ -47,7 +47,7 @@ import {
 } from "./flowModel";
 import { NodePanel } from "./NodePanel";
 import { DRAG_TYPE, NodePalette } from "./NodePalette";
-import { dashboardPath } from "@/lib/navigation";
+import { dashboardPath } from "@/lib/paths";
 
 const NODE_TYPES = { flowNode: FlowNodeCard };
 type Tab = "test" | "settings" | "issues";

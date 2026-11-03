@@ -8,7 +8,7 @@ import { DailyBars, OutcomeBars, StatTile } from "@/components/calls/Charts";
 import { ServiceStatus } from "@/components/shell/ServiceStatus";
 import { Card, PageHeader } from "@/components/ui/primitives";
 import { getMetrics, type Metrics } from "@/lib/api";
-import { dashboardPath } from "@/lib/navigation";
+import { dashboardPath } from "@/lib/paths";
 
 const PERIODS = [7, 14, 30];
 // The busiest agents; the Calls page filters by any agent.

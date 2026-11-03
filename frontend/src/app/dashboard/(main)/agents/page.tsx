@@ -12,7 +12,7 @@ import {
   listAgents,
   listTemplates,
 } from "@/lib/api";
-import { dashboardPath } from "@/lib/navigation";
+import { dashboardPath } from "@/lib/paths";
 
 export default function AgentsPage() {
   const router = useRouter();

@@ -16,7 +16,7 @@ import {
 } from "@/components/calls/format";
 import { Card, Chip, PageHeader } from "@/components/ui/primitives";
 import { type Agent, type Call, getAgent, getCall } from "@/lib/api";
-import { dashboardPath } from "@/lib/navigation";
+import { dashboardPath } from "@/lib/paths";
 
 // While the post-call analysis runs, look again this often.
 const ANALYSIS_POLL_MS = 3000;

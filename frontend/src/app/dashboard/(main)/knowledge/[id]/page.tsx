@@ -18,7 +18,7 @@ import {
   listKnowledgeBases,
   uploadDocument,
 } from "@/lib/api";
-import { dashboardPath } from "@/lib/navigation";
+import { dashboardPath } from "@/lib/paths";
 
 // Poll while a document is still being read and embedded.
 const REFRESH_WHILE_PROCESSING_MS = 2000;

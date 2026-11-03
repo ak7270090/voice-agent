@@ -9,7 +9,7 @@ import {
 } from "@/components/calls/format";
 import { Chip } from "@/components/ui/primitives";
 import type { Call } from "@/lib/api";
-import { dashboardPath } from "@/lib/navigation";
+import { dashboardPath } from "@/lib/paths";
 
 export function SuccessChip({ call }: { call: Call }) {
   if (call.analysis_status === "pending") return <Chip>analysing…</Chip>;

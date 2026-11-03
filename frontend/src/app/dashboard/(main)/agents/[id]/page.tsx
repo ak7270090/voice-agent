@@ -19,7 +19,7 @@ import {
   listKnowledgeBases,
   updateAgent,
 } from "@/lib/api";
-import { dashboardPath } from "@/lib/navigation";
+import { dashboardPath } from "@/lib/paths";
 
 // The runtime closes the call record a moment after the room empties.
 const CALL_RECORD_DELAY_MS = 1500;
