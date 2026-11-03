@@ -1,6 +1,6 @@
 target-version = "py311"
 line-length = 100
-src = ["backend/studio-backend/src", "backend/studio-backend/tests", "backend/voice-agent/src", "backend/voice-agent/tests"]
+src = ["backend/studio-backend/src", "backend/studio-backend/tests", "backend/voice-agent/src", "backend/voice-agent/tests", "examples/demo-clinic/src", "examples/demo-clinic/tests"]
 
 [lint]
 select = ["E", "F", "I", "N", "UP", "B", "SIM", "ASYNC"]

@@ -48,7 +48,7 @@ class Settings(BaseSettings):
     default_tts_model: str = "deepgram/aura-2-thalia-en"
     default_voice: str = ""
     # Where the runtime reaches the demo clinic API used by the clinic template's tools.
-    demo_clinic_api_url: str = "http://api:8000"
+    demo_clinic_api_url: str = "http://demo-clinic:8100"
 
     # Call costs in US dollars, from each call's usage. Check them against the providers'
     # pricing pages (31 October 2026: OpenAI gpt-5.4-mini; Deepgram's Nova-3 streaming rate is

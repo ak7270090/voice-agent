@@ -25,6 +25,7 @@ import httpx
 from livekit import rtc
 
 API = "http://localhost:8000"
+DEMO_CLINIC = "http://localhost:8100"
 TEMPLATE_ID = "clinic-booking"
 AGENT_NAME = "Clinic booking (scenario runs)"
 DOCTOR = "skin"
@@ -137,7 +138,7 @@ async def free_day(
         if day == not_on:
             continue
         response = await api.get(
-            "/demo-clinic/availability", params={"doctor": doctor, "day": day.isoformat()}
+            f"{DEMO_CLINIC}/availability", params={"doctor": doctor, "day": day.isoformat()}
         )
         free = [time for time in response.json()["free_times"] if time >= earliest]
         if len(free) >= needed:
@@ -166,7 +167,7 @@ async def build_scenarios(api: httpx.AsyncClient) -> list[Scenario]:
     patient = "My name is Rohan Gupta and I am 34 years old."
     # Someone else takes this slot first, so the booking gets 409 and the flow goes back.
     someone_else = await api.post(
-        "/demo-clinic/appointments",
+        f"{DEMO_CLINIC}/appointments",
         json={
             "patient_name": "Asha Rao",
             "patient_age": 41,

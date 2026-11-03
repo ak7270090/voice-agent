@@ -127,7 +127,7 @@ class BackendClient:
         await self._http.aclose()
 
 
-def create_control_plane_client(settings: Settings) -> BackendClient:
+def create_backend_client(settings: Settings) -> BackendClient:
     return BackendClient(
         httpx.AsyncClient(
             base_url=settings.api_url,

@@ -31,7 +31,7 @@ from studio_voice.backend_client import (
     AgentConfig,
     BackendClient,
     CallRecord,
-    create_control_plane_client,
+    create_backend_client,
 )
 from studio_voice.channels import (
     CallMetadata,
@@ -207,7 +207,7 @@ async def ring_and_answer(
 async def run_call(ctx: JobContext) -> None:
     settings = get_settings()
     metadata = parse_call_metadata(ctx.job.metadata)
-    backend_client = create_control_plane_client(settings)
+    backend_client = create_backend_client(settings)
     tracer_provider = ctx.proc.userdata[TRACER_PROVIDER_USERDATA_KEY]
     if tracer_provider is not None:
         ctx.add_shutdown_callback(CallTracing(tracer_provider, session_id=ctx.room.name).flush)

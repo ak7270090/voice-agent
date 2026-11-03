@@ -78,6 +78,14 @@ services:
       API_URL: http://api:8000
     ports:
       - "8081:8081"
+    depends_on:
+      - demo-clinic
+
+  # The stand-in hospital booking API that the clinic template's tools call.
+  demo-clinic:
+    build: ./examples/demo-clinic
+    ports:
+      - "8100:8100"
 
   console:
     build:

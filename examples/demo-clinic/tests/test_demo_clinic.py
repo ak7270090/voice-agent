@@ -1,7 +1,10 @@
+from collections.abc import AsyncIterator
 from datetime import date, timedelta
 
+import httpx
 import pytest
-from studio_backend.demo_clinic.service import DoctorNotFoundError, find_doctor
+from demo_clinic.clinic import DoctorNotFoundError, find_doctor
+from demo_clinic.main import create_app
 
 
 def next_weekday(weekday: int) -> date:
@@ -18,6 +21,13 @@ BOOKING = {
     "day": SATURDAY.isoformat(),
     "time": "11:00",
 }
+
+
+@pytest.fixture
+async def client() -> AsyncIterator[httpx.AsyncClient]:
+    transport = httpx.ASGITransport(app=create_app())
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as test_client:
+        yield test_client
 
 
 @pytest.mark.parametrize(
@@ -42,7 +52,7 @@ def test_unknown_doctor_is_not_found():
 
 async def test_availability_lists_free_half_hours_in_the_doctors_shift(client):
     response = await client.get(
-        "/demo-clinic/availability", params={"doctor": "Mehta", "day": SATURDAY.isoformat()}
+        "/availability", params={"doctor": "Mehta", "day": SATURDAY.isoformat()}
     )
 
     body = response.json()
@@ -52,7 +62,7 @@ async def test_availability_lists_free_half_hours_in_the_doctors_shift(client):
 
 async def test_closed_day_suggests_the_next_open_days(client):
     response = await client.get(
-        "/demo-clinic/availability", params={"doctor": "Mehta", "day": SUNDAY.isoformat()}
+        "/availability", params={"doctor": "Mehta", "day": SUNDAY.isoformat()}
     )
 
     assert response.json()["free_times"] == []
@@ -60,13 +70,11 @@ async def test_closed_day_suggests_the_next_open_days(client):
 
 
 async def test_booking_returns_an_id_and_takes_the_slot(client):
-    first = await client.post("/demo-clinic/appointments", json=BOOKING)
-    second = await client.post("/demo-clinic/appointments", json={**BOOKING, "time": "11:30"})
-    taken = await client.post("/demo-clinic/appointments", json=BOOKING)
+    first = await client.post("/appointments", json=BOOKING)
+    second = await client.post("/appointments", json={**BOOKING, "time": "11:30"})
+    taken = await client.post("/appointments", json=BOOKING)
     free = (
-        await client.get(
-            "/demo-clinic/availability", params={"doctor": "Mehta", "day": SATURDAY.isoformat()}
-        )
+        await client.get("/availability", params={"doctor": "Mehta", "day": SATURDAY.isoformat()})
     ).json()["free_times"]
 
     assert first.json()["booking_id"] == "A-1001"
@@ -79,9 +87,9 @@ async def test_booking_returns_an_id_and_takes_the_slot(client):
 async def test_a_repeated_booking_with_the_same_key_returns_the_first_booking(client):
     key = {"Idempotency-Key": "web-3f9a:book"}
 
-    first = await client.post("/demo-clinic/appointments", json=BOOKING, headers=key)
-    again = await client.post("/demo-clinic/appointments", json=BOOKING, headers=key)
-    other_caller = await client.post("/demo-clinic/appointments", json=BOOKING)
+    first = await client.post("/appointments", json=BOOKING, headers=key)
+    again = await client.post("/appointments", json=BOOKING, headers=key)
+    other_caller = await client.post("/appointments", json=BOOKING)
 
     assert first.status_code == again.status_code == 201
     assert again.json()["booking_id"] == first.json()["booking_id"]
@@ -89,11 +97,9 @@ async def test_a_repeated_booking_with_the_same_key_returns_the_first_booking(cl
 
 
 async def test_unknown_doctor_cannot_be_booked_or_checked(client):
-    booking = await client.post(
-        "/demo-clinic/appointments", json={**BOOKING, "doctor": "astrologer"}
-    )
+    booking = await client.post("/appointments", json={**BOOKING, "doctor": "astrologer"})
     check = await client.get(
-        "/demo-clinic/availability", params={"doctor": "astrologer", "day": SATURDAY.isoformat()}
+        "/availability", params={"doctor": "astrologer", "day": SATURDAY.isoformat()}
     )
 
     assert booking.status_code == 404
@@ -101,7 +107,7 @@ async def test_unknown_doctor_cannot_be_booked_or_checked(client):
 
 
 async def test_doctors_are_listed_with_their_days(client):
-    doctors = (await client.get("/demo-clinic/doctors")).json()
+    doctors = (await client.get("/doctors")).json()
 
     assert {doctor["id"] for doctor in doctors} == {"dr-sharma", "dr-mehta", "dr-iyer", "dr-khan"}
     assert next(d for d in doctors if d["id"] == "dr-mehta")["days"] == ["Mon", "Wed", "Fri", "Sat"]

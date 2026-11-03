@@ -6,7 +6,7 @@ from studio_voice.backend_client import (
     BackendClient,
     CallRecord,
     TranscriptTurn,
-    create_control_plane_client,
+    create_backend_client,
 )
 from studio_voice.config import Settings
 
@@ -112,7 +112,7 @@ async def test_the_number_dialled_says_which_agent_answers():
 
 
 def test_client_sends_the_runtime_token_to_the_configured_api():
-    client = create_control_plane_client(Settings(api_url="http://api:8000", runtime_api_token="t"))
+    client = create_backend_client(Settings(api_url="http://api:8000", runtime_api_token="t"))
 
     assert str(client._http.base_url) == "http://api:8000"
     assert client._http.headers["Authorization"] == "Bearer t"

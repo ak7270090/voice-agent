@@ -38,7 +38,7 @@ def issues_of(flow: dict) -> list[str]:
     [
         build_reminder_flow,
         build_lead_qualifier_flow,
-        lambda: build_clinic_booking_flow("http://api:8000"),
+        lambda: build_clinic_booking_flow("http://demo-clinic:8100"),
     ],
 )
 def test_template_flows_are_valid(build):
@@ -218,7 +218,9 @@ async def test_cal_com_clinic_flow_publishes_once_the_key_and_event_types_are_se
     calcom = calcom_clinic_settings()
     for number, resource in enumerate(calcom.resources, start=1):
         resource.event_type_id = number
-    flow = build_clinic_booking_flow("http://api:8000", calcom=calcom).model_dump(mode="json")
+    flow = build_clinic_booking_flow("http://demo-clinic:8100", calcom=calcom).model_dump(
+        mode="json"
+    )
     agent = await create_agent(client)
     await client.put("/secrets/CALCOM_KEY", json={"value": "cal_live_0123456789abcdef"})
     await client.put(f"/agents/{agent['id']}/flow", json=flow)

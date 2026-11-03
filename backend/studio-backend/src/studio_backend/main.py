@@ -20,7 +20,6 @@ from studio_backend.campaigns.router import router as campaigns_router
 from studio_backend.config import export_provider_keys, get_settings
 from studio_backend.credentials.router import router as secrets_router
 from studio_backend.database import create_session_factory
-from studio_backend.demo_clinic.router import router as demo_clinic_router
 from studio_backend.flows.router import router as flows_router
 from studio_backend.health import build_dependency_checks
 from studio_backend.health import router as health_router
@@ -86,7 +85,6 @@ def create_app() -> FastAPI:
         numbers_runtime_router,
         campaigns_router,
         secrets_router,
-        demo_clinic_router,
     ):
         app.include_router(router)
     trace_requests(app, create_tracer_provider(get_settings()))

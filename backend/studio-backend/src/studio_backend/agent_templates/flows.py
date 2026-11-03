@@ -1,7 +1,6 @@
 """Ready-made flows for the agent templates. The clinic one rebuilds clinic-voice-agent's
 booking form as nodes: collect, check free times, read back, book, give the booking ID."""
 
-from studio_backend.demo_clinic.constants import DOCTORS
 from studio_backend.flows.constants import CALCOM_AVAILABILITY_TOOL, CALCOM_BOOKING_TOOL
 from studio_backend.flows.schemas import (
     CalcomResource,
@@ -30,6 +29,34 @@ DOCTOR_LIST = (
     "Dr. Anil Sharma, general physician; Dr. Priya Mehta, skin; Dr. Ravi Iyer, children; "
     "Dr. Sana Khan, bones and joints"
 )
+# Each doctor, and the words a caller may use instead of the name.
+CLINIC_DOCTORS = (
+    (
+        "Dr. Anil Sharma",
+        ("general physician", "sharma", "general", "physician", "fever", "cold", "cough"),
+    ),
+    (
+        "Dr. Priya Mehta",
+        ("dermatologist", "mehta", "skin", "derma", "dermatologist", "rash", "acne", "hair"),
+    ),
+    (
+        "Dr. Ravi Iyer",
+        (
+            "paediatrician",
+            "iyer",
+            "child",
+            "kid",
+            "baby",
+            "paediatric",
+            "pediatric",
+            "paediatrician",
+        ),
+    ),
+    (
+        "Dr. Sana Khan",
+        ("orthopaedic surgeon", "khan", "bone", "joint", "ortho", "knee", "back", "fracture"),
+    ),
+)
 
 
 def at(column: float, row: float) -> Position:
@@ -48,8 +75,7 @@ def calcom_clinic_settings() -> CalcomSettings:
     return CalcomSettings(
         api_key_secret="CALCOM_KEY",
         resources=[
-            CalcomResource(name=doctor.name, keywords=[doctor.speciality, *doctor.keywords])
-            for doctor in DOCTORS
+            CalcomResource(name=name, keywords=list(keywords)) for name, keywords in CLINIC_DOCTORS
         ],
     )
 
@@ -66,9 +92,7 @@ def availability_tool(clinic_api_url: str, calcom: CalcomSettings | None) -> Too
     }
     if calcom is not None:
         return ToolData(kind=CALCOM_AVAILABILITY_TOOL, calcom=calcom, **common)
-    return ToolData(
-        url=f"{clinic_api_url}/demo-clinic/availability?doctor={{doctor}}&day={{day}}", **common
-    )
+    return ToolData(url=f"{clinic_api_url}/availability?doctor={{doctor}}&day={{day}}", **common)
 
 
 def booking_tool(clinic_api_url: str, calcom: CalcomSettings | None) -> ToolData:
@@ -82,7 +106,7 @@ def booking_tool(clinic_api_url: str, calcom: CalcomSettings | None) -> ToolData
         return ToolData(kind=CALCOM_BOOKING_TOOL, calcom=calcom, **common)
     return ToolData(
         method="POST",
-        url=f"{clinic_api_url}/demo-clinic/appointments",
+        url=f"{clinic_api_url}/appointments",
         body={
             "patient_name": "{patient_name}",
             "patient_age": "{patient_age}",

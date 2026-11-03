@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "demo-clinic"
+version = "0.1.0"
+description = "A stand-in hospital booking API for Voice Agent Studio's clinic template"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = [
+    "fastapi~=0.115",
+    "uvicorn[standard]~=0.34",
+]
+
+[project.optional-dependencies]
+dev = [
+    "httpx~=0.28",
+    "pytest>=9.0",
+    "pytest-asyncio>=1.0",
+    "pytest-cov>=7.0",
+    "ruff>=0.15",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-p no:cacheprovider --cov=demo_clinic --cov-report=term-missing --cov-fail-under=80"

@@ -18,7 +18,6 @@ from studio_backend.campaigns import models as campaign_models  # noqa: F401
 from studio_backend.config import get_settings
 from studio_backend.credentials import models as secret_models  # noqa: F401
 from studio_backend.database import Base, create_session_factory
-from studio_backend.demo_clinic import models as demo_clinic_models  # noqa: F401
 from studio_backend.flows import models as flow_models  # noqa: F401
 from studio_backend.knowledge.constants import EMBEDDING_DIMENSIONS
 from studio_backend.main import create_app
