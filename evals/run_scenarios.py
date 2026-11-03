@@ -42,7 +42,8 @@ LISTENING = "listening"
 # done when nothing new has come for this long and it is listening.
 QUIET_SECONDS = 1.5
 REPLY_TIMEOUT_SECONDS = 60
-RECORD_WAIT_SECONDS = 4
+RECORD_WAIT_SECONDS = 30
+RECORD_POLL_SECONDS = 0.5
 # Fail the run if the median reply gets this much slower than the baseline.
 ALLOWED_SLOWDOWN = 1.10
 BASELINE_FILE = Path(__file__).with_name("scenarios_baseline.json")
@@ -228,8 +229,9 @@ async def build_scenarios(api: httpx.AsyncClient) -> list[Scenario]:
             {"doctor": "Dr. Anil Sharma", "time": physician_time},
             expected_in_replies=("Mehta",),
         ),
-        # A vague time: the booked time must be one the clinic said was free, never made up
-        # (the same phone call once got 12:00 for "the afternoon" without any check).
+        # A vague time: the agent must offer the afternoon's times and book the one chosen. It once
+        # picked 13:00 itself, and "the earliest of those" was taken as a yes. Noon may or may not
+        # count as afternoon, so the earliest is either of the first two.
         Scenario(
             "asks for the afternoon",
             [
@@ -241,7 +243,7 @@ async def build_scenarios(api: httpx.AsyncClient) -> list[Scenario]:
                 "Yes.",
             ],
             ("booked",),
-            {"time": set(afternoon_times)},
+            {"time": set(afternoon_times[:2])},
         ),
         Scenario("asks for a person", ["Can I talk to a person, please?"], ("transfer_requested",)),
         # The scenario agent has no knowledge base, so this only checks the question path:
@@ -269,6 +271,19 @@ def matches(actual: object, expected: object) -> bool:
     return actual in expected if isinstance(expected, set) else actual == expected
 
 
+async def finished_record(api: httpx.AsyncClient, agent_id: str, room: str) -> dict | None:
+    """The call's record once the agent has closed it: read too early, it has no outcome yet."""
+    deadline = time.monotonic() + RECORD_WAIT_SECONDS
+    record = None
+    while time.monotonic() < deadline:
+        calls = (await api.get("/calls", params={"agent_id": agent_id, "limit": 20})).json()
+        record = next((c for c in calls if c["room_name"] == room), None)
+        if record is not None and record["ended_at"] is not None:
+            break
+        await asyncio.sleep(RECORD_POLL_SECONDS)
+    return record
+
+
 async def run(api: httpx.AsyncClient, agent_id: str, scenario: Scenario) -> Result:
     response = await api.post(f"/agents/{agent_id}/browser-calls")
     browser_call = response.raise_for_status().json()
@@ -277,9 +292,7 @@ async def run(api: httpx.AsyncClient, agent_id: str, scenario: Scenario) -> Resu
     await call.say(None)
     seconds = [await call.say(line) for line in scenario.lines]
     await call.leave()
-    await asyncio.sleep(RECORD_WAIT_SECONDS)
-    calls = (await api.get("/calls", params={"agent_id": agent_id, "limit": 20})).json()
-    record = next((c for c in calls if c["room_name"] == browser_call["room"]), None)
+    record = await finished_record(api, agent_id, browser_call["room"])
     timed = [s for s in seconds if s is not None]
     if record is None:
         return Result(scenario, False, None, timed, call.replies, "no call record")
@@ -340,15 +353,26 @@ def regressed(summary: dict) -> bool:
 async def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--save-baseline", action="store_true")
+    parser.add_argument("--only", help="run only the scenario with this name")
+    parser.add_argument(
+        "--repeat", type=int, default=1, help="run this many times: LLM failures can be occasional"
+    )
     args = parser.parse_args()
+    results = []
     async with httpx.AsyncClient(base_url=API, timeout=10) as api:
         agent_id = await clinic_agent(api)
-        results = [await run(api, agent_id, scenario) for scenario in await build_scenarios(api)]
+        for _ in range(args.repeat):
+            # Built afresh each time: every run books slots, so needs its own free ones.
+            for scenario in await build_scenarios(api):
+                if args.only in (None, scenario.name):
+                    results.append(await run(api, agent_id, scenario))
     summary = report(results)
     if args.save_baseline:
         BASELINE_FILE.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
         return 0
-    return 1 if regressed(summary) or summary["pass_rate"] < 1 else 0
+    # A partial run says nothing about the baseline's speed or pass rate.
+    partial = args.only is not None or args.repeat > 1
+    return 1 if summary["pass_rate"] < 1 or (not partial and regressed(summary)) else 0
 
 
 if __name__ == "__main__":

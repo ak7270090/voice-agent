@@ -21,7 +21,6 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import httpx
-
 from run_scenarios import TesterCall, spoken_clock, spoken_day
 
 API = "http://localhost:8000"

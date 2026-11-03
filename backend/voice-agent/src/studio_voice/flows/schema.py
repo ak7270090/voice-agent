@@ -11,6 +11,7 @@ class FieldSpec(BaseModel):
     type: str = "text"
     description: str = ""
     required: bool = True
+    choices_from: str = ""
 
 
 class StepData(BaseModel):
@@ -21,6 +22,7 @@ class StepData(BaseModel):
     use_knowledge: bool = False
     say_on_enter: str = ""
     wait_after_enter: bool = False
+    on_yes: str = ""
 
 
 class CalcomResource(BaseModel):

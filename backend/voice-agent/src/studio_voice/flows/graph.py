@@ -71,11 +71,15 @@ class FlowGraph:
             return
         history = [m for m in state.get("messages", []) if not isinstance(m, SystemMessage)]
         users = [m for m in history if isinstance(m, HumanMessage)]
+        filler_said = False
         if users:
             runner.entry_line = ""
+            line = runner.line_before_answer(users[-1].text)
+            if line:
+                yield spoken(f"{line} ")
+                filler_said = True
             await runner.take_answer(users[-1].text)
         scratch: list[BaseMessage] = []
-        filler_said = False
         words_only = False
         for _ in range(MAX_PASSES):
             if runner.ended:

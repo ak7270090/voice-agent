@@ -17,7 +17,7 @@ from studio_voice.core.config import Settings
 from studio_voice.core.observability import TRACE_CONTEXT_HOOKS
 from studio_voice.flows.graph import FlowGraph
 from studio_voice.flows.runner import FlowRunner
-from studio_voice.languages import parsers_for
+from studio_voice.languages import choice_readers_for, parsers_for
 
 # Participant attributes the dashboard reads to highlight the live node and show the fields.
 FLOW_NODE_ATTRIBUTE = "studio.flow_node"
@@ -53,6 +53,7 @@ def create_flow_runner(
         on_change=lambda runner: publish_progress(room, runner),
         call_values=call_values,
         secrets=config.secrets,
+        choice_readers=choice_readers_for(language),
     )
 
 

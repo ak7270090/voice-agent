@@ -159,6 +159,10 @@ def _check_steps_and_tools(flow: Flow, nodes: dict) -> list[FlowIssue]:
             names = [field.name for field in node.data.fields]
             if len(names) != len(set(names)):
                 issues.append(FlowIssue(message="Two fields share a name", node_id=node.id))
+            on_yes = node.data.on_yes
+            if on_yes and not any(e.source == node.id and e.target == on_yes for e in flow.edges):
+                message = "A yes must lead to a node this step connects to"
+                issues.append(FlowIssue(message=message, node_id=node.id))
             for tool_id in node.data.tools:
                 if not isinstance(nodes.get(tool_id), ToolNode):
                     message = f"Attached tool '{tool_id}' is not a tool node"

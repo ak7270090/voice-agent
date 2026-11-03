@@ -26,6 +26,23 @@ MONTHS = (
 )  # fmt: skip
 YES_WORDS = {"yes", "yeah", "yep", "sure", "correct", "right", "okay", "ok", "confirm", "please"}
 NO_WORDS = {"no", "nope", "nah", "wrong", "not", "don't", "cancel"}
+CLEAR_YES_WORDS = (YES_WORDS - {"please"}) | {
+    "absolutely", "book", "definitely", "exactly", "fine", "good", "great", "perfect",
+}  # fmt: skip
+NOT_A_CLEAR_YES = NO_WORDS | {
+    "actually", "another", "but", "change", "different", "earliest", "first", "instead", "last",
+    "latest", "wait",
+}  # fmt: skip
+# Start and end of each part, as HH:MM.
+PARTS_OF_DAY = {
+    "morning": ("00:00", "12:00"),
+    "afternoon": ("12:00", "17:00"),
+    "evening": ("17:00", "24:00"),
+}
+# "The third" alone could be a date, so a position needs a word after it.
+EARLIEST = re.compile(r"\b(earliest|soonest|first (one|option|time|available))\b")
+LATEST = re.compile(r"\b(latest|last (one|option|time))\b")
+NTH_CHOICE = re.compile(r"\b(second|third|fourth|fifth) (one|option|time)\b")
 # Clinic-style hours: "at 4" without am/pm means the afternoon.
 AFTERNOON_HOURS_WITHOUT_SUFFIX = range(1, 8)
 
@@ -141,6 +158,43 @@ def parse_phone(text: str, today: date | None = None) -> str | None:
     digits = re.sub(r"\D", "", text)
     return digits if 10 <= len(digits) <= 13 else None
 
+
+def parse_clear_yes(text: str, today: date | None = None) -> bool | None:
+    """True only for a plain yes, because it can start a booking: "please" alone or "yes, but
+    change the time" are not one."""
+    tokens = set(words(text))
+    return True if tokens & CLEAR_YES_WORDS and not tokens & NOT_A_CLEAR_YES else None
+
+
+def narrow_times(text: str, times: list[str]) -> list[str] | None:
+    """The times in the part of the day the caller named, or None if they named no part."""
+    tokens = words(text)
+    for part, (start, end) in PARTS_OF_DAY.items():
+        if part in tokens:
+            return [time for time in times if start <= time < end]
+    return None
+
+
+def pick_time(text: str, offered: list[str], free: list[str]) -> str | None:
+    """The time the caller chose: a position in the times `offered` ("the earliest"), a clock
+    time that is `free`, or a plain yes when only one was offered. Positions come first because
+    "the first one" also contains a number."""
+    lowered = text.lower()
+    if offered and EARLIEST.search(lowered):
+        return offered[0]
+    if offered and LATEST.search(lowered):
+        return offered[-1]
+    position = NTH_CHOICE.search(lowered)
+    if position:
+        index = ORDINALS[position.group(1)] - 1
+        return offered[index] if index < len(offered) else None
+    named = parse_time(text)
+    if named is not None:
+        return named if named in free else None
+    return offered[0] if len(offered) == 1 and parse_clear_yes(text) else None
+
+
+CHOICE_READERS = {"narrow": narrow_times, "pick": pick_time, "clear_yes": parse_clear_yes}
 
 FIELD_PARSERS = {
     "number": parse_number,

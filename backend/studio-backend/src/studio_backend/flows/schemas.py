@@ -27,6 +27,9 @@ class FieldSpec(BaseModel):
     type: Literal[FIELD_TYPES] = "text"
     description: str = ""
     required: bool = True
+    # A list in a tool's result (e.g. free_times): only the caller's own words can then pick this
+    # field's value from it, so the LLM can never choose one for them.
+    choices_from: str = ""
 
 
 class StepData(BaseModel):
@@ -41,6 +44,8 @@ class StepData(BaseModel):
     say_on_enter: str = ""
     # After saying the line, wait for the caller instead of asking the LLM for a reply.
     wait_after_enter: bool = False
+    # A node this step leads to: code moves there on the caller's plain yes, and the LLM can't.
+    on_yes: str = ""
 
 
 class CalcomResource(BaseModel):

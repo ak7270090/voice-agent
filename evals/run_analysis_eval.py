@@ -1,7 +1,8 @@
 """Post-call analysis eval: the real analysis model over saved transcripts with known answers.
 
-analysis_cases.json holds real calls from the scenario and campaign runs (transcript, outcome, collected
-details, tool calls, the agent's success rule and analysis fields) and, written by hand, what
+analysis_cases.json holds real calls from the scenario and campaign runs (transcript, outcome,
+collected details, tool calls, the agent's success rule and analysis fields) and, written by
+hand, what
 the analysis should say: whether the call succeeded and the value of chosen fields. The run
 also checks that every analysis field comes back, which Retell users report going missing.
 

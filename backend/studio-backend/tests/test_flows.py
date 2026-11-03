@@ -282,3 +282,16 @@ def test_tool_can_only_save_to_fields_that_exist():
     assert "Save to fields: ['vip'] are not fields of any step" in issues_of(
         {**SMALL_FLOW, "nodes": nodes}
     )
+
+
+def test_a_steps_yes_must_lead_to_a_node_it_connects_to():
+    flow = build_clinic_booking_flow("http://demo-clinic:8100").model_dump(mode="json")
+    confirm = next(node for node in flow["nodes"] if node["id"] == "confirm")
+
+    assert confirm["data"]["on_yes"] == "book"
+    assert validate_flow(Flow.model_validate(flow)) == []
+
+    confirm["data"]["on_yes"] = "booked"
+    messages = [issue.message for issue in validate_flow(Flow.model_validate(flow))]
+
+    assert "A yes must lead to a node this step connects to" in messages

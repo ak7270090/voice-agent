@@ -191,13 +191,15 @@ def build_clinic_booking_flow(clinic_api_url: str, calcom: CalcomSettings | None
                     "suggest any other time. If the day has none, offer its next "
                     "open days, and when the caller picks another day, call check_availability "
                     "for it. If you are back here because the booking failed, call "
-                    "check_availability again and offer the new free times."
+                    "check_availability again and offer the new free times. Never choose a "
+                    "time for the caller: keep asking until they say one."
                 ),
                 fields=[
                     FieldSpec(
                         name="time",
                         type="time",
                         description="One of the free times the caller chose",
+                        choices_from="free_times",
                     ),
                 ],
                 tools=["check_availability"],
@@ -221,7 +223,8 @@ def build_clinic_booking_flow(clinic_api_url: str, calcom: CalcomSettings | None
                 name="Read back and confirm",
                 instructions=(
                     "The details were just read back to the caller. If they say something is "
-                    "wrong, ask what to change."
+                    "wrong, ask what to change. If their answer is unclear, ask again whether "
+                    "the details are right. Their yes books the appointment by itself."
                 ),
                 # Filled in by code from the collected fields, so names, ages, dates and times
                 # are said exactly; then the agent waits for the caller's answer.
@@ -230,6 +233,8 @@ def build_clinic_booking_flow(clinic_api_url: str, calcom: CalcomSettings | None
                     "{time}. Is that right?"
                 ),
                 wait_after_enter=True,
+                # A plain yes books, by code: the LLM once took "the earliest of those" for one.
+                on_yes="book",
             ),
         ),
         ToolNode(

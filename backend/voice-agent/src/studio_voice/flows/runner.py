@@ -118,6 +118,7 @@ class FlowRunner:
         on_change: Callable[["FlowRunner"], None] | None = None,
         call_values: dict[str, Any] | None = None,
         secrets: dict[str, str] | None = None,
+        choice_readers: dict[str, Callable[..., Any]] | None = None,
     ) -> None:
         self._idempotency_prefix = idempotency_prefix
         self._secrets = secrets or {}
@@ -125,6 +126,9 @@ class FlowRunner:
         self._edges = flow.edges
         self._http = http
         self._parsers = parsers
+        self._choice_readers = choice_readers or {}
+        # The times left after the caller named a part of the day; None until they do.
+        self._narrowed: list[str] | None = None
         self._today = today
         self._knowledge_tool = knowledge_tool
         self._tool_unavailable_line = tool_unavailable_line
@@ -250,6 +254,7 @@ class FlowRunner:
         return f"{self._idempotency_prefix}:{node.id}" if self._idempotency_prefix else None
 
     def _record(self, node: ToolNode, result: ToolResult) -> None:
+        self._narrowed = None
         self.results[node.data.name] = result.data
         self.last_result = (node.data.name, result.data)
         self._last_result_for_llm = (node.data.name, shown_to_llm(node, result.data))
@@ -302,8 +307,13 @@ class FlowRunner:
         with flow_span("flow.save_fields", values) as span:
             specs = {field.name: field for field in self._step_fields()}
             problems = []
+            refused = False
             for name, raw in values.items():
                 if raw in (None, "") or name not in specs:
+                    continue
+                if self._choices(specs[name]) is not None:
+                    refused = True
+                    problems.append(prompts.CHOICE_FROM_CALLER.format(name=name))
                     continue
                 value = self._normalise(specs[name], raw)
                 if value is None:
@@ -311,7 +321,7 @@ class FlowRunner:
                 else:
                     self.fields[name] = value
             self._notify()
-            moved = await self._move_if_complete()
+            moved = None if refused else await self._move_if_complete()
             missing = ", ".join(field.name for field in self.missing_fields())
             status = (
                 prompts.ALL_COLLECTED if not missing else prompts.STILL_NEEDED.format(names=missing)
@@ -325,6 +335,14 @@ class FlowRunner:
         so an answer counts even when the LLM forgets to save it (clinic-voice-agent's fix)."""
         # The caller has spoken since the flow came back: the step may move on again.
         self.holding = False
+        if self._is_yes_to_this_step(user_text):
+            await self.enter(self.current.data.on_yes, moved_by=MOVED_BY_CODE)
+            return
+        for field in self._step_fields():
+            choices = self._choices(field)
+            if choices is not None:
+                await self._take_choice(field, choices, user_text)
+                return
         missing = self.missing_fields()
         if not missing or missing[0].type not in self._parsers:
             return
@@ -336,6 +354,42 @@ class FlowRunner:
                 self.fields[field.name] = value
                 self._notify()
                 await self._move_if_complete()
+
+    def _choices(self, field: FieldSpec) -> list[str] | None:
+        """The list this field must be picked from, once a tool has returned it."""
+        if not field.choices_from or not self._choice_readers:
+            return None
+        for data in reversed(list(self.results.values())):
+            if isinstance(data, dict) and isinstance(data.get(field.choices_from), list):
+                return data[field.choices_from]
+        return None
+
+    async def _take_choice(self, field: FieldSpec, choices: list[str], user_text: str) -> None:
+        """Naming a part of the day narrows what is offered; then the caller's own words pick."""
+        with flow_span("flow.take_choice", {"field": field.name, "words": user_text}) as span:
+            narrowed = self._choice_readers["narrow"](user_text, choices)
+            if narrowed is not None:
+                self._narrowed = narrowed
+            offered = choices if self._narrowed is None else self._narrowed
+            value = self._choice_readers["pick"](user_text, offered, choices)
+            set_span_output(span, {field.name: value})
+            if value is not None:
+                self.fields[field.name] = value
+                self._notify()
+                await self._move_if_complete()
+
+    def _is_yes_to_this_step(self, user_text: str) -> bool:
+        if self.current is None or not self.current.data.on_yes or not self._choice_readers:
+            return False
+        return bool(self._choice_readers["clear_yes"](user_text))
+
+    def line_before_answer(self, user_text: str) -> str:
+        """What to say first if this answer starts a tool on the way (the LLM isn't asked, so
+        nothing else would fill the silence while a booking runs)."""
+        if not self._is_yes_to_this_step(user_text):
+            return ""
+        target = self._nodes[self.current.data.on_yes]
+        return target.data.say_while_running if isinstance(target, ToolNode) else ""
 
     async def _move_if_complete(self) -> str | None:
         if self.current is None or self.missing_fields() or self.holding:
@@ -375,6 +429,9 @@ class FlowRunner:
             name, data = self._last_result_for_llm
             result = json.dumps(data, default=str)[:MAX_TEXT_RESULT_CHARS]
             sections.append(prompts.RESULTS_SECTION.format(tool=name, result=result))
+        if self._narrowed is not None:
+            times = prompts.ONLY_THESE_TIMES.format(times=", ".join(self._narrowed))
+            sections.append(times if self._narrowed else prompts.NO_TIMES_IN_PART)
         if self.holding and self.returned_after_failure:
             sections.append(prompts.AFTER_FAILURE.format(tool=self._last_result_for_llm[0]))
         elif self.holding:
@@ -428,6 +485,7 @@ class FlowRunner:
         moves = [
             (edge.target, edge.condition)
             for edge in self._outgoing(self.current.id, CONDITION_EDGE)
+            if edge.target != self.current.data.on_yes
         ]
         for node in self._nodes.values():
             if isinstance(node, GlobalNode) and self._outgoing(node.id):

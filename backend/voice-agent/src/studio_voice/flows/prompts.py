@@ -39,6 +39,15 @@ BACK_TO_CHANGE = (
     "change. When they say the new value, call save_fields with it: the details above keep the "
     "old value until you do."
 )
+CHOICE_FROM_CALLER = (
+    "{name} is set only from the caller's own words, and they have not picked one yet. Ask them "
+    "to say one of the times."
+)
+ONLY_THESE_TIMES = "The caller asked for part of the day. Offer only these times: {times}."
+NO_TIMES_IN_PART = (
+    "None of the free times are in the part of the day the caller asked for. Say so and offer "
+    "the other times."
+)
 TOOL_UNAVAILABLE = (
     "{name} got no answer: the service is unavailable. The caller has already been told it "
     "can't be checked right now. Offer to try again in a moment or to connect them to a person. "

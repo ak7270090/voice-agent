@@ -54,9 +54,17 @@ def build_instructions(agent_instructions: str, locale: Locale, has_knowledge: b
     return "\n\n".join([agent_instructions.strip(), *rules])
 
 
+def choice_readers_for(language: str) -> dict[str, Callable[..., Any]]:
+    """How this language says which offered time it wants, and a plain yes."""
+    return _parser_module(language).CHOICE_READERS
+
+
 def parsers_for(language: str) -> dict[str, FieldParser]:
+    return _parser_module(language).FIELD_PARSERS
+
+
+def _parser_module(language: str) -> Any:
     try:
-        module = import_module(f"studio_voice.locales.{language}.parser")
+        return import_module(f"studio_voice.locales.{language}.parser")
     except ModuleNotFoundError as error:
         raise UnsupportedLanguageError(language) from error
-    return module.FIELD_PARSERS

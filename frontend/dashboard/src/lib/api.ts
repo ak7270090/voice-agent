@@ -434,6 +434,7 @@ export type FieldSpec = {
   type: FieldType;
   description: string;
   required: boolean;
+  choices_from?: string;
 };
 
 export type StepData = {
@@ -444,6 +445,7 @@ export type StepData = {
   use_knowledge: boolean;
   say_on_enter: string;
   wait_after_enter: boolean;
+  on_yes?: string;
 };
 
 export type ToolKind = "http" | "calcom_availability" | "calcom_booking";
