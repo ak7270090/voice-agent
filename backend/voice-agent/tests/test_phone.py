@@ -3,6 +3,7 @@ from types import SimpleNamespace
 import pytest
 from livekit import api
 from livekit.agents import AMDCategory
+
 from studio_voice import worker
 from studio_voice.phone import (
     PhoneLine,

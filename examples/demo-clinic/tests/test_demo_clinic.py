@@ -3,6 +3,7 @@ from datetime import date, timedelta
 
 import httpx
 import pytest
+
 from demo_clinic.clinic import DoctorNotFoundError, find_doctor
 from demo_clinic.main import create_app
 

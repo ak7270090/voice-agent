@@ -1,5 +1,6 @@
 import pytest
 from livekit.plugins import cartesia, deepgram, openai
+
 from studio_voice.backend_client import VoiceSettings
 from studio_voice.config import Settings
 from studio_voice.languages import UnsupportedLanguageError, build_instructions, load_locale
