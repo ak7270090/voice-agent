@@ -9,12 +9,11 @@ import pytest
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, AIMessageChunk, HumanMessage, SystemMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
-
-from studio_runtime.flows.graph import FlowGraph
-from studio_runtime.flows.runner import FlowRunner, value_at
-from studio_runtime.flows.schema import Flow
-from studio_runtime.observability import LlmCallTracer
-from studio_runtime.parsers import parsers_for
+from studio_voice.flows.graph import FlowGraph
+from studio_voice.flows.runner import FlowRunner, value_at
+from studio_voice.flows.schema import Flow
+from studio_voice.languages import parsers_for
+from studio_voice.observability import LlmCallTracer
 
 FRIDAY = date(2026, 10, 30)
 CLINIC = "http://clinic"

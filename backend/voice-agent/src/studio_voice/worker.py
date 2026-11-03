@@ -1,4 +1,4 @@
-"""LiveKit worker: `python -m studio_runtime.worker start` (`download-files` once for the VAD).
+"""LiveKit worker: `python -m studio_voice.worker start` (`download-files` once for the VAD).
 
 One worker serves every agent: the dispatch metadata names the agent, and its settings come from
 the API when the call starts. LiveKit serves the health check at `/` on `health_port`.
@@ -25,36 +25,34 @@ from livekit.agents import (
 from livekit.plugins import silero
 from livekit.plugins.langchain import LLMAdapter
 
-from studio_runtime.channels import (
+from studio_voice.backend_client import (
+    INBOUND_DIRECTION,
+    OUTBOUND_DIRECTION,
+    AgentConfig,
+    BackendClient,
+    CallRecord,
+    create_control_plane_client,
+)
+from studio_voice.channels import (
     CallMetadata,
     parse_call_metadata,
     register_idle_caller,
     register_voice_toggle,
     set_voice,
 )
-from studio_runtime.config import Settings, get_settings
-from studio_runtime.control_plane import (
-    INBOUND_DIRECTION,
-    OUTBOUND_DIRECTION,
-    AgentConfig,
-    CallRecord,
-    ControlPlaneClient,
-    create_control_plane_client,
-)
-from studio_runtime.conversation import build_transcript, create_llm
-from studio_runtime.flows.call import create_flow_llm, create_flow_runner
-from studio_runtime.flows.http_tools import fill_leniently
-from studio_runtime.flows.runner import FlowRunner
-from studio_runtime.knowledge import build_knowledge_tool
-from studio_runtime.languages import FALLBACK_LANGUAGE, build_instructions, load_locale
-from studio_runtime.observability import (
+from studio_voice.config import Settings, get_settings
+from studio_voice.conversation import build_transcript, create_llm
+from studio_voice.flows.runner import FlowRunner
+from studio_voice.flows.setup import create_flow_llm, create_flow_runner
+from studio_voice.languages import FALLBACK_LANGUAGE, build_instructions, load_locale
+from studio_voice.observability import (
     CallTracing,
     LlmCallTracer,
     TurnLatencies,
     call_usage,
     create_tracer_provider,
 )
-from studio_runtime.phone import (
+from studio_voice.phone import (
     CALLEE_IDENTITY,
     TRANSFER_FAILED_OUTCOME,
     TRANSFERRED_OUTCOME,
@@ -64,7 +62,9 @@ from studio_runtime.phone import (
     ring,
     transfer,
 )
-from studio_runtime.providers import build_turn_handling, create_stt, create_tts
+from studio_voice.speech_providers import build_turn_handling, create_stt, create_tts
+from studio_voice.tools.http_tool import fill_leniently
+from studio_voice.tools.knowledge import build_knowledge_tool
 
 logger = logging.getLogger(__name__)
 
@@ -169,11 +169,11 @@ def personalise(config: AgentConfig, variables: dict[str, str]) -> None:
         config.instructions = f"{config.instructions}\n\n{KNOWN_DETAILS_HEADING}{known}."
 
 
-async def agent_for(control_plane: ControlPlaneClient, metadata: CallMetadata) -> str:
+async def agent_for(backend_client: BackendClient, metadata: CallMetadata) -> str:
     """The agent named in the dispatch, or the one the dialled number is bound to now."""
     if metadata.agent_id is not None:
         return metadata.agent_id
-    number = await control_plane.get_phone_number(metadata.number_id)
+    number = await backend_client.get_phone_number(metadata.number_id)
     if number.agent_id is None:
         raise LookupError(f"{number.number} is not bound to an agent")
     return number.agent_id
@@ -207,7 +207,7 @@ async def ring_and_answer(
 async def run_call(ctx: JobContext) -> None:
     settings = get_settings()
     metadata = parse_call_metadata(ctx.job.metadata)
-    control_plane = create_control_plane_client(settings)
+    backend_client = create_control_plane_client(settings)
     tracer_provider = ctx.proc.userdata[TRACER_PROVIDER_USERDATA_KEY]
     if tracer_provider is not None:
         ctx.add_shutdown_callback(CallTracing(tracer_provider, session_id=ctx.room.name).flush)
@@ -219,15 +219,15 @@ async def run_call(ctx: JobContext) -> None:
     if not metadata.is_web and not metadata.is_outbound:
         line = caller_line(await ctx.wait_for_participant())
     try:
-        config = await control_plane.get_agent_config(
-            await agent_for(control_plane, metadata), metadata.flow
+        config = await backend_client.get_agent_config(
+            await agent_for(backend_client, metadata), metadata.flow
         )
     except Exception:
         logger.exception("could not load the agent for %s", ctx.job.metadata)
         if metadata.is_web:
             message = load_locale(FALLBACK_LANGUAGE).messages["agent_unavailable"]
             await ctx.room.local_participant.send_text(message, topic=TRANSCRIPTION_TOPIC)
-        await control_plane.aclose()
+        await backend_client.aclose()
         ctx.shutdown()
         return
 
@@ -235,7 +235,7 @@ async def run_call(ctx: JobContext) -> None:
     language = config.starting_language
     locale = load_locale(language)
     knowledge_tool = (
-        build_knowledge_tool(control_plane, config.id, locale)
+        build_knowledge_tool(backend_client, config.id, locale)
         if config.knowledge_base_ids
         else None
     )
@@ -260,7 +260,7 @@ async def run_call(ctx: JobContext) -> None:
         llm = create_llm(config.llm_model, tools, settings, callbacks)
 
     direction = OUTBOUND_DIRECTION if metadata.is_outbound else INBOUND_DIRECTION
-    call_id = await control_plane.start_call(
+    call_id = await backend_client.start_call(
         config.id,
         ctx.room.name,
         metadata.channel,
@@ -293,9 +293,9 @@ async def run_call(ctx: JobContext) -> None:
         # Ended on the phone side: nobody answered, voicemail, or the transfer.
         record.outcome = line.outcome or record.outcome
         try:
-            await control_plane.end_call(call_id, record)
+            await backend_client.end_call(call_id, record)
         finally:
-            await control_plane.aclose()
+            await backend_client.aclose()
             if runner is not None:
                 await runner.aclose()
 

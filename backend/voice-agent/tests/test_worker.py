@@ -2,10 +2,9 @@ from types import SimpleNamespace
 
 import httpx
 from livekit.agents.llm import ChatMessage
-
-from studio_runtime import worker
-from studio_runtime.config import Settings
-from studio_runtime.worker import create_server, run_call
+from studio_voice import worker
+from studio_voice.config import Settings
+from studio_voice.worker import create_server, run_call
 
 
 def test_server_takes_its_health_port_and_load_threshold_from_settings():
@@ -75,8 +74,8 @@ class FakeJobContext:
 
 
 async def test_browser_call_for_an_agent_that_cannot_be_loaded_says_so_and_ends(monkeypatch):
-    control_plane = UnreachableControlPlane()
-    monkeypatch.setattr(worker, "create_control_plane_client", lambda settings: control_plane)
+    backend_client = UnreachableControlPlane()
+    monkeypatch.setattr(worker, "create_control_plane_client", lambda settings: backend_client)
     ctx = FakeJobContext('{"agent_id": "agent-1", "channel": "web"}')
 
     await run_call(ctx)
@@ -88,7 +87,7 @@ async def test_browser_call_for_an_agent_that_cannot_be_loaded_says_so_and_ends(
         )
     ]
     assert ctx.shut_down
-    assert control_plane.closed
+    assert backend_client.closed
 
 
 class FakeSession:

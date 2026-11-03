@@ -2,8 +2,8 @@
 
 from langchain_core.tools import BaseTool, StructuredTool
 
-from studio_runtime.control_plane import ControlPlaneClient, KnowledgeHit
-from studio_runtime.languages import Locale
+from studio_voice.backend_client import BackendClient, KnowledgeHit
+from studio_voice.languages import Locale
 
 TOOL_NAME = "search_knowledge"
 TOOL_DESCRIPTION = (
@@ -19,11 +19,9 @@ def format_hits(hits: list[KnowledgeHit], nothing_found: str) -> str:
     return "\n\n".join(f"[{hit.document_name}]\n{hit.text}" for hit in hits)
 
 
-def build_knowledge_tool(
-    control_plane: ControlPlaneClient, agent_id: str, locale: Locale
-) -> BaseTool:
+def build_knowledge_tool(backend_client: BackendClient, agent_id: str, locale: Locale) -> BaseTool:
     async def search_knowledge(question: str) -> str:
-        hits = await control_plane.search_knowledge(agent_id, question)
+        hits = await backend_client.search_knowledge(agent_id, question)
         return format_hits(hits, locale.messages["knowledge_nothing_found"])
 
     return StructuredTool.from_function(

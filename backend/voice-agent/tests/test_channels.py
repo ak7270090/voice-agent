@@ -1,8 +1,7 @@
 from types import SimpleNamespace
 
 import pytest
-
-from studio_runtime.channels import (
+from studio_voice.channels import (
     InvalidCallMetadataError,
     parse_call_metadata,
     register_idle_caller,

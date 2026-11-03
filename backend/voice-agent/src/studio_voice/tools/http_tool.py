@@ -9,7 +9,7 @@ from urllib.parse import quote
 
 import httpx
 
-from studio_runtime.flows.schema import ToolData
+from studio_voice.flows.schema import ToolData
 
 PLACEHOLDER = re.compile(r"\{([a-z][a-z0-9_]*)\}")
 # Fields and secrets in one pattern, filled in one pass: a filled-in value (the caller's words)

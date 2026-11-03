@@ -27,9 +27,9 @@ from langchain_core.messages import (
 )
 from langchain_core.tools import BaseTool
 
-from studio_runtime.flows import prompts
-from studio_runtime.flows.runner import SAVE_FIELDS_TOOL, FlowRunner
-from studio_runtime.observability import FLOW_STEP_KEY
+from studio_voice.flows import prompts
+from studio_voice.flows.runner import SAVE_FIELDS_TOOL, FlowRunner
+from studio_voice.observability import FLOW_STEP_KEY
 
 logger = logging.getLogger(__name__)
 

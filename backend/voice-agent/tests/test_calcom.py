@@ -6,11 +6,10 @@ from datetime import date
 
 import httpx
 import pytest
-
-from studio_runtime.flows.calcom import call_calcom, find_resource
-from studio_runtime.flows.runner import FlowRunner
-from studio_runtime.flows.schema import CalcomResource, Flow, ToolData
-from studio_runtime.parsers import parsers_for
+from studio_voice.flows.runner import FlowRunner
+from studio_voice.flows.schema import CalcomResource, Flow, ToolData
+from studio_voice.languages import parsers_for
+from studio_voice.tools.calcom import call_calcom, find_resource
 
 KEY = "cal_live_0123456789abcdef"
 MONDAY = date(2026, 11, 2)

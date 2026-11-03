@@ -26,7 +26,7 @@ from opentelemetry import propagate
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.trace import Span
 
-from studio_runtime.config import Settings
+from studio_voice.config import Settings
 
 logger = logging.getLogger(__name__)
 

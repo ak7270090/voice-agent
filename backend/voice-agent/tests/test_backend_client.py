@@ -2,14 +2,13 @@ import json
 
 import httpx
 import pytest
-
-from studio_runtime.config import Settings
-from studio_runtime.control_plane import (
+from studio_voice.backend_client import (
+    BackendClient,
     CallRecord,
-    ControlPlaneClient,
     TranscriptTurn,
     create_control_plane_client,
 )
+from studio_voice.config import Settings
 
 AGENT = {
     "id": "agent-1",
@@ -28,7 +27,7 @@ AGENT = {
 }
 
 
-def client_answering(handler) -> tuple[ControlPlaneClient, list[httpx.Request]]:
+def client_answering(handler) -> tuple[BackendClient, list[httpx.Request]]:
     requests: list[httpx.Request] = []
 
     def record(request: httpx.Request) -> httpx.Response:
@@ -36,7 +35,7 @@ def client_answering(handler) -> tuple[ControlPlaneClient, list[httpx.Request]]:
         return handler(request)
 
     http = httpx.AsyncClient(transport=httpx.MockTransport(record), base_url="http://api")
-    return ControlPlaneClient(http), requests
+    return BackendClient(http), requests
 
 
 async def test_agent_config_is_read_from_the_runtime_endpoint():

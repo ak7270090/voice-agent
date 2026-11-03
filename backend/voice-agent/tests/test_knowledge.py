@@ -1,10 +1,9 @@
 import json
 
 import httpx
-
-from studio_runtime.control_plane import ControlPlaneClient
-from studio_runtime.knowledge import build_knowledge_tool
-from studio_runtime.languages import load_locale
+from studio_voice.backend_client import BackendClient
+from studio_voice.languages import load_locale
+from studio_voice.tools.knowledge import build_knowledge_tool
 
 HITS = [
     {"document_name": "timings.md", "text": "Open 8 am to 8 pm.", "score": 0.9},
@@ -20,7 +19,7 @@ def tool_answering(hits: list[dict]) -> tuple:
         return httpx.Response(200, json=hits)
 
     http = httpx.AsyncClient(transport=httpx.MockTransport(answer), base_url="http://api")
-    tool = build_knowledge_tool(ControlPlaneClient(http), "agent-1", load_locale("en"))
+    tool = build_knowledge_tool(BackendClient(http), "agent-1", load_locale("en"))
     return tool, requests
 
 

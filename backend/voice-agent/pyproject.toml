@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "studio-runtime"
+name = "studio-voice"
 version = "0.1.0"
 description = "LiveKit agent runtime for Voice Agent Studio: loads an agent's settings and runs its calls"
 requires-python = ">=3.11"
@@ -32,9 +32,9 @@ dev = [
 where = ["src"]
 
 [tool.setuptools.package-data]
-studio_runtime = ["locales/*/*"]
+studio_voice = ["locales/*/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
-addopts = "-p no:cacheprovider --cov=studio_runtime --cov-report=term-missing --cov-fail-under=80"
+addopts = "-p no:cacheprovider --cov=studio_voice --cov-report=term-missing --cov-fail-under=80"

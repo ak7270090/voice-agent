@@ -16,16 +16,8 @@ import httpx
 from langchain_core.tools import BaseTool, StructuredTool
 from pydantic import Field, create_model
 
-from studio_runtime.flows import calcom, prompts
-from studio_runtime.flows.http_tools import (
-    MAX_TEXT_RESULT_CHARS,
-    ToolResult,
-    call_tool,
-    fill_leniently,
-    mask_secrets,
-    placeholders,
-)
-from studio_runtime.flows.schema import (
+from studio_voice.flows import prompts
+from studio_voice.flows.schema import (
     EndNode,
     FieldSpec,
     Flow,
@@ -36,11 +28,20 @@ from studio_runtime.flows.schema import (
     ToolNode,
     TransferNode,
 )
-from studio_runtime.observability import (
+from studio_voice.observability import (
     LANGFUSE_OBSERVATION_TYPE,
     TOOL_OBSERVATION,
     flow_span,
     set_span_output,
+)
+from studio_voice.tools import calcom
+from studio_voice.tools.http_tool import (
+    MAX_TEXT_RESULT_CHARS,
+    ToolResult,
+    call_tool,
+    fill_leniently,
+    mask_secrets,
+    placeholders,
 )
 
 CONDITION_EDGE = "condition"

@@ -11,8 +11,8 @@ from zoneinfo import ZoneInfo
 
 import httpx
 
-from studio_runtime.flows.http_tools import ToolResult
-from studio_runtime.flows.schema import CalcomResource, CalcomSettings, ToolData
+from studio_voice.flows.schema import CalcomResource, CalcomSettings, ToolData
+from studio_voice.tools.http_tool import ToolResult
 
 AVAILABILITY_KIND = "calcom_availability"
 BOOKING_KIND = "calcom_booking"

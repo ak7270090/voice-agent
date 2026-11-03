@@ -11,13 +11,13 @@ from langchain_core.tools import BaseTool
 from livekit import rtc
 from livekit.plugins.langchain import LLMAdapter
 
-from studio_runtime.config import Settings
-from studio_runtime.control_plane import AgentConfig
-from studio_runtime.conversation import create_chat_model
-from studio_runtime.flows.graph import FlowGraph
-from studio_runtime.flows.runner import FlowRunner
-from studio_runtime.observability import TRACE_CONTEXT_HOOKS
-from studio_runtime.parsers import parsers_for
+from studio_voice.backend_client import AgentConfig
+from studio_voice.config import Settings
+from studio_voice.conversation import create_chat_model
+from studio_voice.flows.graph import FlowGraph
+from studio_voice.flows.runner import FlowRunner
+from studio_voice.languages import parsers_for
+from studio_voice.observability import TRACE_CONTEXT_HOOKS
 
 # Participant attributes the console reads to highlight the live node and show the fields.
 FLOW_NODE_ATTRIBUTE = "studio.flow_node"

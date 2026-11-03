@@ -5,9 +5,9 @@ from typing import Any
 import httpx
 from pydantic import BaseModel
 
-from studio_runtime.config import Settings
-from studio_runtime.flows.schema import Flow
-from studio_runtime.observability import TRACE_CONTEXT_HOOKS
+from studio_voice.config import Settings
+from studio_voice.flows.schema import Flow
+from studio_voice.observability import TRACE_CONTEXT_HOOKS
 
 INBOUND_DIRECTION = "inbound"
 OUTBOUND_DIRECTION = "outbound"
@@ -71,7 +71,7 @@ class KnowledgeHit(BaseModel):
     score: float
 
 
-class ControlPlaneClient:
+class BackendClient:
     def __init__(self, http: httpx.AsyncClient) -> None:
         self._http = http
 
@@ -127,8 +127,8 @@ class ControlPlaneClient:
         await self._http.aclose()
 
 
-def create_control_plane_client(settings: Settings) -> ControlPlaneClient:
-    return ControlPlaneClient(
+def create_control_plane_client(settings: Settings) -> BackendClient:
+    return BackendClient(
         httpx.AsyncClient(
             base_url=settings.api_url,
             headers={"Authorization": f"Bearer {settings.runtime_api_token}"},

@@ -1,10 +1,8 @@
 from datetime import date
 
 import pytest
-
-from studio_runtime.languages import UnsupportedLanguageError
-from studio_runtime.parsers import parsers_for
-from studio_runtime.parsers.en import (
+from studio_voice.languages import UnsupportedLanguageError, parsers_for
+from studio_voice.locales.en.parser import (
     parse_day,
     parse_number,
     parse_phone,

@@ -3,9 +3,8 @@ from types import SimpleNamespace
 import pytest
 from livekit import api
 from livekit.agents import AMDCategory
-
-from studio_runtime import worker
-from studio_runtime.phone import (
+from studio_voice import worker
+from studio_voice.phone import (
     PhoneLine,
     answer,
     caller_line,
