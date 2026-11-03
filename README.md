@@ -130,8 +130,7 @@ voice-agent-studio/
 ├── backend/
 │   ├── studio-backend/        FastAPI API and background worker
 │   │   ├── src/studio_backend/
-│   │   │   ├── agents/            agents, browser-call tokens, runtime config
-│   │   │   ├── agent_catalog/     ready-made agents; `examples/` holds one file per agent
+│   │   │   ├── agents/            agents, browser-call tokens, ready-made examples/ (one file each)
 │   │   │   ├── flows/             flow schema, validation, draft/publish
 │   │   │   ├── knowledge/         knowledge bases, ingestion, hybrid search
 │   │   │   ├── phone_numbers/     phone numbers, SIP trunks, outbound calls

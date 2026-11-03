@@ -1,12 +1,12 @@
 import pytest
 from pydantic import ValidationError
 
-from studio_backend.agent_catalog.examples.appointment_reminder import build_reminder_flow
-from studio_backend.agent_catalog.examples.clinic_booking import (
+from studio_backend.agents.examples.appointment_reminder import build_reminder_flow
+from studio_backend.agents.examples.clinic_booking import (
     build_clinic_booking_flow,
     calcom_clinic_settings,
 )
-from studio_backend.agent_catalog.examples.lead_qualifier import build_lead_qualifier_flow
+from studio_backend.agents.examples.lead_qualifier import build_lead_qualifier_flow
 from studio_backend.config import get_settings
 from studio_backend.flows.schemas import Flow
 from studio_backend.flows.validation import validate_flow

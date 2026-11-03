@@ -1,13 +1,13 @@
 """The agents shown when creating a new one: a blank start, then every example."""
 
-from studio_backend.agent_catalog.examples import (
+from studio_backend.agents.examples import (
     appointment_reminder,
     clinic_booking,
     delivery_follow_up,
     lead_qualifier,
 )
-from studio_backend.agent_catalog.template_parts import build_agent_fields
 from studio_backend.agents.schemas import AgentTemplate
+from studio_backend.agents.template_parts import build_agent_fields
 from studio_backend.config import Settings
 
 BLANK_INSTRUCTIONS = "You answer phone calls for the business. Be warm and brief."

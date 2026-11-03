@@ -1,7 +1,7 @@
 """Calls customers to confirm a delivery. Prompt only, with no flow."""
 
-from studio_backend.agent_catalog.template_parts import build_agent_fields
 from studio_backend.agents.schemas import AgentTemplate
+from studio_backend.agents.template_parts import build_agent_fields
 from studio_backend.config import Settings
 
 DELIVERY_FOLLOW_UP_INSTRUCTIONS = """You call customers about a delivery.

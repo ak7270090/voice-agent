@@ -1,7 +1,7 @@
 """Calls tomorrow's patients to confirm or move their appointment."""
 
-from studio_backend.agent_catalog.template_parts import at, build_agent_fields, edge
 from studio_backend.agents.schemas import AgentTemplate, AnalysisField
+from studio_backend.agents.template_parts import at, build_agent_fields, edge
 from studio_backend.config import Settings
 from studio_backend.flows.schemas import (
     EndData,

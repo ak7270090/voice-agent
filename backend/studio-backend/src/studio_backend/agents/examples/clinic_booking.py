@@ -1,8 +1,8 @@
 """A hospital receptionist. Its flow rebuilds clinic-voice-agent's booking form as nodes: collect,
 check free times, read back, book, give the booking ID."""
 
-from studio_backend.agent_catalog.template_parts import at, build_agent_fields, edge
 from studio_backend.agents.schemas import AgentTemplate, AnalysisField
+from studio_backend.agents.template_parts import at, build_agent_fields, edge
 from studio_backend.config import Settings
 from studio_backend.flows.constants import CALCOM_AVAILABILITY_TOOL, CALCOM_BOOKING_TOOL
 from studio_backend.flows.schemas import (

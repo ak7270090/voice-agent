@@ -1,7 +1,7 @@
 """Calls people who asked about a product and qualifies them for a sales meeting."""
 
-from studio_backend.agent_catalog.template_parts import at, build_agent_fields, edge
 from studio_backend.agents.schemas import AgentTemplate
+from studio_backend.agents.template_parts import at, build_agent_fields, edge
 from studio_backend.config import Settings
 from studio_backend.flows.schemas import (
     EndData,
