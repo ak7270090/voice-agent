@@ -36,12 +36,12 @@ function Placeholders({ text }: { text: string }) {
 function FlowCard({
   node,
   kind,
-  why,
+  stop = false,
   active = false,
 }: {
   node: FlowNode | FlowBranch;
   kind: NodeKind;
-  why?: string;
+  stop?: boolean;
   active?: boolean;
 }) {
   const meta = NODE_KINDS[kind];
@@ -50,15 +50,14 @@ function FlowCard({
   return (
     <article
       className={`flow-card ${kind}${active ? " active" : ""}`}
-      data-stop={why ? "" : undefined}
+      data-stop={stop ? "" : undefined}
     >
-      <div className="flow-card-head">
-        <span className="flow-kind">{`${meta.icon} ${meta.label}`}</span>
-        <h3>{node.name}</h3>
-      </div>
-      {node.says && (
+      <span className="flow-kind">{`${meta.icon} ${meta.label}`}</span>
+      <h3>{node.name}</h3>
+      {details.detail && <p className="flow-detail">{details.detail}</p>}
+      {details.says && (
         <p className="flow-says">
-          <Placeholders text={node.says} />
+          <Placeholders text={details.says} />
         </p>
       )}
       {details.fields && (
@@ -68,29 +67,6 @@ function FlowCard({
           ))}
         </ul>
       )}
-      {details.rows && (
-        <dl className="flow-rows">
-          {details.rows.map(([label, value]) => (
-            <div key={label}>
-              <dt>{label}</dt>
-              <dd>
-                <Placeholders text={value} />
-              </dd>
-            </div>
-          ))}
-        </dl>
-      )}
-      {details.moves && (
-        <ul className="flow-moves">
-          {details.moves.map(([when, to]) => (
-            <li key={when}>
-              <span>{when}</span>
-              <b>{to}</b>
-            </li>
-          ))}
-        </ul>
-      )}
-      {why && <p className="flow-why">{why}</p>}
       {loopsBack && <p className="flow-loop">{`↩ ${loopsBack}`}</p>}
     </article>
   );
@@ -102,10 +78,8 @@ function FlowLink({ label }: { label?: string }) {
 
 export function PlatformFlow() {
   const [flowIndex, setFlowIndex] = useState(0);
-  const [folded, setFolded] = useState(true);
   const [active, setActive] = useState(0);
   const root = useRef<HTMLDivElement>(null);
-  const main = useRef<HTMLDivElement>(null);
   const queued = useRef(false);
 
   const flow = FLOWS[flowIndex];
@@ -141,23 +115,14 @@ export function PlatformFlow() {
     };
   }, [highlight]);
 
-  // Folding or changing flows changes what is on screen, so the highlight follows.
-  useEffect(highlight, [highlight, flowIndex, folded]);
+  // Changing flows changes what is on screen, so the highlight follows.
+  useEffect(highlight, [highlight, flowIndex]);
 
   function chooseFlow(index: number) {
     setFlowIndex(index);
-    setFolded(true);
     // Switching flows from further down starts the new one from its top.
     const top = root.current?.getBoundingClientRect().top ?? 0;
     if (top < 0) scrollBy({ top: top - NAV_CLEARANCE, behavior: "instant" });
-  }
-
-  // On a phone a long flow starts folded. It never scrolls inside its own panel: a panel filling
-  // the screen would take every swipe, and the page would seem stuck.
-  function toggleFold() {
-    const folding = !folded;
-    setFolded(folding);
-    if (folding) main.current?.scrollIntoView({ behavior: "instant" });
   }
 
   return (
@@ -191,24 +156,19 @@ export function PlatformFlow() {
             : "Open the demo workspace"}
         </a>
       </div>
-      <div className="flow-main" ref={main}>
-        <div className={folded ? "flow-canvas folded" : "flow-canvas"}>
-          {flow.nodes.map((node, position) => {
-            const label = position > 0 ? flow.nodes[position - 1].via : undefined;
-            return (
-              <FlowStop
-                key={`${flow.tab}-${position}`}
-                node={node}
-                showLink={position > 0}
-                label={label}
-                active={position === active}
-              />
-            );
-          })}
-        </div>
-        <button className="flow-more" type="button" aria-expanded={!folded} onClick={toggleFold}>
-          {folded ? "Show the whole flow" : "Show less"}
-        </button>
+      <div className="flow-canvas">
+        {flow.nodes.map((node, position) => {
+          const label = position > 0 ? flow.nodes[position - 1].via : undefined;
+          return (
+            <FlowStop
+              key={`${flow.tab}-${position}`}
+              node={node}
+              showLink={position > 0}
+              label={label}
+              active={position === active}
+            />
+          );
+        })}
       </div>
     </div>
   );
@@ -229,7 +189,7 @@ function FlowStop({
     return (
       <>
         {showLink && <FlowLink label={label} />}
-        <FlowCard node={node} kind={node.kind ?? "step"} why={node.why} active={active} />
+        <FlowCard node={node} kind={node.kind ?? "step"} stop active={active} />
       </>
     );
   }
@@ -252,7 +212,6 @@ function FlowStop({
           </div>
         ))}
       </div>
-      <p className="flow-why flow-branch-why">{node.why}</p>
     </>
   );
 }

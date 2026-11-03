@@ -28,7 +28,6 @@ export type FlowBranch = {
   via: string;
   kind: NodeKind;
   name: string;
-  says?: string;
   loopsBack?: string;
 };
 
@@ -37,8 +36,7 @@ export type FlowNode = {
   name?: string;
   says?: string;
   fields?: string[];
-  rows?: [label: string, value: string][];
-  moves?: [when: string, to: string][];
+  detail?: string;
   via?: string;
   why: string;
   branches?: FlowBranch[];
@@ -234,10 +232,7 @@ export const USE_CASES: UseCase[] = [
 const AFTER_THE_CALL: FlowNode = {
   kind: "after",
   name: "Saved and sent on",
-  rows: [
-    ["Saved", "Transcript, summary, success, cost"],
-    ["Sent to", "Slack, HubSpot, Google Sheets"],
-  ],
+  detail: "Slack, HubSpot, Google Sheets",
   why: "Every call is summarised and scored, then sent to the tools your team already uses.",
 };
 
@@ -249,69 +244,48 @@ export const FLOWS: Flow[] = [
       {
         kind: "step",
         name: "Find out what the caller wants",
-        says: "Welcome to City Hospital. How can I help you today?",
-        moves: [
-          ["Wants to book", "Collect booking details"],
-          ["Has a question", "Answer questions"],
-          ["Asks for a person", "Transfer to the front desk"],
-        ],
+        says: "How can I help you today?",
+        via: "wants to book",
         why: "The AI understands the caller and picks the next move, but only from the arrows you drew.",
       },
       {
         kind: "step",
         name: "Collect booking details",
-        fields: ["Patient's name", "Age", "Doctor", "Day"],
-        via: "all details collected",
+        fields: ["Name", "Age", "Doctor", "Day"],
+        via: "all details in",
         why: "The call moves on only when all four details are in. That's decided by code, not the AI.",
       },
       {
         kind: "tool",
         name: "Check free times",
-        rows: [
-          ["Kind", "Cal.com: free times"],
-          ["Looks up", "{doctor} on {day}"],
-        ],
-        via: "free times found",
+        detail: "Cal.com",
+        via: "times found",
         why: "This runs by itself, so a time is never offered before it has been checked.",
       },
       {
         kind: "step",
         name: "Choose a free time",
-        fields: ["Time, from the free times"],
-        via: "the caller picks one",
+        fields: ["Time"],
+        via: "caller picks one",
         why: "Only the caller's own words can set the time. The AI can't choose one for them.",
       },
       {
         kind: "step",
         name: "Read back and confirm",
-        says: "To confirm: {patient_name}, aged {patient_age}, with {doctor} on {day} at {time}. Is that right?",
+        says: "{doctor} on {day} at {time}. Is that right?",
+        via: "a clear yes",
         why: "The read-back is filled in by code, so a name or number is never misread.",
       },
       {
         kind: "tool",
         name: "Book the appointment",
-        rows: [
-          ["Kind", "Cal.com: booking"],
-          ["Says", "One moment while I book that."],
-        ],
-        via: "a clear yes",
+        detail: "Cal.com",
         why: "A plain yes starts the booking, and it only ever happens once, even if a request is retried.",
       },
       {
         branches: [
-          {
-            via: "booked",
-            kind: "end",
-            name: "Booked",
-            says: "Your appointment with {doctor} is booked for {weekday} at {time}.",
-          },
-          {
-            via: "slot just taken",
-            kind: "step",
-            name: "Choose a free time",
-            says: "That time was just taken. Which other time suits you?",
-            loopsBack: "Goes back and offers the new free times",
-          },
+          { via: "booked", kind: "end", name: "Booked" },
+          { via: "slot taken", kind: "step", name: "Choose again", loopsBack: "Goes back" },
         ],
         why: "If someone took the slot first, the call goes back and offers the new free times.",
       },
@@ -325,40 +299,20 @@ export const FLOWS: Flow[] = [
       {
         kind: "campaign",
         name: "Tomorrow's reminders",
-        rows: [
-          ["Contacts", "Your uploaded list"],
-          ["Calling hours", "09:00 to 18:00"],
-          ["Skips", "Anyone without consent"],
-        ],
+        detail: "Your contact list, within calling hours",
         why: "Upload a list and press start. Calls stay within your hours, with a limit on calls at once.",
       },
       {
         kind: "step",
         name: "Confirm the appointment",
-        says: "Hello {name}, this is City Hospital calling about your appointment tomorrow.",
-        via: "the person answers",
+        says: "Hello {name}, about your appointment tomorrow.",
         why: "No answer means a retry later, and an answering machine gets a short message instead.",
       },
       {
         branches: [
-          {
-            via: "will come",
-            kind: "end",
-            name: "Confirmed",
-            says: "Great, see you tomorrow. Goodbye.",
-          },
-          {
-            via: "wants another time",
-            kind: "end",
-            name: "Reschedule requested",
-            says: "No problem. The front desk will call you to find a new time. Goodbye.",
-          },
-          {
-            via: "says stop",
-            kind: "end",
-            name: "Opted out",
-            says: "Understood, we won't call you again. Goodbye.",
-          },
+          { via: "will come", kind: "end", name: "Confirmed" },
+          { via: "other time", kind: "end", name: "Moved" },
+          { via: "says stop", kind: "end", name: "Opted out" },
         ],
         why: "Every call ends with a clear outcome. Anyone who says stop is never called again.",
       },
@@ -372,31 +326,20 @@ export const FLOWS: Flow[] = [
       {
         kind: "step",
         name: "Qualify the lead",
-        says: "Hi, thanks for your interest. Do you have two minutes to talk about it?",
-        fields: ["What they need", "Budget", "When they want to start"],
+        fields: ["Need", "Budget", "Timeline"],
+        via: "all details in",
         why: "Each step collects only what it needs, and the agent asks for one detail at a time.",
       },
       {
         kind: "step",
         name: "Offer a meeting",
         fields: ["Meeting day"],
-        via: "all details collected",
         why: "A lead that fits moves on by itself, with no script for the AI to lose track of.",
       },
       {
         branches: [
-          {
-            via: "picks a day",
-            kind: "end",
-            name: "Meeting requested",
-            says: "Thanks. Our sales team will confirm the meeting for {meeting_day}.",
-          },
-          {
-            via: "not interested",
-            kind: "end",
-            name: "Not interested",
-            says: "Thanks for your time. Goodbye.",
-          },
+          { via: "picks a day", kind: "end", name: "Meeting" },
+          { via: "says no", kind: "end", name: "Not interested" },
         ],
         why: "Both endings are recorded, so you can see how many leads turned into meetings.",
       },
