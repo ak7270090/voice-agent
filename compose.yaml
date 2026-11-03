@@ -41,14 +41,14 @@ services:
       interval: 5s
       retries: 10
 
-  api:
+  backend:
     build: ./backend/studio-backend
     env_file: .env.local
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-studio}:${POSTGRES_PASSWORD:-studio}@postgres:5432/${POSTGRES_DB:-studio}
       REDIS_URL: redis://redis:6379/0
       S3_ENDPOINT: http://storage:9000
-      RUNTIME_HEALTH_URL: http://runtime:8081/
+      RUNTIME_HEALTH_URL: http://voice-agent:8081/
     ports:
       - "8000:8000"
     depends_on:
@@ -69,13 +69,13 @@ services:
       REDIS_URL: redis://redis:6379/0
       S3_ENDPOINT: http://storage:9000
     depends_on:
-      - api
+      - backend
 
-  runtime:
+  voice-agent:
     build: ./backend/voice-agent
     env_file: .env.local
     environment:
-      API_URL: http://api:8000
+      API_URL: http://backend:8000
     ports:
       - "8081:8081"
     depends_on:
@@ -87,7 +87,7 @@ services:
     ports:
       - "8100:8100"
 
-  console:
+  dashboard:
     build:
       context: ./frontend/dashboard
       args:
@@ -95,7 +95,7 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - api
+      - backend
 
 volumes:
   postgres-data:
