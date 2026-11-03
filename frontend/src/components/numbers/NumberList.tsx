@@ -2,6 +2,7 @@
 
 import { Button, Card, Chip } from "@/components/ui/primitives";
 import type { Agent, PhoneNumber } from "@/lib/api";
+import { DEMO_MODE } from "@/lib/demo";
 
 const SELECT =
   "rounded-lg border border-slate-200 px-2 py-1 text-[13px] outline-none focus:border-brand-500";
@@ -32,7 +33,7 @@ export function NumberList({
               <th className="px-4 py-2 font-medium">Number</th>
               <th className="px-4 py-2 font-medium">Answered by</th>
               <th className="px-4 py-2 font-medium">Can</th>
-              <th className="px-4 py-2 font-medium">LiveKit dispatch rule</th>
+              {!DEMO_MODE && <th className="px-4 py-2 font-medium">LiveKit dispatch rule</th>}
               <th className="px-4 py-2" />
             </tr>
           </thead>
@@ -66,18 +67,20 @@ export function NumberList({
                     {number.can_transfer && <Chip tone="brand">transfer</Chip>}
                   </div>
                 </td>
-                <td className="px-4 py-2">
-                  <code className="text-xs">{number.dispatch_rule_id}</code>
-                  {number.provider === "livekit" && (
-                    <div className="mt-1 text-[11px] text-slate-400">
-                      Assign it to the number once:{" "}
-                      <code>
-                        lk number update --id &lt;number id&gt; --sip-dispatch-rule-id{" "}
-                        {number.dispatch_rule_id}
-                      </code>
-                    </div>
-                  )}
-                </td>
+                {!DEMO_MODE && (
+                  <td className="px-4 py-2">
+                    <code className="text-xs">{number.dispatch_rule_id}</code>
+                    {number.provider === "livekit" && (
+                      <div className="mt-1 text-[11px] text-slate-400">
+                        Assign it to the number once:{" "}
+                        <code>
+                          lk number update --id &lt;number id&gt; --sip-dispatch-rule-id{" "}
+                          {number.dispatch_rule_id}
+                        </code>
+                      </div>
+                    )}
+                  </td>
+                )}
                 <td className="px-4 py-2 text-right">
                   <Button variant="danger" onClick={() => onDelete(number.id)}>
                     Remove

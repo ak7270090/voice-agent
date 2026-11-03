@@ -64,7 +64,7 @@ const ALL_DEMOS: Demo[] = [
     title: "Book an appointment over a call",
     text: "The caller asks for the skin doctor. The agent finds her free times, confirms the details and books the slot, all in one call.",
     video: "/media/voice-call.mp4",
-    poster: "/media/voice-call.jpg",
+    poster: "/media/voice-call.webp",
   },
   {
     id: "phone",
@@ -74,7 +74,7 @@ const ALL_DEMOS: Demo[] = [
     title: "Answers your business line",
     text: "A customer dials your number and the agent picks up straight away, day or night.",
     video: "/media/phone-call.mp4",
-    poster: "/media/phone-call.jpg",
+    poster: "/media/phone-call.webp",
     // Optional: [{"at": seconds, "role": "agent" | "caller", "text": "..."}], highlighted in time.
     transcript: "/media/phone-call.json",
   },
@@ -84,7 +84,7 @@ const ALL_DEMOS: Demo[] = [
     title: "Remind every patient in minutes",
     text: "Upload tomorrow's list and press start. Each person ends up confirmed, rescheduled, messaged on voicemail or called again later.",
     video: "/media/campaign.mp4",
-    poster: "/media/campaign.jpg",
+    poster: "/media/campaign.webp",
   },
   {
     id: "build",
@@ -92,7 +92,7 @@ const ALL_DEMOS: Demo[] = [
     title: "Build an agent from scratch",
     text: "Give it a name and a job, draw the one step it needs, say how the call ends, then publish and test it.",
     video: "/media/build-agent.mp4",
-    poster: "/media/build-agent.jpg",
+    poster: "/media/build-agent.webp",
   },
 ];
 

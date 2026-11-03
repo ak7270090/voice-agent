@@ -344,7 +344,7 @@ h1 {
 }
 
 .player-stage {
-  background: #000;
+  background: var(--bg-alt);
   aspect-ratio: 16 / 10;
   display: grid;
   place-items: center;
@@ -354,11 +354,6 @@ h1 {
   width: 100%;
   height: 100%;
   object-fit: contain;
-}
-
-.player-missing {
-  color: #cbd5e1;
-  font-size: 15px;
 }
 
 .player-side {
@@ -804,7 +799,7 @@ h1 {
 }
 .flow-card.tool .flow-kind {
   background: #f0f9ff;
-  color: #0284c7;
+  color: #0369a1;
 }
 .flow-card.end .flow-kind {
   background: #f1f5f9;
@@ -812,11 +807,11 @@ h1 {
 }
 .flow-card.campaign .flow-kind {
   background: #ecfdf5;
-  color: #059669;
+  color: #047857;
 }
 .flow-card.after .flow-kind {
   background: #ecfdf5;
-  color: #059669;
+  color: #047857;
 }
 
 .flow-says {
@@ -864,9 +859,18 @@ h1 {
 .flow-link::before {
   content: "";
   position: absolute;
-  inset: 0 50%;
+  top: 0;
+  bottom: 0;
+  left: calc(50% - 1px);
   width: 2px;
   background: var(--wire);
+  transition: background-color 0.2s;
+}
+
+/* The lines into and out of a highlighted branch light up with it, so they read as one. */
+.flow-link:has(+ .flow-branches.active),
+.flow-branches.active + .flow-link {
+  --wire: var(--accent);
 }
 
 .flow-link span {

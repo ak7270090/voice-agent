@@ -130,7 +130,7 @@ export function CampaignForm({
               onChange={(timezone) => set({ timezone })}
             />
           </Field>
-          <Field label="Calls at once" hint="LiveKit free plan: 5 sessions">
+          <Field label="Calls at once" hint="Calls running at the same time">
             <input
               type="number"
               min={1}

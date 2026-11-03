@@ -8,7 +8,6 @@ type TranscriptLine = { at: number; role: string; text: string };
 
 export function DemoPlayer() {
   const [demo, setDemo] = useState<Demo>(DEMOS[0]);
-  const [available, setAvailable] = useState<boolean | null>(null);
   const [lines, setLines] = useState<TranscriptLine[]>([]);
   const [now, setNow] = useState(-1);
   const video = useRef<HTMLVideoElement>(null);
@@ -18,22 +17,15 @@ export function DemoPlayer() {
     let stale = false;
     setLines([]);
     setNow(-1);
-    setAvailable(null);
-    async function load() {
-      const found = await fetch(demo.video, { method: "HEAD" }).then(
-        (response) => response.ok,
-        () => false,
-      );
-      if (stale) return;
-      setAvailable(found);
-      if (!found || !demo.transcript) return;
-      const loaded = await fetch(demo.transcript).then(
+    if (!demo.transcript) return;
+    fetch(demo.transcript)
+      .then(
         (response) => (response.ok ? response.json() : []),
         () => [],
-      );
-      if (!stale) setLines(loaded);
-    }
-    load();
+      )
+      .then((loaded) => {
+        if (!stale) setLines(loaded);
+      });
     return () => {
       stale = true;
     };
@@ -83,23 +75,21 @@ export function DemoPlayer() {
       </div>
       <div className="player-body">
         <div className="player-stage">
+          {/* The poster is in the page's first HTML, and the video only downloads once it's played. */}
           <video
+            key={demo.id}
             ref={video}
             className="player-video"
             controls
             playsInline
-            preload="metadata"
-            hidden={available === false}
-            poster={available ? demo.poster : undefined}
-            src={available ? demo.video : undefined}
+            preload="none"
+            poster={demo.poster}
+            src={demo.video}
             onTimeUpdate={followVideo}
           />
-          <div className="player-missing" hidden={available !== false}>
-            This recording is coming soon.
-          </div>
         </div>
         <aside className="player-side">
-          <h3 className="player-title">{demo.title}</h3>
+          <h2 className="player-title">{demo.title}</h2>
           <p className="player-text">{demo.text}</p>
           <ol className="player-transcript" ref={transcript}>
             {lines.map((line, index) => (
