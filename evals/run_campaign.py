@@ -6,7 +6,7 @@ one who wants another time, one who asks not to be called again, an answering ma
 number has no trunk (nobody answers) and one contact gave no consent. The run passes when every
 contact ends as expected and no more calls ran at once than the campaign allows.
 
-    runtime\\.venv\\Scripts\\python.exe evals\\run_campaign.py <sip-host> [--clean]
+    backend\\voice-agent\\.venv\\Scripts\\python.exe evals\\run_campaign.py <sip-host> [--clean]
 
 <sip-host> is the LiveKit project's SIP URI without "sip:" (LiveKit dashboard → Settings).
 Needs the stack up (API, worker, runtime). Costs LiveKit, speech and LLM minutes only.

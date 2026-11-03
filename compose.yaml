@@ -42,7 +42,7 @@ services:
       retries: 10
 
   api:
-    build: ./api
+    build: ./backend/studio-backend
     env_file: .env.local
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-studio}:${POSTGRES_PASSWORD:-studio}@postgres:5432/${POSTGRES_DB:-studio}
@@ -61,7 +61,7 @@ services:
 
   # Background jobs (document ingestion): same image as the API, run by arq.
   worker:
-    build: ./api
+    build: ./backend/studio-backend
     command: ["arq", "studio_api.worker.WorkerSettings"]
     env_file: .env.local
     environment:
@@ -72,7 +72,7 @@ services:
       - api
 
   runtime:
-    build: ./runtime
+    build: ./backend/voice-agent
     env_file: .env.local
     environment:
       API_URL: http://api:8000
@@ -81,7 +81,7 @@ services:
 
   console:
     build:
-      context: ./console
+      context: ./frontend/dashboard
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
     ports:

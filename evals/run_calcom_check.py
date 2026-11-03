@@ -1,7 +1,7 @@
 """Live check of Phase 7: a typed call books a real Cal.com slot, and the call's signed webhooks
 reach a local receiver.
 
-    runtime\\.venv\\Scripts\\python.exe evals\\run_calcom_check.py
+    backend\\voice-agent\\.venv\\Scripts\\python.exe evals\\run_calcom_check.py
 
 Needs the stack up (API, worker, runtime), CALCOM_API_KEY in .env.local, and the Cal.com event
 types made for the demo clinic's doctors (titles start with the doctor's name). The worker

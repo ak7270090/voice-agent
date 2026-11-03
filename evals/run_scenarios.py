@@ -5,7 +5,7 @@ the caller's lines one by one, waits for each reply, and checks the call record 
 saves. A run fails when fewer scenarios pass, or the median reply is >10% slower, than the
 saved baseline.
 
-    runtime\\.venv\\Scripts\\python.exe evals\\run_scenarios.py [--save-baseline]
+    backend\\voice-agent\\.venv\\Scripts\\python.exe evals\\run_scenarios.py [--save-baseline]
 
 Needs the stack up (API, worker, runtime) and LiveKit keys in .env.local. Typed calls cost only
 LLM tokens; the silent-caller check needs voice, so it stays a unit test (test_channels).

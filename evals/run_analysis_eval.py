@@ -5,7 +5,7 @@ details, tool calls, the agent's success rule and analysis fields) and, written 
 the analysis should say: whether the call succeeded and the value of chosen fields. The run
 also checks that every analysis field comes back, which Retell users report going missing.
 
-    api\\.venv\\Scripts\\python.exe evals\\run_analysis_eval.py [--repeat 3]
+    backend\\studio-backend\\.venv\\Scripts\\python.exe evals\\run_analysis_eval.py [--repeat 3]
 
 Needs the analysis model's key (OPENAI_API_KEY) in .env.local; no running stack.
 """
