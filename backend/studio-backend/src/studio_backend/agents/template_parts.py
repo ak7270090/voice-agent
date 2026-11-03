@@ -2,7 +2,7 @@
 
 from studio_backend.agents.constants import ENGLISH
 from studio_backend.agents.schemas import AgentFields, AnalysisField, VoiceSettings
-from studio_backend.config import Settings
+from studio_backend.core.config import Settings
 from studio_backend.flows.schemas import FlowEdge, Position
 
 COLUMN = 300

@@ -14,7 +14,7 @@ from contextlib import asynccontextmanager
 from fastapi import Request
 from livekit import api
 
-from studio_backend.config import Settings
+from studio_backend.core.config import Settings
 from studio_backend.phone_numbers.constants import (
     INBOUND_CALL_ROOM_PREFIX,
     LIVEKIT_RESOURCE_PREFIX,

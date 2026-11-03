@@ -2,7 +2,7 @@
 
 from studio_backend.agents.schemas import AgentTemplate
 from studio_backend.agents.template_parts import at, build_agent_fields, edge
-from studio_backend.config import Settings
+from studio_backend.core.config import Settings
 from studio_backend.flows.schemas import (
     EndData,
     EndNode,

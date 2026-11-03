@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 
 from studio_backend.agents.service import AgentNotFoundError
-from studio_backend.database import SessionDep
+from studio_backend.core.database import SessionDep
 from studio_backend.flows import service
 from studio_backend.flows.schemas import Flow, FlowDraft, FlowVersionRead
 

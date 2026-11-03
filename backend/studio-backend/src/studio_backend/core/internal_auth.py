@@ -5,7 +5,7 @@ from typing import Annotated
 
 from fastapi import Depends, Header, HTTPException, status
 
-from studio_backend.config import SettingsDep
+from studio_backend.core.config import SettingsDep
 
 BEARER_PREFIX = "Bearer "
 

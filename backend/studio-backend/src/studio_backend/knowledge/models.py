@@ -4,7 +4,7 @@ from pgvector.sqlalchemy import Vector
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from studio_backend.database import Base, new_id, utc_now
+from studio_backend.core.database import Base, new_id, utc_now
 from studio_backend.knowledge.constants import EMBEDDING_DIMENSIONS, QUEUED_STATUS
 
 

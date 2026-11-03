@@ -5,7 +5,7 @@ from cryptography.fernet import Fernet, InvalidToken
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from studio_backend.config import Settings
+from studio_backend.core.config import Settings
 from studio_backend.integrations.credentials.constants import (
     HIDDEN_PREVIEW,
     PREVIEW_EDGE_CHARS,

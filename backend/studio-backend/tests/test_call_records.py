@@ -3,7 +3,7 @@ from sqlalchemy import select
 
 from studio_backend.calls.costs import call_cost
 from studio_backend.calls.models import Call
-from studio_backend.config import Settings
+from studio_backend.core.config import Settings
 from tests.test_agents import create_agent
 
 PRICED_MODEL = "openai:gpt-5.4-mini"

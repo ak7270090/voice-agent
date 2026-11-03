@@ -7,7 +7,7 @@ from studio_backend.agents.examples.clinic_booking import (
     calcom_clinic_settings,
 )
 from studio_backend.agents.examples.lead_qualifier import build_lead_qualifier_flow
-from studio_backend.config import get_settings
+from studio_backend.core.config import get_settings
 from studio_backend.flows.schemas import Flow
 from studio_backend.flows.validation import validate_flow
 from tests.test_agents import create_agent

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
-from studio_backend.database import UtcDateTime
+from studio_backend.core.database import UtcDateTime
 
 
 class KnowledgeBaseCreate(BaseModel):

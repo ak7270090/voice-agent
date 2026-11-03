@@ -20,7 +20,7 @@ from studio_backend.campaigns.constants import (
 )
 from studio_backend.campaigns.models import Campaign, CampaignContact
 from studio_backend.campaigns.service import apply_outcome
-from studio_backend.database import assume_utc
+from studio_backend.core.database import assume_utc
 from studio_backend.phone_numbers.constants import OUTBOUND_CALL_ROOM_PREFIX, PHONE_CHANNEL
 from studio_backend.phone_numbers.service import get_number
 from studio_backend.phone_numbers.telephony import Telephony, TelephonyError

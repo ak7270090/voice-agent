@@ -1,4 +1,4 @@
-from studio_backend.database import create_session_factory
+from studio_backend.core.database import create_session_factory
 from studio_backend.knowledge.ingestion import ingest_document
 from studio_backend.knowledge.search import Candidate, content_words, rerank
 from tests.conftest import WordEmbeddings

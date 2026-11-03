@@ -4,7 +4,7 @@ from typing import Any
 
 from studio_backend.agents.models import Agent
 from studio_backend.calls.models import Call
-from studio_backend.config import Settings
+from studio_backend.core.config import Settings
 
 
 def call_url(settings: Settings, call: Call) -> str:

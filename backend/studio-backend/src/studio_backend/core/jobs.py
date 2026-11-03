@@ -6,7 +6,7 @@ from arq import ArqRedis, create_pool
 from arq.connections import RedisSettings
 from fastapi import Depends, Request
 
-from studio_backend.config import Settings
+from studio_backend.core.config import Settings
 
 
 class JobQueue:

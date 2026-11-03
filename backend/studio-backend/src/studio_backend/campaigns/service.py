@@ -35,7 +35,7 @@ from studio_backend.campaigns.schemas import (
     ContactImport,
     RejectedRow,
 )
-from studio_backend.database import utc_now
+from studio_backend.core.database import utc_now
 from studio_backend.phone_numbers.service import CannotCallOutError, get_number
 
 # Which status a campaign may move to from which.

@@ -16,14 +16,19 @@ from studio_backend.agents.router import runtime_router as agents_runtime_router
 from studio_backend.calls.router import router as calls_router
 from studio_backend.calls.router import runtime_router as calls_runtime_router
 from studio_backend.campaigns.router import router as campaigns_router
-from studio_backend.config import export_provider_keys, get_settings
-from studio_backend.database import create_session_factory
+from studio_backend.core.config import export_provider_keys, get_settings
+from studio_backend.core.database import create_session_factory
+from studio_backend.core.jobs import create_job_queue
+from studio_backend.core.tracing import (
+    create_tracer_provider,
+    find_langfuse_project,
+    trace_requests,
+)
 from studio_backend.flows.router import router as flows_router
 from studio_backend.health import build_dependency_checks
 from studio_backend.health import router as health_router
 from studio_backend.integrations.credentials.router import router as credentials_router
 from studio_backend.integrations.deliveries.router import router as deliveries_router
-from studio_backend.jobs import create_job_queue
 from studio_backend.knowledge.embeddings import create_embeddings
 from studio_backend.knowledge.router import router as knowledge_router
 from studio_backend.knowledge.router import runtime_router as knowledge_runtime_router
@@ -31,7 +36,6 @@ from studio_backend.knowledge.storage import create_file_store
 from studio_backend.phone_numbers.router import router as numbers_router
 from studio_backend.phone_numbers.router import runtime_router as numbers_runtime_router
 from studio_backend.phone_numbers.telephony import Telephony
-from studio_backend.tracing import create_tracer_provider, find_langfuse_project, trace_requests
 
 logger = logging.getLogger(__name__)
 

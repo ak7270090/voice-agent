@@ -4,7 +4,7 @@ from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Tim
 from sqlalchemy.orm import Mapped, mapped_column
 
 from studio_backend.campaigns.constants import DRAFT, PENDING
-from studio_backend.database import Base, new_id, utc_now
+from studio_backend.core.database import Base, new_id, utc_now
 
 
 class Campaign(Base):

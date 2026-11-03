@@ -16,7 +16,7 @@ from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.sampling import ALWAYS_OFF, ParentBased
 
-from studio_backend.config import Settings
+from studio_backend.core.config import Settings
 
 logger = logging.getLogger(__name__)
 

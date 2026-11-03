@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from studio_backend.database import Base, new_id, utc_now
+from studio_backend.core.database import Base, new_id, utc_now
 
 
 class FlowVersion(Base):

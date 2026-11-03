@@ -3,7 +3,7 @@ from pathlib import PurePath
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from studio_backend.jobs import JobQueue
+from studio_backend.core.jobs import JobQueue
 from studio_backend.knowledge.constants import (
     DOCUMENT_KEY_PREFIX,
     INGEST_JOB_NAME,

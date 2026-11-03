@@ -6,7 +6,7 @@ from fastapi import Depends, Request
 from langchain.embeddings import init_embeddings
 from langchain_core.embeddings import Embeddings
 
-from studio_backend.config import Settings
+from studio_backend.core.config import Settings
 
 
 def create_embeddings(settings: Settings) -> Embeddings:

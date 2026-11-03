@@ -2,8 +2,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Path, status
 
-from studio_backend.config import SettingsDep
-from studio_backend.database import SessionDep
+from studio_backend.core.config import SettingsDep
+from studio_backend.core.database import SessionDep
 from studio_backend.integrations.credentials import service
 from studio_backend.integrations.credentials.constants import (
     SECRET_NAME_MAX_LENGTH,

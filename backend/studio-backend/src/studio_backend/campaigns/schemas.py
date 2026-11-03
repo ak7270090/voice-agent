@@ -5,7 +5,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from studio_backend.campaigns.constants import MAX_ATTEMPTS, MAX_CONCURRENT_CALLS
-from studio_backend.database import UtcDateTime
+from studio_backend.core.database import UtcDateTime
 from studio_backend.phone_numbers.schemas import E164Number
 
 

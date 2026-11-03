@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from studio_backend.database import Base, new_id, utc_now
+from studio_backend.core.database import Base, new_id, utc_now
 from studio_backend.phone_numbers.constants import SIP_TRUNK_PROVIDER
 
 

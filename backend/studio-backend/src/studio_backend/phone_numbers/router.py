@@ -3,8 +3,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from studio_backend.agents.service import AgentNotFoundError
-from studio_backend.database import SessionDep
-from studio_backend.internal_auth import RuntimeAuthDep
+from studio_backend.core.database import SessionDep
+from studio_backend.core.internal_auth import RuntimeAuthDep
 from studio_backend.phone_numbers import service
 from studio_backend.phone_numbers.schemas import (
     OutboundCall,

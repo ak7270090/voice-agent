@@ -4,7 +4,7 @@ import socket
 import pytest
 from fastapi.testclient import TestClient
 
-from studio_backend.config import get_settings
+from studio_backend.core.config import get_settings
 from studio_backend.health import get_dependency_checks
 from studio_backend.main import create_app
 

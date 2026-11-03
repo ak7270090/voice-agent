@@ -16,7 +16,7 @@ from studio_backend.agents.constants import (
     WEB_CHANNEL,
 )
 from studio_backend.agents.schemas import BrowserCall
-from studio_backend.config import Settings
+from studio_backend.core.config import Settings
 
 
 def build_browser_call(settings: Settings, agent_id: str) -> BrowserCall:

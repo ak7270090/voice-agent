@@ -20,8 +20,8 @@ from studio_backend.calls.costs import call_cost
 from studio_backend.calls.models import Call
 from studio_backend.calls.schemas import AgentSuccess, CallEnd, CallStart, DayCount, Metrics
 from studio_backend.campaigns.service import record_call_outcome
-from studio_backend.config import Settings
-from studio_backend.database import assume_utc, utc_now
+from studio_backend.core.config import Settings
+from studio_backend.core.database import assume_utc, utc_now
 
 PERCENTILES = 100
 

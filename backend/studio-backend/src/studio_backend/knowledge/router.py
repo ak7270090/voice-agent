@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException, UploadFile, status
 
 from studio_backend.agents.service import AgentNotFoundError, get_agent
-from studio_backend.config import SettingsDep
-from studio_backend.database import SessionDep
-from studio_backend.internal_auth import RuntimeAuthDep
-from studio_backend.jobs import JobQueueDep
+from studio_backend.core.config import SettingsDep
+from studio_backend.core.database import SessionDep
+from studio_backend.core.internal_auth import RuntimeAuthDep
+from studio_backend.core.jobs import JobQueueDep
 from studio_backend.knowledge import service
 from studio_backend.knowledge.embeddings import EmbeddingsDep
 from studio_backend.knowledge.schemas import (

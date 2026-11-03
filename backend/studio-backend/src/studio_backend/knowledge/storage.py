@@ -11,7 +11,7 @@ import boto3
 from botocore.exceptions import ClientError
 from fastapi import Depends, Request
 
-from studio_backend.config import Settings
+from studio_backend.core.config import Settings
 
 
 class FileStore:

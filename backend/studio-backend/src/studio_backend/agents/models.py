@@ -4,7 +4,7 @@ from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, String, Tabl
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from studio_backend.agents.constants import DRAFT_STATUS
-from studio_backend.database import Base, new_id, utc_now
+from studio_backend.core.database import Base, new_id, utc_now
 from studio_backend.knowledge.models import KnowledgeBase
 
 agent_knowledge_bases = Table(

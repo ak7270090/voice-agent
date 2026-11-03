@@ -4,7 +4,7 @@ from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from studio_backend.database import UtcDateTime
+from studio_backend.core.database import UtcDateTime
 from studio_backend.flows.constants import (
     CALCOM_API_URL,
     FIELD_TYPES,

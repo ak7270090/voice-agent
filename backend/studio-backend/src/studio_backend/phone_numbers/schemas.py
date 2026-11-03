@@ -2,7 +2,7 @@ from typing import Annotated, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from studio_backend.database import UtcDateTime
+from studio_backend.core.database import UtcDateTime
 from studio_backend.phone_numbers.constants import E164_PATTERN, LIVEKIT_PROVIDER, PROVIDERS
 
 E164Number = Annotated[str, Field(pattern=E164_PATTERN)]

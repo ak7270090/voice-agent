@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from studio_backend.database import UtcDateTime
+from studio_backend.core.database import UtcDateTime
 from studio_backend.integrations.credentials.constants import SECRET_NAME_PATTERN
 from studio_backend.integrations.deliveries.constants import (
     ACTION_KINDS,

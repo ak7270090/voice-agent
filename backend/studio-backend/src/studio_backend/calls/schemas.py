@@ -8,7 +8,7 @@ from studio_backend.calls.constants import (
     INBOUND_DIRECTION,
     TRANSCRIPT_ROLES,
 )
-from studio_backend.database import UtcDateTime
+from studio_backend.core.database import UtcDateTime
 
 
 class TranscriptTurn(BaseModel):

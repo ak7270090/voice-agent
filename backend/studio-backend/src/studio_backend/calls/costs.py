@@ -5,7 +5,7 @@ the runtime's usage counts; LLM tokens use the agent model's price, and a model 
 is reported as unpriced rather than free.
 """
 
-from studio_backend.config import Settings
+from studio_backend.core.config import Settings
 
 TOKENS_PER_MILLION = 1_000_000
 CHARACTERS_PER_THOUSAND = 1000

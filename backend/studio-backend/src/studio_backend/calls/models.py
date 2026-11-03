@@ -4,7 +4,7 @@ from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from studio_backend.calls.constants import ACTIVE_STATUS, INBOUND_DIRECTION
-from studio_backend.database import Base, new_id, utc_now
+from studio_backend.core.database import Base, new_id, utc_now
 
 
 class Call(Base):

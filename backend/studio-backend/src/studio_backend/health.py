@@ -11,7 +11,7 @@ from redis.asyncio import Redis
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from studio_backend.config import SettingsDep
+from studio_backend.core.config import SettingsDep
 
 DependencyCheck = Callable[[], Awaitable[object]]
 

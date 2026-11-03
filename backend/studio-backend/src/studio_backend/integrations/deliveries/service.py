@@ -7,8 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from studio_backend.agents.models import Agent
 from studio_backend.calls.models import Call
-from studio_backend.config import Settings
-from studio_backend.database import new_id
+from studio_backend.core.config import Settings
+from studio_backend.core.database import new_id
 from studio_backend.integrations.credentials.service import SecretsKeyMissingError, secret_values
 from studio_backend.integrations.deliveries.constants import (
     FAILED_DELIVERY,

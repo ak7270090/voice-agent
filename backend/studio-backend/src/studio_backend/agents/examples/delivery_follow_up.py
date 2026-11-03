@@ -2,7 +2,7 @@
 
 from studio_backend.agents.schemas import AgentTemplate
 from studio_backend.agents.template_parts import build_agent_fields
-from studio_backend.config import Settings
+from studio_backend.core.config import Settings
 
 DELIVERY_FOLLOW_UP_INSTRUCTIONS = """You call customers about a delivery.
 Confirm the address and a delivery slot that suits them."""

@@ -8,7 +8,7 @@ from studio_backend.agents.examples import (
 )
 from studio_backend.agents.schemas import AgentTemplate
 from studio_backend.agents.template_parts import build_agent_fields
-from studio_backend.config import Settings
+from studio_backend.core.config import Settings
 
 BLANK_INSTRUCTIONS = "You answer phone calls for the business. Be warm and brief."
 # Listed in this order in the dashboard.

@@ -137,7 +137,8 @@ voice-agent-studio/
 │   │   │   ├── campaigns/         campaigns, contacts, CSV import, the dialler
 │   │   │   ├── calls/             call records, cost, post-call analysis, dashboard
 │   │   │   ├── integrations/      saved keys (credentials/), results sent to Slack, HubSpot, Sheets, webhooks (deliveries/)
-│   │   │   └── main.py · worker.py · jobs.py · health.py · tracing.py · internal_auth.py
+│   │   │   ├── core/              settings, database, job queue, tracing, internal auth
+│   │   │   └── main.py · worker.py · health.py
 │   │   ├── migrations/            Alembic (0001-0012)
 │   │   └── tests/
 │   └── voice-agent/           the LiveKit agent that talks on calls

@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from studio_backend.agents.service import get_agent
-from studio_backend.database import new_id
+from studio_backend.core.database import new_id
 from studio_backend.phone_numbers.constants import (
     OUTBOUND_CALL_ROOM_PREFIX,
     PHONE_CHANNEL,

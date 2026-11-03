@@ -14,7 +14,7 @@ from markitdown import MarkItDown, StreamInfo
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from studio_backend.config import Settings
+from studio_backend.core.config import Settings
 from studio_backend.knowledge.constants import (
     FAILED_STATUS,
     PROCESSING_STATUS,

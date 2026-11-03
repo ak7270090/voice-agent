@@ -10,7 +10,7 @@ from studio_backend.campaigns.schemas import (
     ContactImport,
     ContactRead,
 )
-from studio_backend.database import SessionDep
+from studio_backend.core.database import SessionDep
 from studio_backend.phone_numbers.service import CannotCallOutError, PhoneNumberNotFoundError
 
 router = APIRouter(prefix="/campaigns", tags=["campaigns"])
