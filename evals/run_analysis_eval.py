@@ -1,11 +1,11 @@
 """Post-call analysis eval: the real analysis model over saved transcripts with known answers.
 
-cases.json holds real calls from the scenario and campaign runs (transcript, outcome, collected
+analysis_cases.json holds real calls from the scenario and campaign runs (transcript, outcome, collected
 details, tool calls, the agent's success rule and analysis fields) and, written by hand, what
 the analysis should say: whether the call succeeded and the value of chosen fields. The run
 also checks that every analysis field comes back, which Retell users report going missing.
 
-    api\\.venv\\Scripts\\python.exe tools\\analysis_eval\\run_eval.py [--repeat 3]
+    api\\.venv\\Scripts\\python.exe evals\\run_analysis_eval.py [--repeat 3]
 
 Needs the analysis model's key (OPENAI_API_KEY) in .env.local; no running stack.
 """
@@ -21,7 +21,7 @@ from studio_api.agents.schemas import AnalysisField
 from studio_api.calls.analysis import analyse, create_analysis_model, result_model
 from studio_api.config import export_provider_keys, get_settings
 
-CASES_FILE = Path(__file__).with_name("cases.json")
+CASES_FILE = Path(__file__).with_name("analysis_cases.json")
 
 
 async def run_case(case: dict, settings) -> list[str]:

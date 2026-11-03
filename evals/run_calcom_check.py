@@ -1,7 +1,7 @@
 """Live check of Phase 7: a typed call books a real Cal.com slot, and the call's signed webhooks
 reach a local receiver.
 
-    runtime\\.venv\\Scripts\\python.exe tools\\integrations\\calcom_check.py
+    runtime\\.venv\\Scripts\\python.exe evals\\run_calcom_check.py
 
 Needs the stack up (API, worker, runtime), CALCOM_API_KEY in .env.local, and the Cal.com event
 types made for the demo clinic's doctors (titles start with the doctor's name). The worker
@@ -22,12 +22,11 @@ from zoneinfo import ZoneInfo
 
 import httpx
 
-sys.path.insert(0, str(Path(__file__).parents[1] / "scenarios"))
-from run_scenarios import TesterCall, spoken_clock, spoken_day  # noqa: E402
+from run_scenarios import TesterCall, spoken_clock, spoken_day
 
 API = "http://localhost:8000"
 CALCOM = "https://api.cal.com/v2"
-ENV_FILE = Path(__file__).parents[2] / ".env.local"
+ENV_FILE = Path(__file__).parents[1] / ".env.local"
 TEMPLATE_ID = "clinic-booking-calcom"
 AGENT_NAME = "Clinic booking (Cal.com check)"
 DOCTOR = "Dr. Priya Mehta"

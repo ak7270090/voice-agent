@@ -5,7 +5,7 @@ the caller's lines one by one, waits for each reply, and checks the call record 
 saves. A run fails when fewer scenarios pass, or the median reply is >10% slower, than the
 saved baseline.
 
-    runtime\\.venv\\Scripts\\python.exe tools\\scenarios\\run_scenarios.py [--save-baseline]
+    runtime\\.venv\\Scripts\\python.exe evals\\run_scenarios.py [--save-baseline]
 
 Needs the stack up (API, worker, runtime) and LiveKit keys in .env.local. Typed calls cost only
 LLM tokens; the silent-caller check needs voice, so it stays a unit test (test_channels).
@@ -44,7 +44,7 @@ REPLY_TIMEOUT_SECONDS = 60
 RECORD_WAIT_SECONDS = 4
 # Fail the run if the median reply gets this much slower than the baseline.
 ALLOWED_SLOWDOWN = 1.10
-BASELINE_FILE = Path(__file__).with_name("baseline.json")
+BASELINE_FILE = Path(__file__).with_name("scenarios_baseline.json")
 
 
 @dataclass
