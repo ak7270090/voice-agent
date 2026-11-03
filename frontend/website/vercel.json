@@ -1,0 +1,7 @@
+{
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/demo", "destination": "https://voice-agent-studio-demo.vercel.app/demo" },
+    { "source": "/demo/:path*", "destination": "https://voice-agent-studio-demo.vercel.app/demo/:path*" }
+  ]
+}
