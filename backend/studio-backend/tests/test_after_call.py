@@ -5,10 +5,10 @@ import httpx
 import pytest
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
+
 from studio_backend import worker
 from studio_backend.after_call.senders import sign, slack_text
 from studio_backend.after_call.service import deliver
-
 from tests.test_agents import create_agent
 from tests.test_call_records import SPOKEN, end, start
 

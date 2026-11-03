@@ -2,6 +2,7 @@ import httpx
 from fastapi import FastAPI
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
+
 from studio_backend.config import Settings
 from studio_backend.tracing import (
     create_tracer_provider,

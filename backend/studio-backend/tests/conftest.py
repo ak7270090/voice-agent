@@ -11,6 +11,7 @@ from livekit import api
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from sqlalchemy.pool import NullPool, StaticPool
+
 from studio_backend.after_call import models as after_call_models  # noqa: F401
 from studio_backend.agents import models as agent_models  # noqa: F401 - registers the tables
 from studio_backend.calls import models as call_models  # noqa: F401 - registers the tables

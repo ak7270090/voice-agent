@@ -3,7 +3,7 @@ from typing import Literal
 from fastapi import APIRouter, HTTPException, status
 from pydantic import ValidationError
 
-from studio_backend.agent_templates.catalog import build_templates
+from studio_backend.agent_catalog.catalog import build_templates
 from studio_backend.agents import service
 from studio_backend.agents.browser_calls import build_browser_call
 from studio_backend.agents.constants import FLOW_CHOICES, PUBLISHED_FLOW

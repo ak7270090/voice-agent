@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 import httpx
 import pytest
+
 from studio_backend.health import build_dependency_checks
 
 

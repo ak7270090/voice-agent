@@ -1,6 +1,9 @@
-"""Ready-made flows for the agent templates. The clinic one rebuilds clinic-voice-agent's
-booking form as nodes: collect, check free times, read back, book, give the booking ID."""
+"""A hospital receptionist. Its flow rebuilds clinic-voice-agent's booking form as nodes: collect,
+check free times, read back, book, give the booking ID."""
 
+from studio_backend.agent_catalog.template_parts import at, build_agent_fields, edge
+from studio_backend.agents.schemas import AgentTemplate, AnalysisField
+from studio_backend.config import Settings
 from studio_backend.flows.constants import CALCOM_AVAILABILITY_TOOL, CALCOM_BOOKING_TOOL
 from studio_backend.flows.schemas import (
     CalcomResource,
@@ -9,10 +12,8 @@ from studio_backend.flows.schemas import (
     EndNode,
     FieldSpec,
     Flow,
-    FlowEdge,
     GlobalData,
     GlobalNode,
-    Position,
     StartNode,
     StepData,
     StepNode,
@@ -22,8 +23,35 @@ from studio_backend.flows.schemas import (
     TransferNode,
 )
 
-COLUMN = 300
-ROW = 150
+CLINIC_BOOKING_INSTRUCTIONS = """You are the receptionist of City Hospital.
+Help callers book, move or cancel an appointment, and answer questions about the hospital.
+Be warm and brief."""
+
+GREETING = "Welcome to City Hospital. How can I help you today?"
+CLINIC_ANALYSIS = (
+    [
+        AnalysisField(
+            name="reason",
+            type="choice",
+            description="Why the caller called",
+            choices=["book", "question", "change", "other"],
+        ),
+        # A choice, not text: as text, "skin doctor" and "Dr. Priya Mehta" were both answers.
+        AnalysisField(
+            name="doctor",
+            type="choice",
+            description="The doctor the appointment or question was about",
+            choices=["Dr. Anil Sharma", "Dr. Priya Mehta", "Dr. Ravi Iyer", "Dr. Sana Khan"],
+        ),
+        AnalysisField(
+            name="asked_about_fees",
+            type="yes_no",
+            description="Did the caller ask what a visit costs?",
+        ),
+    ],
+    "An appointment was booked (the agent gave a booking ID), or the caller's question was "
+    "answered.",
+)
 # The demo clinic's doctors, as the agent names them when the caller has not said.
 DOCTOR_LIST = (
     "Dr. Anil Sharma, general physician; Dr. Priya Mehta, skin; Dr. Ravi Iyer, children; "
@@ -57,16 +85,6 @@ CLINIC_DOCTORS = (
         ("orthopaedic surgeon", "khan", "bone", "joint", "ortho", "knee", "back", "fracture"),
     ),
 )
-
-
-def at(column: float, row: float) -> Position:
-    return Position(x=column * COLUMN, y=row * ROW)
-
-
-def edge(source: str, target: str, kind: str = "condition", condition: str = "") -> FlowEdge:
-    return FlowEdge(
-        id=f"{source}-{target}", source=source, target=target, kind=kind, condition=condition
-    )
 
 
 def calcom_clinic_settings() -> CalcomSettings:
@@ -283,103 +301,37 @@ def build_clinic_booking_flow(clinic_api_url: str, calcom: CalcomSettings | None
     return Flow(nodes=nodes, edges=edges)
 
 
-def build_reminder_flow() -> Flow:
-    nodes = [
-        StartNode(id="start", type="start", position=at(1, 0)),
-        StepNode(
-            id="remind",
-            type="step",
-            position=at(1, 1),
-            data=StepData(
-                name="Confirm the appointment",
-                instructions=(
-                    "Remind the patient of tomorrow's appointment and ask if they will come."
-                ),
+def build_templates(settings: Settings) -> list[AgentTemplate]:
+    return [
+        AgentTemplate(
+            id="clinic-booking",
+            name="Clinic booking",
+            summary="Books, moves and cancels appointments; answers from hospital documents.",
+            channel_label="Inbound",
+            fields=build_agent_fields(
+                settings,
+                "Clinic receptionist",
+                CLINIC_BOOKING_INSTRUCTIONS,
+                GREETING,
+                CLINIC_ANALYSIS,
             ),
+            flow=build_clinic_booking_flow(settings.demo_clinic_api_url),
         ),
-        EndNode(
-            id="confirmed",
-            type="end",
-            position=at(0, 2),
-            data=EndData(outcome="confirmed", message="Great, see you tomorrow. Goodbye."),
-        ),
-        EndNode(
-            id="reschedule",
-            type="end",
-            position=at(2, 2),
-            data=EndData(
-                outcome="reschedule_requested",
-                message="No problem. The front desk will call you to find a new time. Goodbye.",
+        AgentTemplate(
+            id="clinic-booking-calcom",
+            name="Clinic booking (Cal.com)",
+            summary="Books into each doctor's Cal.com calendar: save your Cal.com key as "
+            "CALCOM_KEY, then set each doctor's event type.",
+            channel_label="Inbound",
+            fields=build_agent_fields(
+                settings,
+                "Clinic receptionist (Cal.com)",
+                CLINIC_BOOKING_INSTRUCTIONS,
+                GREETING,
+                CLINIC_ANALYSIS,
             ),
-        ),
-        EndNode(
-            id="opted_out",
-            type="end",
-            position=at(3, 2),
-            # A campaign never calls a contact again after this outcome.
-            data=EndData(
-                outcome="opted_out",
-                message="Understood, we won't call you again. Goodbye.",
+            flow=build_clinic_booking_flow(
+                settings.demo_clinic_api_url, calcom=calcom_clinic_settings()
             ),
         ),
     ]
-    edges = [
-        edge("start", "remind", "always"),
-        edge("remind", "confirmed", condition="The patient will come"),
-        edge("remind", "reschedule", condition="The patient cannot come or wants another time"),
-        edge("remind", "opted_out", condition="The person asks not to be called again"),
-    ]
-    return Flow(nodes=nodes, edges=edges)
-
-
-def build_lead_qualifier_flow() -> Flow:
-    nodes = [
-        StartNode(id="start", type="start", position=at(1, 0)),
-        StepNode(
-            id="qualify",
-            type="step",
-            position=at(1, 1),
-            data=StepData(
-                name="Qualify the lead",
-                instructions="Find out what they need, their budget and when they want to start.",
-                fields=[
-                    FieldSpec(name="need", description="What they want to solve"),
-                    FieldSpec(name="budget", description="Budget, with currency"),
-                    FieldSpec(name="timeline", description="When they want to start"),
-                ],
-            ),
-        ),
-        StepNode(
-            id="offer_meeting",
-            type="step",
-            position=at(1, 2),
-            data=StepData(
-                name="Offer a meeting",
-                instructions="Offer a short call with sales and ask for a day that suits them.",
-                fields=[FieldSpec(name="meeting_day", type="date", description="Meeting day")],
-            ),
-        ),
-        EndNode(
-            id="qualified",
-            type="end",
-            position=at(0, 3),
-            data=EndData(
-                outcome="meeting_requested",
-                message="Thanks. Our sales team will confirm the meeting for {meeting_day}.",
-            ),
-        ),
-        EndNode(
-            id="not_interested",
-            type="end",
-            position=at(2, 3),
-            data=EndData(outcome="not_interested", message="Thanks for your time. Goodbye."),
-        ),
-    ]
-    edges = [
-        edge("start", "qualify", "always"),
-        edge("qualify", "offer_meeting", "fields_complete"),
-        edge("qualify", "not_interested", condition="They are not interested"),
-        edge("offer_meeting", "qualified", "fields_complete"),
-        edge("offer_meeting", "not_interested", condition="They do not want a meeting"),
-    ]
-    return Flow(nodes=nodes, edges=edges)
