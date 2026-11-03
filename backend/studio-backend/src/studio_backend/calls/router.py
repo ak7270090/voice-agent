@@ -3,8 +3,6 @@ from urllib.parse import quote
 
 from fastapi import APIRouter, HTTPException, Query, Request, status
 
-from studio_backend.after_call.constants import CALL_ANALYSED, CALL_ENDED, DELIVER_JOB
-from studio_backend.after_call.service import schedule_deliveries
 from studio_backend.agents.service import AgentNotFoundError
 from studio_backend.calls import service
 from studio_backend.calls.constants import ANALYSIS_PENDING, ENDED_STATUS
@@ -12,6 +10,8 @@ from studio_backend.calls.models import Call
 from studio_backend.calls.schemas import CallEnd, CallRead, CallStart, Metrics
 from studio_backend.config import Settings, SettingsDep
 from studio_backend.database import SessionDep
+from studio_backend.integrations.deliveries.constants import CALL_ANALYSED, CALL_ENDED, DELIVER_JOB
+from studio_backend.integrations.deliveries.service import schedule_deliveries
 from studio_backend.internal_auth import RuntimeAuthDep
 from studio_backend.jobs import JobQueueDep
 

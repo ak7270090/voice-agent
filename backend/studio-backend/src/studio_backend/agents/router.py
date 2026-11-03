@@ -17,10 +17,10 @@ from studio_backend.agents.schemas import (
     RuntimeAgentConfig,
 )
 from studio_backend.config import SettingsDep
-from studio_backend.credentials.service import SecretsKeyMissingError, secret_values
 from studio_backend.database import SessionDep
 from studio_backend.flows.schemas import Flow
 from studio_backend.flows.validation import referenced_secrets
+from studio_backend.integrations.credentials.service import SecretsKeyMissingError, secret_values
 from studio_backend.internal_auth import RuntimeAuthDep
 from studio_backend.knowledge.service import KnowledgeBaseNotFoundError
 

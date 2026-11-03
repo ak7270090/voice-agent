@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field
 
-from studio_backend.credentials.constants import SECRET_VALUE_MAX_LENGTH
 from studio_backend.database import UtcDateTime
+from studio_backend.integrations.credentials.constants import SECRET_VALUE_MAX_LENGTH
 
 
 class SecretWrite(BaseModel):

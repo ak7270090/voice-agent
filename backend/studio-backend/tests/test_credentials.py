@@ -1,7 +1,7 @@
 from sqlalchemy import select
 
-from studio_backend.credentials.models import Secret
-from studio_backend.credentials.service import preview
+from studio_backend.integrations.credentials.models import Secret
+from studio_backend.integrations.credentials.service import preview
 from tests.test_agents import create_agent
 
 CALCOM_KEY = "cal_live_0123456789abcdef0123456789abcdef"

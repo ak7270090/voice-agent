@@ -11,18 +11,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from studio_backend.after_call.router import router as after_call_router
 from studio_backend.agents.router import router as agents_router
 from studio_backend.agents.router import runtime_router as agents_runtime_router
 from studio_backend.calls.router import router as calls_router
 from studio_backend.calls.router import runtime_router as calls_runtime_router
 from studio_backend.campaigns.router import router as campaigns_router
 from studio_backend.config import export_provider_keys, get_settings
-from studio_backend.credentials.router import router as secrets_router
 from studio_backend.database import create_session_factory
 from studio_backend.flows.router import router as flows_router
 from studio_backend.health import build_dependency_checks
 from studio_backend.health import router as health_router
+from studio_backend.integrations.credentials.router import router as credentials_router
+from studio_backend.integrations.deliveries.router import router as deliveries_router
 from studio_backend.jobs import create_job_queue
 from studio_backend.knowledge.embeddings import create_embeddings
 from studio_backend.knowledge.router import router as knowledge_router
@@ -77,14 +77,14 @@ def create_app() -> FastAPI:
         agents_runtime_router,
         calls_router,
         calls_runtime_router,
-        after_call_router,
+        deliveries_router,
         knowledge_router,
         knowledge_runtime_router,
         flows_router,
         numbers_router,
         numbers_runtime_router,
         campaigns_router,
-        secrets_router,
+        credentials_router,
     ):
         app.include_router(router)
     trace_requests(app, create_tracer_provider(get_settings()))

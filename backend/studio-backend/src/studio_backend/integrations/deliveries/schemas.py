@@ -3,7 +3,9 @@ from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from studio_backend.after_call.constants import (
+from studio_backend.database import UtcDateTime
+from studio_backend.integrations.credentials.constants import SECRET_NAME_PATTERN
+from studio_backend.integrations.deliveries.constants import (
     ACTION_KINDS,
     ACTIONS_NEEDING_A_SECRET,
     CALL_ANALYSED,
@@ -11,8 +13,6 @@ from studio_backend.after_call.constants import (
     GOOGLE_SHEETS_ACTION,
     WEBHOOK_ACTION,
 )
-from studio_backend.credentials.constants import SECRET_NAME_PATTERN
-from studio_backend.database import UtcDateTime
 
 
 def new_action_id() -> str:

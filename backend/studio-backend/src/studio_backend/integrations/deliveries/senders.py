@@ -16,7 +16,7 @@ import httpx
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 
-from studio_backend.after_call.constants import (
+from studio_backend.integrations.deliveries.constants import (
     DELIVERY_HEADER,
     EMAIL_FIELD,
     EVENT_HEADER,
@@ -33,7 +33,7 @@ from studio_backend.after_call.constants import (
     SIGNATURE_HEADER,
     TIMESTAMP_HEADER,
 )
-from studio_backend.after_call.schemas import AfterCallAction
+from studio_backend.integrations.deliveries.schemas import AfterCallAction
 
 
 class NothingToSendError(Exception):

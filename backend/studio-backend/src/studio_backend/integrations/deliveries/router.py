@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, status
 
-from studio_backend.after_call import service
-from studio_backend.after_call.constants import DELIVER_JOB
-from studio_backend.after_call.schemas import DeliveryRead
 from studio_backend.database import SessionDep
+from studio_backend.integrations.deliveries import service
+from studio_backend.integrations.deliveries.constants import DELIVER_JOB
+from studio_backend.integrations.deliveries.schemas import DeliveryRead
 from studio_backend.jobs import JobQueueDep
 
 router = APIRouter(prefix="/calls/{call_id}/deliveries", tags=["after call"])

@@ -3,8 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from studio_backend.agents.models import Agent
 from studio_backend.agents.schemas import AgentFields, AgentTemplate, AgentUpdate
-from studio_backend.credentials.service import secret_names
 from studio_backend.flows.schemas import Flow
+from studio_backend.integrations.credentials.service import secret_names
 from studio_backend.knowledge.models import KnowledgeBase
 from studio_backend.knowledge.service import KnowledgeBaseNotFoundError
 

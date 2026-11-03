@@ -5,7 +5,12 @@ import httpx
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from studio_backend.after_call.constants import (
+from studio_backend.agents.models import Agent
+from studio_backend.calls.models import Call
+from studio_backend.config import Settings
+from studio_backend.database import new_id
+from studio_backend.integrations.credentials.service import SecretsKeyMissingError, secret_values
+from studio_backend.integrations.deliveries.constants import (
     FAILED_DELIVERY,
     GOOGLE_SHEETS_ACTION,
     HUBSPOT_ACTION,
@@ -14,10 +19,10 @@ from studio_backend.after_call.constants import (
     SKIPPED_DELIVERY,
     SLACK_ACTION,
 )
-from studio_backend.after_call.models import Delivery
-from studio_backend.after_call.payload import call_payload
-from studio_backend.after_call.schemas import AfterCallAction
-from studio_backend.after_call.senders import (
+from studio_backend.integrations.deliveries.models import Delivery
+from studio_backend.integrations.deliveries.payload import call_payload
+from studio_backend.integrations.deliveries.schemas import AfterCallAction
+from studio_backend.integrations.deliveries.senders import (
     NothingToSendError,
     PermanentDeliveryError,
     RetryableDeliveryError,
@@ -26,11 +31,6 @@ from studio_backend.after_call.senders import (
     send_slack,
     send_webhook,
 )
-from studio_backend.agents.models import Agent
-from studio_backend.calls.models import Call
-from studio_backend.config import Settings
-from studio_backend.credentials.service import SecretsKeyMissingError, secret_values
-from studio_backend.database import new_id
 
 RETRY_GROWTH = 3
 

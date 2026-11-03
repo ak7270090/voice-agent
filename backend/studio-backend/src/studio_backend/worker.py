@@ -7,13 +7,13 @@ import httpx
 from arq import cron
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from studio_backend.after_call.constants import CALL_ANALYSED, DELIVER_JOB
-from studio_backend.after_call.service import deliver, schedule_deliveries
 from studio_backend.calls.analysis import run_analysis
 from studio_backend.calls.models import Call
 from studio_backend.campaigns.dialler import run_dialler
 from studio_backend.config import export_provider_keys, get_settings
 from studio_backend.database import create_session_factory, utc_now
+from studio_backend.integrations.deliveries.constants import CALL_ANALYSED, DELIVER_JOB
+from studio_backend.integrations.deliveries.service import deliver, schedule_deliveries
 from studio_backend.jobs import build_redis_settings
 from studio_backend.knowledge.embeddings import create_embeddings
 from studio_backend.knowledge.ingestion import ingest_document

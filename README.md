@@ -136,8 +136,7 @@ voice-agent-studio/
 │   │   │   ├── phone_numbers/     phone numbers, SIP trunks, outbound calls
 │   │   │   ├── campaigns/         campaigns, contacts, CSV import, the dialler
 │   │   │   ├── calls/             call records, cost, post-call analysis, dashboard
-│   │   │   ├── credentials/       encrypted keys and tokens
-│   │   │   ├── after_call/        webhooks, Slack, HubSpot, Google Sheets, deliveries
+│   │   │   ├── integrations/      saved keys (credentials/), results sent to Slack, HubSpot, Sheets, webhooks (deliveries/)
 │   │   │   └── main.py · worker.py · jobs.py · health.py · tracing.py · internal_auth.py
 │   │   ├── migrations/            Alembic (0001-0012)
 │   │   └── tests/

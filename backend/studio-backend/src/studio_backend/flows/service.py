@@ -2,10 +2,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from studio_backend.agents.service import get_agent
-from studio_backend.credentials.service import secret_names
 from studio_backend.flows.models import FlowVersion
 from studio_backend.flows.schemas import Flow, FlowDraft, FlowIssue
 from studio_backend.flows.validation import validate_flow
+from studio_backend.integrations.credentials.service import secret_names
 
 
 class FlowHasIssuesError(ValueError):

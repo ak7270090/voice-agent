@@ -3,8 +3,8 @@ from datetime import datetime
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from studio_backend.after_call.constants import PENDING_DELIVERY
 from studio_backend.database import Base, new_id, utc_now
+from studio_backend.integrations.deliveries.constants import PENDING_DELIVERY
 
 
 class Delivery(Base):

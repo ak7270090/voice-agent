@@ -3,10 +3,13 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Path, status
 
 from studio_backend.config import SettingsDep
-from studio_backend.credentials import service
-from studio_backend.credentials.constants import SECRET_NAME_MAX_LENGTH, SECRET_NAME_PATTERN
-from studio_backend.credentials.schemas import SecretRead, SecretWrite
 from studio_backend.database import SessionDep
+from studio_backend.integrations.credentials import service
+from studio_backend.integrations.credentials.constants import (
+    SECRET_NAME_MAX_LENGTH,
+    SECRET_NAME_PATTERN,
+)
+from studio_backend.integrations.credentials.schemas import SecretRead, SecretWrite
 
 router = APIRouter(prefix="/secrets", tags=["secrets"])
 

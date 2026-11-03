@@ -2,10 +2,10 @@ from typing import Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from studio_backend.after_call.schemas import AfterCallAction
 from studio_backend.agents.constants import AGENT_STATUSES, ANALYSIS_FIELD_TYPES, CHOICE_FIELD
 from studio_backend.database import UtcDateTime
 from studio_backend.flows.schemas import Flow, Identifier
+from studio_backend.integrations.deliveries.schemas import AfterCallAction
 
 
 class VoiceSettings(BaseModel):

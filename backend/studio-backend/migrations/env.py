@@ -7,14 +7,14 @@ from alembic import context
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from studio_backend.after_call import models as after_call_models  # noqa: F401
 from studio_backend.agents import models as agent_models  # noqa: F401 - registers the tables
 from studio_backend.calls import models as call_models  # noqa: F401 - registers the tables
 from studio_backend.campaigns import models as campaign_models  # noqa: F401
 from studio_backend.config import get_settings
-from studio_backend.credentials import models as secret_models  # noqa: F401
 from studio_backend.database import Base
 from studio_backend.flows import models as flow_models  # noqa: F401
+from studio_backend.integrations.credentials import models as credential_models  # noqa: F401
+from studio_backend.integrations.deliveries import models as delivery_models  # noqa: F401
 from studio_backend.phone_numbers import models as number_models  # noqa: F401
 
 if context.config.config_file_name is not None:
