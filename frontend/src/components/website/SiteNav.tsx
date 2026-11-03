@@ -47,7 +47,7 @@ export function SiteNav() {
               />
             </svg>
           </span>
-          Voice Agent Studio
+          Ringvi
         </a>
         <nav className="nav-links">
           {LINKS.map(({ id, label }) => (

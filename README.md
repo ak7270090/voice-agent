@@ -1,11 +1,11 @@
-# Voice Agent Studio: AI Phone Agents Without Code (LiveKit + LangChain)
+# Ringvi: AI Phone Agents Without Code (LiveKit + LangChain)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-**[Website](https://voice-agent-studio-inky.vercel.app)** · **[Demo workspace](https://voice-agent-studio-inky.vercel.app/dashboard)** (read-only, sample data from real runs)
+**[Website](https://ringvi.vercel.app)** · **[Demo workspace](https://ringvi.vercel.app/dashboard)** (read-only, sample data from real runs)
 
 **Every business wants an AI on its phone line, but each agent still needs an engineer to build.**
-Voice Agent Studio lets a business build its own voice agents in the browser: design the
+Ringvi lets a business build its own voice agents in the browser: design the
 conversation, test it, put it on a phone number, and see how every call went.
 
 - **Front desk:** a caller asks for the skin doctor on Wednesday; the agent finds the doctor's free

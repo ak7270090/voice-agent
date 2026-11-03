@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "studio-voice"
 version = "0.1.0"
-description = "LiveKit agent runtime for Voice Agent Studio: loads an agent's settings and runs its calls"
+description = "LiveKit agent runtime for Ringvi: loads an agent's settings and runs its calls"
 requires-python = ">=3.11"
 license = "MIT"
 dependencies = [

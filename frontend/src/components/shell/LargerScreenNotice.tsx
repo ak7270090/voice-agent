@@ -7,7 +7,7 @@ export function LargerScreenNotice() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-6 text-center lg:hidden">
       <div className="flex items-center gap-2.5 text-sm font-semibold">
         <BrandMark />
-        Voice Agent Studio
+        Ringvi
       </div>
       <h1 className="mt-8 text-xl font-semibold text-slate-900">
         Open the dashboard on a larger screen

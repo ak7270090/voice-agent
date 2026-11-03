@@ -4,7 +4,7 @@ import { Inter } from "next/font/google";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Voice Agent Studio",
+  title: "Ringvi",
   description: "Build, test and run voice agents for phone and browser",
   icons: { icon: "/favicon.svg" },
 };

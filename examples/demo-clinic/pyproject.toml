@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "demo-clinic"
 version = "0.1.0"
-description = "A stand-in hospital booking API for Voice Agent Studio's clinic template"
+description = "A stand-in hospital booking API for Ringvi's clinic template"
 requires-python = ">=3.11"
 license = "MIT"
 dependencies = [

@@ -1,1 +1,1 @@
-"""Control plane API for Voice Agent Studio."""
+"""Control plane API for Ringvi."""

@@ -15,7 +15,7 @@ export function Sidebar() {
     <aside className="flex w-56 shrink-0 flex-col gap-0.5 border-r border-slate-200 bg-white px-3 py-4">
       <div className="flex items-center gap-2.5 px-2 pb-5 text-sm font-semibold">
         <BrandMark />
-        Voice Agent Studio
+        Ringvi
       </div>
       {NAV_SECTIONS.map((section) => (
         <div key={section.title}>

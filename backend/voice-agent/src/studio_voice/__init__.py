@@ -1,1 +1,1 @@
-"""The LiveKit voice agent for Voice Agent Studio."""
+"""The LiveKit voice agent for Ringvi."""

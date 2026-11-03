@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "studio-backend"
 version = "0.1.0"
-description = "Control plane API for Voice Agent Studio: agents, flows, knowledge, numbers, campaigns, calls"
+description = "Control plane API for Ringvi: agents, flows, knowledge, numbers, campaigns, calls"
 requires-python = ">=3.11"
 license = "MIT"
 dependencies = [

@@ -68,7 +68,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="Voice Agent Studio API", lifespan=lifespan)
+    app = FastAPI(title="Ringvi API", lifespan=lifespan)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=get_settings().cors_origins,
