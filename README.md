@@ -22,7 +22,7 @@ the booking has gone through.
 ## Architecture
 
 <p align="center">
-  <img src="docs/images/architecture.png" alt="A business team builds agents in the console, which saves them to the API and Postgres. Callers reach LiveKit Cloud by phone (SIP) or browser (WebRTC). The agent runtime gets the agent and its flow from the API, runs the flow step by step in one process per call, talks to the AI models (speech, LLM, voice) and uses live tools such as Cal.com or your own API. When a call ends, the worker analyses it and sends the result to your apps (HubSpot, Slack, Sheets); the worker also places campaign calls through LiveKit." width="85%">
+  <img src="docs/images/architecture.png" alt="A business team builds agents in the dashboard, which saves them to the backend and Postgres. Callers reach LiveKit Cloud by phone (SIP) or browser (WebRTC). The voice agent gets the agent and its flow from the backend, runs the flow step by step in one process per call, talks to the AI models (speech, LLM, voice) and uses live tools such as Cal.com or your own API. When a call ends, the worker analyses it and sends the result to your apps (HubSpot, Slack, Sheets); the worker also places campaign calls through LiveKit." width="85%">
 </p>
 
 - **Agents are data, not code:** one runtime serves every agent and loads its flow when a call starts.
@@ -100,7 +100,7 @@ Copy-Item .env.example .env.local      # LIVEKIT_*, OPENAI_API_KEY, DEEPGRAM_API
 docker compose up -d --build
 ```
 
-- Console: <http://localhost:3000> (Overview shows every service's health)
+- Dashboard: <http://localhost:3000> (Overview shows every service's health)
 - API docs: <http://localhost:8000/docs>
 
 Then: **Agents → Clinic booking → Open flow builder → Start test call**, and book an appointment,
@@ -112,41 +112,46 @@ booking (Cal.com)**.
 
 | What | Command |
 |---|---|
-| API tests | `cd api; .\.venv\Scripts\python.exe -m pytest` |
-| Runtime tests | `cd runtime; .\.venv\Scripts\python.exe -m pytest` |
+| Backend tests | `cd backend\studio-backend; .\.venv\Scripts\python.exe -m pytest` |
+| Voice agent tests | `cd backend\voice-agent; .\.venv\Scripts\python.exe -m pytest` |
 | Lint and format check (Python) | `.\.venv\Scripts\ruff.exe check . ; .\.venv\Scripts\ruff.exe format --check .` |
-| Console | `cd console; npm run dev` · `npm run lint` · `npm run build` |
+| Dashboard | `cd frontend\dashboard; npm run dev` · `npm run lint` · `npm run build` |
 
-Each Python app has its own virtual environment:
+Each Python app (`backend/studio-backend`, `backend/voice-agent`, `examples/demo-clinic`) has its own virtual environment:
 `python -m venv .venv` then `.\.venv\Scripts\python.exe -m pip install -e ".[dev]"`.
 
 ## Project structure
 
 ```text
 voice-agent-studio/
-├── api/                       control plane (FastAPI)
-│   ├── src/studio_api/
-│   │   ├── agents/            agents, templates, browser-call tokens, runtime config
-│   │   ├── flows/             flow schema, validation, draft/publish, flow templates
-│   │   ├── knowledge/         knowledge bases, ingestion, hybrid search
-│   │   ├── numbers/           phone numbers, SIP trunks, outbound calls
-│   │   ├── campaigns/         campaigns, contacts, CSV import, the dialler
-│   │   ├── calls/             call records, cost, post-call analysis, dashboard
-│   │   ├── secrets/           encrypted keys and tokens
-│   │   ├── after_call/        webhooks, Slack, HubSpot, Google Sheets, deliveries
-│   │   ├── demo_clinic/       a stand-in hospital booking API for the clinic template
-│   │   └── main.py · worker.py · storage.py · jobs.py · health.py · tracing.py
-│   ├── migrations/            Alembic (0001-0011)
-│   └── tests/
-├── runtime/                   agent runtime (LiveKit Agents)
-│   ├── src/studio_runtime/
-│   │   ├── flows/             flow runner, per-step graph, HTTP and Cal.com tools, prompts
-│   │   ├── parsers/           reading typed answers, per language
-│   │   └── worker.py · phone.py · control_plane.py · channels.py · providers.py · observability.py
-│   └── tests/
-├── console/                   Next.js console (and its read-only demo build)
-├── site/                      the product page (static)
-├── tools/                     scenarios, campaign and Cal.com live checks, analysis eval, showcase, demo recorders
+├── frontend/
+│   ├── dashboard/             Next.js app where agents are built and calls reviewed
+│   └── website/               the product page (static)
+├── backend/
+│   ├── studio-backend/        FastAPI API and background worker
+│   │   ├── src/studio_backend/
+│   │   │   ├── agents/            agents, browser-call tokens, runtime config
+│   │   │   ├── agent_templates/   ready-made agents and their flows
+│   │   │   ├── flows/             flow schema, validation, draft/publish
+│   │   │   ├── knowledge/         knowledge bases, ingestion, hybrid search
+│   │   │   ├── phone_numbers/     phone numbers, SIP trunks, outbound calls
+│   │   │   ├── campaigns/         campaigns, contacts, CSV import, the dialler
+│   │   │   ├── calls/             call records, cost, post-call analysis, dashboard
+│   │   │   ├── credentials/       encrypted keys and tokens
+│   │   │   ├── after_call/        webhooks, Slack, HubSpot, Google Sheets, deliveries
+│   │   │   └── main.py · worker.py · jobs.py · health.py · tracing.py · internal_auth.py
+│   │   ├── migrations/            Alembic (0001-0012)
+│   │   └── tests/
+│   └── voice-agent/           the LiveKit agent that talks on calls
+│       ├── src/studio_voice/
+│       │   ├── flows/             flow runner, per-step graph, prompts
+│       │   ├── tools/             HTTP, Cal.com and knowledge search tools
+│       │   ├── locales/           each language's rules, messages and answer parsers
+│       │   └── worker.py · phone.py · channels.py · backend_client.py · speech_providers.py
+│       └── tests/
+├── examples/
+│   └── demo-clinic/           a stand-in hospital booking API for the clinic template
+├── evals/                     scenario, campaign, Cal.com and post-call analysis checks
 ├── docs/                      architecture diagram, screenshots, demo videos
-└── compose.yaml               Postgres (pgvector), Redis, RustFS, API, worker, runtime, console
+└── compose.yaml               Postgres (pgvector), Redis, RustFS and every app above
 ```

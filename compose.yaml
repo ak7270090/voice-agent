@@ -1,5 +1,5 @@
 # Full local stack: docker compose up -d --build
-#   console http://localhost:3000 · API http://localhost:8000/health · storage console http://localhost:9001
+#   dashboard http://localhost:3000 · API http://localhost:8000/health · storage console http://localhost:9001
 services:
   postgres:
     image: pgvector/pgvector:pg16
