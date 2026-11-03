@@ -24,13 +24,14 @@ the booking has gone through.
 ## Architecture
 
 <p align="center">
-  <img src="docs/images/architecture.png" alt="A business team builds agents in the dashboard, which saves them to the backend and Postgres. Callers reach LiveKit Cloud by phone (SIP) or browser (WebRTC). The voice agent gets the agent and its flow from the backend, runs the flow step by step in one process per call, talks to the AI models (speech, LLM, voice) and uses live tools such as Cal.com or your own API. When a call ends, the worker analyses it and sends the result to your apps (HubSpot, Slack, Sheets); the worker also places campaign calls through LiveKit." width="85%">
+  <img src="docs/images/architecture.png" alt="A business team builds agents in the Next.js dashboard, which saves them through the FastAPI backend to Postgres with pgvector. Callers reach LiveKit Cloud by phone (SIP) or browser (WebRTC), and LiveKit hands each call to a free process inside the voice agent worker, where call A and call B each run in their own process and an idle process waits for the next call. At the start of a call the process gets the agent and flow from the backend; it uses the AI models and live tools such as Cal.com, and sends the trace and cost to Langfuse. When the call ends it saves the call to the backend, which adds jobs to the Redis queue. The background worker (arq) picks up those jobs, reads and writes Postgres, and sends results to your apps (HubSpot, Slack, Sheets). Its campaign dialler also starts outbound calls through LiveKit." width="85%">
 </p>
 
-- **Agents are data, not code:** one runtime serves every agent and loads its flow when a call starts.
-- **Every call is a LiveKit room:** browser tests, incoming phone calls and campaign calls all run the same way.
-- **The API is never in the audio path:** it is asked at the start, at the end, and for tools.
-- **Slow work runs in a worker:** campaign dialling, post-call analysis, deliveries to other apps, document ingestion.
+- **Agents are data, not code:** one voice agent worker serves every agent and loads the flow when a call starts.
+- **Each call gets its own process:** LiveKit hands the call to a process that's already warm, so a crash in one call can't end another.
+- **Calls don't wait in a queue:** browser tests, incoming phone calls and campaign calls all reach a process through a LiveKit room.
+- **The backend is never in the audio path:** it is asked at the start, at the end, and for knowledge searches.
+- **Slow work waits in Redis:** the backend adds jobs, and the background worker runs post-call analysis, deliveries to other apps and document ingestion. Its campaign dialler runs on a timer.
 - **Keys never reach the LLM:** stored encrypted, filled in only when a tool sends a request.
 
 ## Concepts used
@@ -80,6 +81,14 @@ calls end confirmed, moved, opted out, on voicemail, not reached, or never calle
 **The dashboard:** outcomes, cost, reply speed and success by agent.
 
 <p align="center"><img src="docs/images/overview.png" alt="The overview dashboard: calls, average cost, average length, reply delay typical and slow, calls per day, outcomes, and success by agent" width="85%"></p>
+
+**Langfuse, one call's trace:** speech-to-text, each LLM call, the tools it asked for and every flow move, with timing and cost. This voice booking took 1 min 29 s and used 6k tokens, for $0.005 of LLM cost.
+
+<p align="center"><img src="docs/images/langfuse-trace.png" alt="A voice booking's trace in Langfuse: 1 min 29 s, $0.005, 6k tokens. The tree shows stt, llm_call, the go_to_collect_booking_details and save_fields tools and flow.move, with each llm_call's time and cost; the selected llm_call shows the caller asking to book the skin doctor and the tool result listing the details still needed" width="85%"></p>
+
+**Langfuse, cost over 30 days:** LLM spend per model across this project's test and demo calls. Langfuse prices LLM tokens only; the full cost per call, with speech and voice, is on the call's page above.
+
+<p align="center"><img src="docs/images/langfuse-costs.png" alt="The Langfuse home dashboard for the past 30 days: 201 traces, $0.75 total model cost, mostly gpt-5.4-mini, and charts of observations and cost over time" width="85%"></p>
 
 ## Results from real runs
 
@@ -154,6 +163,6 @@ voice-agent-studio/
 ├── examples/
 │   └── demo-clinic/           a stand-in hospital booking API for the clinic template
 ├── evals/                     scenario, campaign, Cal.com and post-call analysis checks
-├── docs/                      architecture diagram, screenshots, demo videos
+├── docs/                      architecture diagram, screenshots, Langfuse traces, demo videos
 └── compose.yaml               Postgres (pgvector), Redis, RustFS and every app above
 ```
