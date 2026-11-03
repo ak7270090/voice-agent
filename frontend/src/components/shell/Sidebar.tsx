@@ -4,6 +4,7 @@ import clsx from "clsx";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { BrandMark } from "@/components/shell/BrandMark";
 import { NAV_SECTIONS } from "@/lib/navigation";
 import { DASHBOARD_ROOT } from "@/lib/paths";
 
@@ -13,17 +14,7 @@ export function Sidebar() {
   return (
     <aside className="flex w-56 shrink-0 flex-col gap-0.5 border-r border-slate-200 bg-white px-3 py-4">
       <div className="flex items-center gap-2.5 px-2 pb-5 text-sm font-semibold">
-        <div className="grid h-7 w-7 place-items-center rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 text-xs text-white">
-          <svg viewBox="0 0 32 32" className="h-full w-full" aria-hidden="true">
-            <path
-              d="M7 13.5v5M11.5 9.5v13M16 6v20M20.5 10.5v11M25 13.5v5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.6"
-              strokeLinecap="round"
-            />
-          </svg>
-        </div>
+        <BrandMark />
         Voice Agent Studio
       </div>
       {NAV_SECTIONS.map((section) => (

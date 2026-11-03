@@ -10,6 +10,7 @@ export const READ_ONLY_STATUS = 403;
 export const READ_ONLY_MESSAGE =
   "This is a demo workspace: changes and calls are turned off. Watch a call on the website.";
 export const WEBSITE_PATH = "/";
+export const WEBSITE_DEMO_PATH = "/#demo";
 export const REPOSITORY_URL = "https://github.com/ak7270090/voice-agent";
 
 const DATA_ROOT = "/demo-data";
