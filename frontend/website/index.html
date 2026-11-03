@@ -22,7 +22,7 @@
     <div class="scroll-progress" aria-hidden="true"></div>
     <header class="nav">
       <div class="wrap nav-inner">
-        <a class="brand" href="#top"><span class="logo">VS</span>Voice Agent Studio</a>
+        <a class="brand" href="#top"><span class="logo" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M7 13.5v5M11.5 9.5v13M16 6v20M20.5 10.5v11M25 13.5v5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></span>Voice Agent Studio</a>
         <nav class="nav-links">
           <a href="#use-cases">Use cases</a>
           <a href="#platform">Platform</a>
@@ -118,7 +118,10 @@
               </div>
               <a class="button outline-dark flow-open" data-flow-open></a>
             </div>
-            <div class="flow-canvas"></div>
+            <div class="flow-main">
+              <div class="flow-canvas"></div>
+              <button class="flow-more" type="button"></button>
+            </div>
           </div>
         </div>
       </section>

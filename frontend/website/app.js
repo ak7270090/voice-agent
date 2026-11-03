@@ -522,6 +522,7 @@ function setUpFlow() {
   const noteTitle = root.querySelector(".flow-note strong");
   const noteText = root.querySelector(".flow-note p");
   const open = root.querySelector("[data-flow-open]");
+  const more = root.querySelector(".flow-more");
   const consoleUrl = window.SHOWCASE?.consoleUrl;
   let stops = [];
   let queued = false;
@@ -546,11 +547,26 @@ function setUpFlow() {
     requestAnimationFrame(highlight);
   }
 
+  // On a phone a long flow starts folded. It never scrolls inside its own panel: a panel filling
+  // the screen would take every swipe, and the page would seem stuck.
+  function fold(folded) {
+    canvas.classList.toggle("folded", folded);
+    more.textContent = folded ? "Show the whole flow" : "Show less";
+    more.setAttribute("aria-expanded", String(!folded));
+  }
+
+  more.addEventListener("click", () => {
+    const folding = !canvas.classList.contains("folded");
+    fold(folding);
+    if (folding) root.querySelector(".flow-main").scrollIntoView({ behavior: "instant" });
+    requestHighlight();
+  });
+
   function show(index) {
     const flow = FLOWS[index];
     [...tabs.children].forEach((button, n) => button.setAttribute("aria-selected", String(n === index)));
     canvas.replaceChildren();
-    canvas.scrollTop = 0;
+    fold(true);
     stops = [];
     flow.nodes.forEach((node, position) => {
       if (position > 0 && !node.branches) {
@@ -609,8 +625,6 @@ function setUpFlow() {
   });
   addEventListener("scroll", requestHighlight, { passive: true });
   addEventListener("resize", requestHighlight);
-  // On a phone the flow scrolls inside its own panel.
-  canvas.addEventListener("scroll", requestHighlight, { passive: true });
   show(0);
 }
 
