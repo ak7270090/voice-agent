@@ -1,6 +1,7 @@
-from studio_api.database import create_session_factory
-from studio_api.knowledge.ingestion import ingest_document
-from studio_api.knowledge.search import Candidate, content_words, rerank
+from studio_backend.database import create_session_factory
+from studio_backend.knowledge.ingestion import ingest_document
+from studio_backend.knowledge.search import Candidate, content_words, rerank
+
 from tests.conftest import WordEmbeddings
 from tests.test_agents import create_agent
 from tests.test_knowledge import create_knowledge_base, upload

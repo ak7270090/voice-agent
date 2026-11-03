@@ -1,15 +1,15 @@
 import pytest
 from pydantic import ValidationError
-
-from studio_api.config import get_settings
-from studio_api.flows.schemas import Flow
-from studio_api.flows.templates import (
+from studio_backend.agent_templates.flows import (
     build_clinic_booking_flow,
     build_lead_qualifier_flow,
     build_reminder_flow,
     calcom_clinic_settings,
 )
-from studio_api.flows.validation import validate_flow
+from studio_backend.config import get_settings
+from studio_backend.flows.schemas import Flow
+from studio_backend.flows.validation import validate_flow
+
 from tests.test_agents import create_agent
 
 SMALL_FLOW = {

@@ -1,8 +1,7 @@
 from datetime import date, timedelta
 
 import pytest
-
-from studio_api.demo_clinic.service import DoctorNotFoundError, find_doctor
+from studio_backend.demo_clinic.service import DoctorNotFoundError, find_doctor
 
 
 def next_weekday(weekday: int) -> date:

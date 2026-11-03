@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "studio-api"
+name = "studio-backend"
 version = "0.1.0"
 description = "Control plane API for Voice Agent Studio: agents, flows, knowledge, numbers, campaigns, calls"
 requires-python = ">=3.11"
@@ -49,7 +49,7 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
-addopts = "-p no:cacheprovider --cov=studio_api --cov-report=term-missing --cov-fail-under=80"
+addopts = "-p no:cacheprovider --cov=studio_backend --cov-report=term-missing --cov-fail-under=80"
 
 [tool.coverage.run]
 # SQLAlchemy async runs queries in greenlets; without this, lines after an await look unrun.

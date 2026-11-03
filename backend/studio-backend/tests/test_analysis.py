@@ -2,9 +2,9 @@ import pytest
 from langchain_core.messages import AIMessage
 from langchain_core.runnables import RunnableLambda
 from pydantic import ValidationError
+from studio_backend.agents.schemas import AnalysisField
+from studio_backend.calls.analysis import result_model, run_analysis
 
-from studio_api.agents.schemas import AnalysisField
-from studio_api.calls.analysis import result_model, run_analysis
 from tests.test_agents import create_agent
 from tests.test_call_records import SPOKEN, end, priced, start
 

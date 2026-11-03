@@ -6,17 +6,16 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
-
-from studio_api.after_call import models as after_call_models  # noqa: F401
-from studio_api.agents import models as agent_models  # noqa: F401 - registers the tables
-from studio_api.calls import models as call_models  # noqa: F401 - registers the tables
-from studio_api.campaigns import models as campaign_models  # noqa: F401
-from studio_api.config import get_settings
-from studio_api.database import Base
-from studio_api.demo_clinic import models as demo_clinic_models  # noqa: F401
-from studio_api.flows import models as flow_models  # noqa: F401
-from studio_api.numbers import models as number_models  # noqa: F401
-from studio_api.secrets import models as secret_models  # noqa: F401
+from studio_backend.after_call import models as after_call_models  # noqa: F401
+from studio_backend.agents import models as agent_models  # noqa: F401 - registers the tables
+from studio_backend.calls import models as call_models  # noqa: F401 - registers the tables
+from studio_backend.campaigns import models as campaign_models  # noqa: F401
+from studio_backend.config import get_settings
+from studio_backend.credentials import models as secret_models  # noqa: F401
+from studio_backend.database import Base
+from studio_backend.demo_clinic import models as demo_clinic_models  # noqa: F401
+from studio_backend.flows import models as flow_models  # noqa: F401
+from studio_backend.phone_numbers import models as number_models  # noqa: F401
 
 if context.config.config_file_name is not None:
     fileConfig(context.config.config_file_name)

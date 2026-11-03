@@ -1,5 +1,6 @@
-from studio_api.database import create_session_factory
-from studio_api.knowledge.ingestion import ingest_document, split_into_chunks, to_markdown
+from studio_backend.database import create_session_factory
+from studio_backend.knowledge.ingestion import ingest_document, split_into_chunks, to_markdown
+
 from tests.conftest import WordEmbeddings
 from tests.test_agents import create_agent
 

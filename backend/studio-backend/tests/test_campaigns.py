@@ -2,11 +2,11 @@ from datetime import datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 import pytest
+from studio_backend.campaigns.dialler import in_window, run_dialler
+from studio_backend.campaigns.models import Campaign
 
-from studio_api.campaigns.dialler import in_window, run_dialler
-from studio_api.campaigns.models import Campaign
 from tests.test_agents import create_agent
-from tests.test_numbers import OUTBOUND, add_number
+from tests.test_phone_numbers import OUTBOUND, add_number
 
 INDIA = ZoneInfo("Asia/Kolkata")
 # The dialler's clock; call outcomes use the real one, so they start from now. Test campaigns

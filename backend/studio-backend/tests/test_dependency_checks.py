@@ -2,8 +2,7 @@ from contextlib import asynccontextmanager
 
 import httpx
 import pytest
-
-from studio_api.health import build_dependency_checks
+from studio_backend.health import build_dependency_checks
 
 
 class FakeConnection:

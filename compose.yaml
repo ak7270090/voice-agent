@@ -62,7 +62,7 @@ services:
   # Background jobs (document ingestion): same image as the API, run by arq.
   worker:
     build: ./backend/studio-backend
-    command: ["arq", "studio_api.worker.WorkerSettings"]
+    command: ["arq", "studio_backend.worker.WorkerSettings"]
     env_file: .env.local
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-studio}:${POSTGRES_PASSWORD:-studio}@postgres:5432/${POSTGRES_DB:-studio}

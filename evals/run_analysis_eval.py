@@ -17,9 +17,9 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
-from studio_api.agents.schemas import AnalysisField
-from studio_api.calls.analysis import analyse, create_analysis_model, result_model
-from studio_api.config import export_provider_keys, get_settings
+from studio_backend.agents.schemas import AnalysisField
+from studio_backend.calls.analysis import analyse, create_analysis_model, result_model
+from studio_backend.config import export_provider_keys, get_settings
 
 CASES_FILE = Path(__file__).with_name("analysis_cases.json")
 
