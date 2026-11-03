@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { type FormEvent, type ReactNode, useState } from "react";
 
-import { Button, Card } from "@/components/ui/primitives";
-import { TimeZoneSelect } from "@/components/ui/TimeZoneSelect";
+import { Button, Card, TimeZoneSelect } from "@/components/ui/primitives";
 import type { Agent, CampaignSettings, PhoneNumber } from "@/lib/api";
 
 const INPUT =

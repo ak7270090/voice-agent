@@ -11,7 +11,7 @@ import {
   type ToolKind,
 } from "@/lib/api";
 
-import { TimeZoneSelect } from "@/components/ui/TimeZoneSelect";
+import { TimeZoneSelect } from "@/components/ui/primitives";
 
 import { INPUT, JsonEditor, KeyValueEditor, Labelled, ListInput } from "./fields";
 

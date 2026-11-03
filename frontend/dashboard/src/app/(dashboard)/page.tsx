@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { formatCost, formatSeconds } from "@/components/calls/format";
-import { DailyBars, OutcomeBars, StatTile } from "@/components/dashboard/Charts";
+import { DailyBars, OutcomeBars, StatTile } from "@/components/calls/Charts";
 import { ServiceStatus } from "@/components/shell/ServiceStatus";
 import { Card, PageHeader } from "@/components/ui/primitives";
 import { getMetrics, type Metrics } from "@/lib/api";

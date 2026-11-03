@@ -6,9 +6,9 @@ import { useCallback, useEffect, useState } from "react";
 
 import { AgentEditor } from "@/components/agents/AgentEditor";
 import { CallMe } from "@/components/agents/CallMe";
-import { RecentCalls } from "@/components/agents/RecentCalls";
+import { CallTable } from "@/components/calls/CallTable";
 import { TestCallPanel } from "@/components/test-call/TestCallPanel";
-import { Button, Chip, PageHeader } from "@/components/ui/primitives";
+import { Button, Card, Chip, PageHeader } from "@/components/ui/primitives";
 import {
   type Agent,
   type AgentUpdate,
@@ -114,7 +114,19 @@ export default function AgentPage({ params }: { params: { id: string } }) {
                 saving={saving}
                 onSave={save}
               />
-              <RecentCalls calls={calls} agentId={agent.id} />
+              <Card>
+                <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3">
+                  <h3 className="text-[13px] font-semibold">Recent calls</h3>
+                  <Chip>{calls.length}</Chip>
+                  <Link
+                    href={`/calls?agent_id=${agent.id}`}
+                    className="ml-auto text-xs text-brand-600 hover:underline"
+                  >
+                    All calls
+                  </Link>
+                </div>
+                <CallTable calls={calls} />
+              </Card>
             </div>
             <div className="flex flex-col gap-4 self-start xl:sticky xl:top-6">
               <TestCallPanel agentId={agent.id} onCallEnded={onCallEnded} />

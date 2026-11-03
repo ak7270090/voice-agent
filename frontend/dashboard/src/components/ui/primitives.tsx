@@ -1,6 +1,8 @@
 import clsx from "clsx";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
+import { TIME_ZONE_CHOICES } from "@/lib/constants";
+
 const CHIP_TONES = {
   neutral: "bg-slate-100 text-slate-700",
   brand: "bg-brand-50 text-brand-700",
@@ -61,5 +63,28 @@ export function PageHeader({ children }: { children: ReactNode }) {
     <header className="flex h-14 shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-6 text-[13px]">
       {children}
     </header>
+  );
+}
+
+/** A list of common zones; a zone saved earlier that is not in it stays selectable. */
+export function TimeZoneSelect({
+  value,
+  className,
+  onChange,
+}: {
+  value: string;
+  className: string;
+  onChange: (zone: string) => void;
+}) {
+  const known = TIME_ZONE_CHOICES.some((choice) => choice.value === value);
+  return (
+    <select className={className} value={value} onChange={(e) => onChange(e.target.value)}>
+      {!known && value && <option value={value}>{value}</option>}
+      {TIME_ZONE_CHOICES.map((choice) => (
+        <option key={choice.value} value={choice.value}>
+          {choice.label}
+        </option>
+      ))}
+    </select>
   );
 }
