@@ -9,11 +9,10 @@ export const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 export const READ_ONLY_STATUS = 403;
 export const READ_ONLY_MESSAGE =
   "This is a demo workspace: changes and calls are turned off. Watch a call on the website.";
-export const PROJECT_URL = process.env.NEXT_PUBLIC_PROJECT_URL ?? "";
-export const REPOSITORY_URL = process.env.NEXT_PUBLIC_REPOSITORY_URL ?? "";
+export const WEBSITE_PATH = "/";
+export const REPOSITORY_URL = "https://github.com/ak7270090/voice-agent";
 
-export const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-const DATA_ROOT = `${BASE_PATH}/demo-data`;
+const DATA_ROOT = "/demo-data";
 // Collections answered by filtering one exported list, as the API's query parameters do.
 const CALL_FILTERS = ["agent_id", "channel", "direction", "outcome"];
 const DEFAULT_CALL_LIMIT = 50;

@@ -5,6 +5,7 @@ import { type FormEvent, type ReactNode, useState } from "react";
 
 import { Button, Card, TimeZoneSelect } from "@/components/ui/primitives";
 import type { Agent, CampaignSettings, PhoneNumber } from "@/lib/api";
+import { dashboardPath } from "@/lib/navigation";
 
 const INPUT =
   "w-full rounded-lg border border-slate-200 px-3 py-1.5 text-[13px] outline-none focus:border-brand-500";
@@ -57,7 +58,7 @@ export function CampaignForm({
     return (
       <Card className="p-4 text-[13px] text-slate-500">
         A campaign calls from a number with an outbound trunk.{" "}
-        <Link href="/numbers" className="text-brand-600 hover:underline">
+        <Link href={dashboardPath("/numbers")} className="text-brand-600 hover:underline">
           Add one
         </Link>{" "}
         first.

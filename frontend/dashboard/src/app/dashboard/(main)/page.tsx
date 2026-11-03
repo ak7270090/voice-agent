@@ -8,6 +8,7 @@ import { DailyBars, OutcomeBars, StatTile } from "@/components/calls/Charts";
 import { ServiceStatus } from "@/components/shell/ServiceStatus";
 import { Card, PageHeader } from "@/components/ui/primitives";
 import { getMetrics, type Metrics } from "@/lib/api";
+import { dashboardPath } from "@/lib/navigation";
 
 const PERIODS = [7, 14, 30];
 // The busiest agents; the Calls page filters by any agent.
@@ -103,7 +104,7 @@ export default function OverviewPage() {
                       <tr key={row.agent_id} className="border-t border-slate-100">
                         <td className="px-4 py-2">
                           <Link
-                            href={`/calls?agent_id=${row.agent_id}`}
+                            href={dashboardPath(`/calls?agent_id=${row.agent_id}`)}
                             className="text-brand-600 hover:underline"
                           >
                             {row.name}

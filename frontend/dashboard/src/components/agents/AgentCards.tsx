@@ -9,6 +9,7 @@ import {
   TEMPLATE_STYLES,
   voiceLabel,
 } from "@/lib/constants";
+import { dashboardPath } from "@/lib/navigation";
 
 function TemplateIcon({
   templateId,
@@ -88,7 +89,7 @@ export function AgentCard({ agent }: { agent: Agent }) {
       <p className="line-clamp-2 text-[13px] text-slate-600">{agent.greeting}</p>
       <div className="flex items-center gap-2 border-t border-slate-100 pt-3">
         <Link
-          href={`/agents/${agent.id}`}
+          href={dashboardPath(`/agents/${agent.id}`)}
           className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
         >
           Edit and test

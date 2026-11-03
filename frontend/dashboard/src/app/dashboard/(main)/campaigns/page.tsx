@@ -17,6 +17,7 @@ import {
   listPhoneNumbers,
   type PhoneNumber,
 } from "@/lib/api";
+import { dashboardPath } from "@/lib/navigation";
 
 export default function CampaignsPage() {
   const router = useRouter();
@@ -40,7 +41,7 @@ export default function CampaignsPage() {
   async function create(settings: CampaignSettings) {
     try {
       const campaign = await createCampaign(settings);
-      router.push(`/campaigns/${campaign.id}`);
+      router.push(dashboardPath(`/campaigns/${campaign.id}`));
     } catch (cause) {
       setError(`Could not create the campaign: ${(cause as Error).message}`);
     }
@@ -65,7 +66,7 @@ export default function CampaignsPage() {
         {agents && numbers && <CampaignForm agents={agents} numbers={numbers} onCreate={create} />}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {campaigns.map((campaign) => (
-            <Link key={campaign.id} href={`/campaigns/${campaign.id}`}>
+            <Link key={campaign.id} href={dashboardPath(`/campaigns/${campaign.id}`)}>
               <Card className="flex flex-col gap-3 p-4 hover:border-brand-500">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold">{campaign.name}</span>

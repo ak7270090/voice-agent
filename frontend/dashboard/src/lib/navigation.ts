@@ -11,6 +11,13 @@ import {
   Send,
 } from "lucide-react";
 
+export const DASHBOARD_ROOT = "/dashboard";
+
+/** Every link inside the app comes from here, so the app's address lives in one place. */
+export function dashboardPath(path: string): string {
+  return path === "/" ? DASHBOARD_ROOT : `${DASHBOARD_ROOT}${path}`;
+}
+
 export type NavItem = {
   label: string;
   href: string;
@@ -27,25 +34,30 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     title: "Build",
     items: [
-      { label: "Overview", href: "/", icon: LayoutDashboard, available: true },
-      { label: "Agents", href: "/agents", icon: Bot, available: true },
-      { label: "Knowledge", href: "/knowledge", icon: BookOpen, available: true },
+      { label: "Overview", href: dashboardPath("/"), icon: LayoutDashboard, available: true },
+      { label: "Agents", href: dashboardPath("/agents"), icon: Bot, available: true },
+      { label: "Knowledge", href: dashboardPath("/knowledge"), icon: BookOpen, available: true },
     ],
   },
   {
     title: "Deploy",
     items: [
-      { label: "Phone numbers", href: "/numbers", icon: Phone, available: true },
-      { label: "Campaigns", href: "/campaigns", icon: Send, available: true },
-      { label: "Integrations", href: "/integrations", icon: Plug, available: true },
+      { label: "Phone numbers", href: dashboardPath("/numbers"), icon: Phone, available: true },
+      { label: "Campaigns", href: dashboardPath("/campaigns"), icon: Send, available: true },
+      { label: "Integrations", href: dashboardPath("/integrations"), icon: Plug, available: true },
     ],
   },
   {
     title: "Monitor",
     items: [
-      { label: "Calls", href: "/calls", icon: List, available: true },
-      { label: "Analytics", href: "/analytics", icon: ChartColumn, available: false },
-      { label: "Evals", href: "/evals", icon: CircleCheck, available: false },
+      { label: "Calls", href: dashboardPath("/calls"), icon: List, available: true },
+      {
+        label: "Analytics",
+        href: dashboardPath("/analytics"),
+        icon: ChartColumn,
+        available: false,
+      },
+      { label: "Evals", href: dashboardPath("/evals"), icon: CircleCheck, available: false },
     ],
   },
 ];

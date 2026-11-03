@@ -9,6 +9,7 @@ import {
 } from "@/components/calls/format";
 import { Chip } from "@/components/ui/primitives";
 import type { Call } from "@/lib/api";
+import { dashboardPath } from "@/lib/navigation";
 
 export function SuccessChip({ call }: { call: Call }) {
   if (call.analysis_status === "pending") return <Chip>analysing…</Chip>;
@@ -49,7 +50,10 @@ export function CallTable({
         {calls.map((call) => (
           <tr key={call.id} className="border-t border-slate-100 text-slate-700 hover:bg-slate-50">
             <td className="px-4 py-2">
-              <Link href={`/calls/${call.id}`} className="text-brand-600 hover:underline">
+              <Link
+                href={dashboardPath(`/calls/${call.id}`)}
+                className="text-brand-600 hover:underline"
+              >
                 {new Date(call.started_at).toLocaleString()}
               </Link>
             </td>

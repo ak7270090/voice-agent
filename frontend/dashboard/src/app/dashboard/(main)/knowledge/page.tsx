@@ -5,6 +5,7 @@ import { type FormEvent, useEffect, useState } from "react";
 
 import { Button, Card, Chip, PageHeader } from "@/components/ui/primitives";
 import { createKnowledgeBase, type KnowledgeBase, listKnowledgeBases } from "@/lib/api";
+import { dashboardPath } from "@/lib/navigation";
 
 export default function KnowledgePage() {
   const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBase[] | null>(null);
@@ -62,7 +63,7 @@ export default function KnowledgePage() {
         )}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           {knowledgeBases?.map((knowledgeBase) => (
-            <Link key={knowledgeBase.id} href={`/knowledge/${knowledgeBase.id}`}>
+            <Link key={knowledgeBase.id} href={dashboardPath(`/knowledge/${knowledgeBase.id}`)}>
               <Card className="flex flex-col gap-3 p-4 hover:border-brand-500">
                 <div className="flex items-center gap-2.5">
                   <div className="grid h-10 w-10 place-items-center rounded-lg bg-violet-50 text-lg text-violet-600">

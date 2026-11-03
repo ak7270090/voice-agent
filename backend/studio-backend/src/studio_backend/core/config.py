@@ -70,7 +70,7 @@ class Settings(BaseSettings):
     # After-call actions (webhooks, Slack, HubSpot, Google Sheets): the console address their
     # call links point to, each request's timeout, and the attempts before a delivery fails
     # (waits grow 3x from the first retry: 10 s, 30 s, 90 s, 270 s).
-    console_url: str = "http://localhost:3000"
+    console_url: str = "http://localhost:3000/dashboard"
     delivery_timeout_seconds: float = 10.0
     delivery_attempts: int = 5
     delivery_first_retry_seconds: float = 10.0

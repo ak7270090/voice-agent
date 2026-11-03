@@ -18,6 +18,7 @@ import {
   listKnowledgeBases,
   uploadDocument,
 } from "@/lib/api";
+import { dashboardPath } from "@/lib/navigation";
 
 // Poll while a document is still being read and embedded.
 const REFRESH_WHILE_PROCESSING_MS = 2000;
@@ -68,7 +69,7 @@ export default function KnowledgeBasePage({ params }: { params: { id: string } }
   async function removeKnowledgeBase() {
     if (!window.confirm("Delete this knowledge base and all its documents?")) return;
     await deleteKnowledgeBase(params.id);
-    router.push("/knowledge");
+    router.push(dashboardPath("/knowledge"));
   }
 
   const totalChunks = documents.reduce((sum, document) => sum + document.chunk_count, 0);
@@ -76,7 +77,7 @@ export default function KnowledgeBasePage({ params }: { params: { id: string } }
   return (
     <>
       <PageHeader>
-        <Link href="/knowledge" className="text-slate-500 hover:text-slate-700">
+        <Link href={dashboardPath("/knowledge")} className="text-slate-500 hover:text-slate-700">
           Knowledge
         </Link>
         <span className="text-slate-300">/</span>

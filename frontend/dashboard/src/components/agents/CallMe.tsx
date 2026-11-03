@@ -6,6 +6,7 @@ import { type FormEvent, useEffect, useState } from "react";
 
 import { Button, Card } from "@/components/ui/primitives";
 import { listPhoneNumbers, type PhoneNumber, startPhoneCall } from "@/lib/api";
+import { dashboardPath } from "@/lib/navigation";
 
 const INPUT =
   "w-full rounded-lg border border-slate-200 px-3 py-1.5 text-[13px] outline-none focus:border-brand-500";
@@ -51,7 +52,7 @@ export function CallMe({ agentId, onCallStarted }: { agentId: string; onCallStar
         {numbers.length === 0 ? (
           <p className="text-[13px] text-slate-400">
             Needs a number with an outbound trunk.{" "}
-            <Link href="/numbers" className="text-brand-600 hover:underline">
+            <Link href={dashboardPath("/numbers")} className="text-brand-600 hover:underline">
               Add one
             </Link>
             .

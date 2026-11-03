@@ -16,6 +16,7 @@ import {
 } from "@/components/calls/format";
 import { Card, Chip, PageHeader } from "@/components/ui/primitives";
 import { type Agent, type Call, getAgent, getCall } from "@/lib/api";
+import { dashboardPath } from "@/lib/navigation";
 
 // While the post-call analysis runs, look again this often.
 const ANALYSIS_POLL_MS = 3000;
@@ -111,7 +112,7 @@ export default function CallPage({ params }: { params: { id: string } }) {
   return (
     <>
       <PageHeader>
-        <Link href="/calls" className="text-slate-500 hover:text-slate-700">
+        <Link href={dashboardPath("/calls")} className="text-slate-500 hover:text-slate-700">
           Calls
         </Link>
         <span className="text-slate-300">/</span>
@@ -153,7 +154,10 @@ export default function CallPage({ params }: { params: { id: string } }) {
             <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-slate-500">
               <span>
                 Agent:{" "}
-                <Link href={`/agents/${call.agent_id}`} className="text-brand-600 hover:underline">
+                <Link
+                  href={dashboardPath(`/agents/${call.agent_id}`)}
+                  className="text-brand-600 hover:underline"
+                >
                   {agent?.name ?? "…"}
                 </Link>
               </span>

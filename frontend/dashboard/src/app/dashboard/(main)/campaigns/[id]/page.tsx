@@ -17,6 +17,7 @@ import {
   pauseCampaign,
   startCampaign,
 } from "@/lib/api";
+import { dashboardPath } from "@/lib/navigation";
 
 // The dialler places calls every few seconds; refresh as often while the campaign runs.
 const REFRESH_MS = 3000;
@@ -72,7 +73,7 @@ export default function CampaignPage({ params }: { params: { id: string } }) {
   return (
     <>
       <PageHeader>
-        <Link href="/campaigns" className="text-slate-500 hover:text-slate-700">
+        <Link href={dashboardPath("/campaigns")} className="text-slate-500 hover:text-slate-700">
           Campaigns
         </Link>
         <span className="text-slate-300">/</span>

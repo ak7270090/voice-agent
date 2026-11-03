@@ -4,7 +4,7 @@ import clsx from "clsx";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { NAV_SECTIONS } from "@/lib/navigation";
+import { DASHBOARD_ROOT, NAV_SECTIONS } from "@/lib/navigation";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -31,7 +31,8 @@ export function Sidebar() {
             {section.title}
           </div>
           {section.items.map(({ label, href, icon: Icon, available }) => {
-            const active = pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
+            const active =
+              pathname === href || (href !== DASHBOARD_ROOT && pathname.startsWith(`${href}/`));
             const className = clsx(
               "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px]",
               active && "bg-brand-50 font-semibold text-brand-700",

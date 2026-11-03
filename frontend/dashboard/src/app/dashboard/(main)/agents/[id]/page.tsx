@@ -19,6 +19,7 @@ import {
   listKnowledgeBases,
   updateAgent,
 } from "@/lib/api";
+import { dashboardPath } from "@/lib/navigation";
 
 // The runtime closes the call record a moment after the room empties.
 const CALL_RECORD_DELAY_MS = 1500;
@@ -69,7 +70,7 @@ export default function AgentPage({ params }: { params: { id: string } }) {
   return (
     <>
       <PageHeader>
-        <Link href="/agents" className="text-slate-500 hover:text-slate-700">
+        <Link href={dashboardPath("/agents")} className="text-slate-500 hover:text-slate-700">
           Agents
         </Link>
         <span className="text-slate-300">/</span>
@@ -85,7 +86,7 @@ export default function AgentPage({ params }: { params: { id: string } }) {
         {agent && (
           <span className="ml-auto flex items-center gap-2">
             <Link
-              href={`/agents/${agent.id}/flow`}
+              href={dashboardPath(`/agents/${agent.id}/flow`)}
               className="inline-flex items-center gap-1.5 rounded-lg border border-brand-600 bg-brand-600 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-brand-700"
             >
               <Workflow size={14} /> {agent.has_flow ? "Open flow builder" : "Create a flow"}
@@ -119,7 +120,7 @@ export default function AgentPage({ params }: { params: { id: string } }) {
                   <h3 className="text-[13px] font-semibold">Recent calls</h3>
                   <Chip>{calls.length}</Chip>
                   <Link
-                    href={`/calls?agent_id=${agent.id}`}
+                    href={dashboardPath(`/calls?agent_id=${agent.id}`)}
                     className="ml-auto text-xs text-brand-600 hover:underline"
                   >
                     All calls

@@ -12,6 +12,7 @@ import {
   listAgents,
   listTemplates,
 } from "@/lib/api";
+import { dashboardPath } from "@/lib/navigation";
 
 export default function AgentsPage() {
   const router = useRouter();
@@ -33,7 +34,7 @@ export default function AgentsPage() {
     setCreating(templateId);
     try {
       const agent = await createAgentFromTemplate(templateId);
-      router.push(`/agents/${agent.id}`);
+      router.push(dashboardPath(`/agents/${agent.id}`));
     } catch (cause) {
       setError(`Could not create the agent: ${(cause as Error).message}`);
       setCreating(null);

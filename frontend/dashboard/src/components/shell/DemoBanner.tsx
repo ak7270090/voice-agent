@@ -1,4 +1,4 @@
-import { DEMO_MODE, PROJECT_URL, REPOSITORY_URL } from "@/lib/demo";
+import { DEMO_MODE, WEBSITE_PATH, REPOSITORY_URL } from "@/lib/demo";
 
 /** Shown on every page of the read-only demo build. */
 export function DemoBanner() {
@@ -12,16 +12,12 @@ export function DemoBanner() {
         Sample agents, calls and campaigns. Changes and calls are turned off.
       </span>
       <span className="ml-auto flex gap-4">
-        {PROJECT_URL && (
-          <a href={PROJECT_URL} className="text-white underline-offset-2 hover:underline">
-            Back to the website
-          </a>
-        )}
-        {REPOSITORY_URL && (
-          <a href={REPOSITORY_URL} className="text-white underline-offset-2 hover:underline">
-            GitHub
-          </a>
-        )}
+        <a href={WEBSITE_PATH} className="text-white underline-offset-2 hover:underline">
+          Back to the website
+        </a>
+        <a href={REPOSITORY_URL} className="text-white underline-offset-2 hover:underline">
+          GitHub
+        </a>
       </span>
     </div>
   );

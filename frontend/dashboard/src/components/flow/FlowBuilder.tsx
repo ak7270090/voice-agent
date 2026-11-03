@@ -47,6 +47,7 @@ import {
 } from "./flowModel";
 import { NodePanel } from "./NodePanel";
 import { DRAG_TYPE, NodePalette } from "./NodePalette";
+import { dashboardPath } from "@/lib/navigation";
 
 const NODE_TYPES = { flowNode: FlowNodeCard };
 type Tab = "test" | "settings" | "issues";
@@ -201,7 +202,10 @@ function Builder({ agent, initial }: { agent: Agent; initial: FlowDraft }) {
   return (
     <div className="flex h-screen flex-col">
       <header className="flex h-14 shrink-0 items-center gap-2.5 border-b border-slate-200 bg-white px-4 text-[13px]">
-        <Link href={`/agents/${agent.id}`} className="text-slate-500 hover:text-slate-700">
+        <Link
+          href={dashboardPath(`/agents/${agent.id}`)}
+          className="text-slate-500 hover:text-slate-700"
+        >
           Agents / {agent.name}
         </Link>
         <span className="text-slate-300">/</span>
