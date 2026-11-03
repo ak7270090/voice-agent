@@ -1,13 +1,13 @@
-"""The runtime's view of the API: an agent's settings at call start, and the call record."""
+"""The voice agent's view of the backend: an agent's settings at call start, and the call record."""
 
 from typing import Any
 
 import httpx
 from pydantic import BaseModel
 
-from studio_voice.config import Settings
+from studio_voice.core.config import Settings
+from studio_voice.core.observability import TRACE_CONTEXT_HOOKS
 from studio_voice.flows.schema import Flow
-from studio_voice.observability import TRACE_CONTEXT_HOOKS
 
 INBOUND_DIRECTION = "inbound"
 OUTBOUND_DIRECTION = "outbound"
@@ -54,7 +54,7 @@ class CallRecord(BaseModel):
     turn_latency_ms: list[dict[str, float]] = []
     # Agent replies the caller talked over: a high share means turn-taking cuts in or lags.
     interruptions: int = 0
-    # Tokens, speech-to-text seconds and characters spoken; the API prices them.
+    # Tokens, speech-to-text seconds and characters spoken; the backend prices them.
     usage: dict[str, float] = {}
     tool_calls: list[dict[str, Any]] = []
 

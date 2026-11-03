@@ -26,7 +26,7 @@ from opentelemetry import propagate
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.trace import Span
 
-from studio_voice.config import Settings
+from studio_voice.core.config import Settings
 
 logger = logging.getLogger(__name__)
 
@@ -175,7 +175,7 @@ class LlmCallTracer(BaseCallbackHandler):
 
 
 async def add_trace_context(request: httpx.Request) -> None:
-    """httpx request hook: a W3C `traceparent` header from the current span, so the API (or
+    """httpx request hook: a W3C `traceparent` header from the current span, so the backend (or
     any traced service) continues this call's trace instead of starting its own."""
     propagate.inject(request.headers)
 

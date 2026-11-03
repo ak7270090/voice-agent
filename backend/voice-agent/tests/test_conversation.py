@@ -2,8 +2,8 @@ import pytest
 from langchain_core.messages import AIMessageChunk, ToolMessage
 from livekit.agents import ChatContext
 
-from studio_voice.config import Settings
-from studio_voice.conversation import SpokenReplyGraph, build_transcript, create_chat_model
+from studio_voice.call.conversation import SpokenReplyGraph, build_transcript, create_chat_model
+from studio_voice.core.config import Settings
 
 
 @pytest.mark.parametrize(

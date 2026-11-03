@@ -1,4 +1,4 @@
-"""Setting up a flow for one call: the runner, the LLM in front of it, and what the console sees."""
+"""Sets up a flow for one call: the runner, the LLM in front of it, and what the dashboard shows."""
 
 import asyncio
 import json
@@ -11,15 +11,15 @@ from langchain_core.tools import BaseTool
 from livekit import rtc
 from livekit.plugins.langchain import LLMAdapter
 
-from studio_voice.backend_client import AgentConfig
-from studio_voice.config import Settings
-from studio_voice.conversation import create_chat_model
+from studio_voice.call.conversation import create_chat_model
+from studio_voice.core.backend_client import AgentConfig
+from studio_voice.core.config import Settings
+from studio_voice.core.observability import TRACE_CONTEXT_HOOKS
 from studio_voice.flows.graph import FlowGraph
 from studio_voice.flows.runner import FlowRunner
 from studio_voice.languages import parsers_for
-from studio_voice.observability import TRACE_CONTEXT_HOOKS
 
-# Participant attributes the console reads to highlight the live node and show the fields.
+# Participant attributes the dashboard reads to highlight the live node and show the fields.
 FLOW_NODE_ATTRIBUTE = "studio.flow_node"
 FLOW_FIELDS_ATTRIBUTE = "studio.fields"
 

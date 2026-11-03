@@ -16,6 +16,12 @@ import httpx
 from langchain_core.tools import BaseTool, StructuredTool
 from pydantic import Field, create_model
 
+from studio_voice.core.observability import (
+    LANGFUSE_OBSERVATION_TYPE,
+    TOOL_OBSERVATION,
+    flow_span,
+    set_span_output,
+)
 from studio_voice.flows import prompts
 from studio_voice.flows.schema import (
     EndNode,
@@ -27,12 +33,6 @@ from studio_voice.flows.schema import (
     StepNode,
     ToolNode,
     TransferNode,
-)
-from studio_voice.observability import (
-    LANGFUSE_OBSERVATION_TYPE,
-    TOOL_OBSERVATION,
-    flow_span,
-    set_span_output,
 )
 from studio_voice.tools import calcom
 from studio_voice.tools.http_tool import (

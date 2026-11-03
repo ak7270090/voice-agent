@@ -2,13 +2,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from studio_voice.channels import (
-    InvalidCallMetadataError,
-    parse_call_metadata,
-    register_idle_caller,
-    register_voice_toggle,
-    set_voice,
-)
+from studio_voice.call.controls import register_idle_caller, register_voice_toggle, set_voice
+from studio_voice.call.metadata import InvalidCallMetadataError, parse_call_metadata
 
 
 class FakeAudioSwitch:

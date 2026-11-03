@@ -9,8 +9,9 @@ from livekit.agents.llm import ChatMessage
 from livekit.agents.metrics import LLMModelUsage, STTModelUsage, TTSModelUsage
 from livekit.agents.telemetry import tracer
 
-from studio_voice.config import Settings
-from studio_voice.observability import (
+from studio_voice.call.speech_providers import build_turn_handling
+from studio_voice.core.config import Settings
+from studio_voice.core.observability import (
     LlmCallTracer,
     TurnLatencies,
     add_trace_context,
@@ -18,7 +19,6 @@ from studio_voice.observability import (
     create_tracer_provider,
     llm_call_attributes,
 )
-from studio_voice.speech_providers import build_turn_handling
 
 
 def test_tracing_is_off_without_langfuse_keys():

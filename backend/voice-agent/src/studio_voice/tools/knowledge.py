@@ -1,8 +1,8 @@
-"""The `search_knowledge` tool: an agent's documents, searched through the API at call time."""
+"""The `search_knowledge` tool: an agent's documents, searched through the backend at call time."""
 
 from langchain_core.tools import BaseTool, StructuredTool
 
-from studio_voice.backend_client import BackendClient, KnowledgeHit
+from studio_voice.core.backend_client import BackendClient, KnowledgeHit
 from studio_voice.languages import Locale
 
 TOOL_NAME = "search_knowledge"

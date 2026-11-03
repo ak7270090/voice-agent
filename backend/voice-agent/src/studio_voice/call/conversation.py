@@ -18,8 +18,8 @@ from langgraph.graph.state import CompiledStateGraph
 from livekit.agents import ChatContext
 from livekit.plugins.langchain import LLMAdapter
 
-from studio_voice.backend_client import TranscriptTurn
-from studio_voice.config import Settings
+from studio_voice.core.backend_client import TranscriptTurn
+from studio_voice.core.config import Settings
 
 TRANSCRIPT_ROLES = ("user", "assistant")
 OPENAI_PROVIDER = "openai"

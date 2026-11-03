@@ -1,4 +1,4 @@
-"""Runtime settings, read from the environment and `.env.local` (repository root or this folder).
+"""Settings, read from the environment and `.env.local` (repository root or this folder).
 
 LiveKit and model-provider keys (LIVEKIT_*, OPENAI_API_KEY) are read by their SDKs directly.
 """

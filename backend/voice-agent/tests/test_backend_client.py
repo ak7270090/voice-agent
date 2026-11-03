@@ -3,13 +3,13 @@ import json
 import httpx
 import pytest
 
-from studio_voice.backend_client import (
+from studio_voice.core.backend_client import (
     BackendClient,
     CallRecord,
     TranscriptTurn,
     create_backend_client,
 )
-from studio_voice.config import Settings
+from studio_voice.core.config import Settings
 
 AGENT = {
     "id": "agent-1",

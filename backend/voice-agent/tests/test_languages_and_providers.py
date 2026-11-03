@@ -1,15 +1,15 @@
 import pytest
 from livekit.plugins import cartesia, deepgram, openai
 
-from studio_voice.backend_client import VoiceSettings
-from studio_voice.config import Settings
-from studio_voice.languages import UnsupportedLanguageError, build_instructions, load_locale
-from studio_voice.speech_providers import (
+from studio_voice.call.speech_providers import (
     UnsupportedProviderError,
     create_stt,
     create_tts,
     split_model,
 )
+from studio_voice.core.backend_client import VoiceSettings
+from studio_voice.core.config import Settings
+from studio_voice.languages import UnsupportedLanguageError, build_instructions, load_locale
 
 VOICE = VoiceSettings(
     stt_model="openai/gpt-4o-mini-transcribe", tts_model="openai/tts-1", voice="alloy"

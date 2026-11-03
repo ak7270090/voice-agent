@@ -4,8 +4,8 @@ import pytest
 from livekit import api
 from livekit.agents import AMDCategory
 
-from studio_voice import worker
-from studio_voice.phone import (
+from studio_voice.call import session as call_session
+from studio_voice.call.phone import (
     PhoneLine,
     answer,
     caller_line,
@@ -152,7 +152,7 @@ async def hand_over(refuse: bool, line: PhoneLine, transfer_to: str = "+91441234
     ctx = SimpleNamespace(api=SimpleNamespace(sip=sip), room=SimpleNamespace(name="call-1"))
     session = FakeSession()
     runner = SimpleNamespace(transfer_to=transfer_to)
-    await worker.hand_over_or_hang_up(ctx, session, runner, line, "Sorry, try later.")
+    await call_session.hand_over_or_hang_up(ctx, session, runner, line, "Sorry, try later.")
     return session, sip
 
 
@@ -197,6 +197,6 @@ class NumberControlPlane:
 async def test_an_incoming_call_is_answered_by_the_agent_bound_to_the_number_now():
     metadata = SimpleNamespace(agent_id=None, number_id="n-1")
 
-    assert await worker.agent_for(NumberControlPlane("agent-2"), metadata) == "agent-2"
+    assert await call_session.agent_for(NumberControlPlane("agent-2"), metadata) == "agent-2"
     with pytest.raises(LookupError):
-        await worker.agent_for(NumberControlPlane(None), metadata)
+        await call_session.agent_for(NumberControlPlane(None), metadata)

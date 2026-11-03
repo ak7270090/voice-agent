@@ -2,7 +2,7 @@ import json
 
 import httpx
 
-from studio_voice.backend_client import BackendClient
+from studio_voice.core.backend_client import BackendClient
 from studio_voice.languages import load_locale
 from studio_voice.tools.knowledge import build_knowledge_tool
 

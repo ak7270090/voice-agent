@@ -143,10 +143,12 @@ voice-agent-studio/
 │   │   └── tests/
 │   └── voice-agent/           the LiveKit agent that talks on calls
 │       ├── src/studio_voice/
+│       │   ├── call/              one call: session, metadata, phone line, speech, LLM
 │       │   ├── flows/             flow runner, per-step graph, prompts
 │       │   ├── tools/             HTTP, Cal.com and knowledge search tools
 │       │   ├── locales/           each language's rules, messages and answer parsers
-│       │   └── worker.py · phone.py · channels.py · backend_client.py · speech_providers.py
+│       │   ├── core/              settings, tracing, backend client
+│       │   └── worker.py · languages.py
 │       └── tests/
 ├── examples/
 │   └── demo-clinic/           a stand-in hospital booking API for the clinic template

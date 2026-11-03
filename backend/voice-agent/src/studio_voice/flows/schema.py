@@ -1,5 +1,5 @@
-"""The flow format as the runtime reads it. The API validates flows before they are published
-(studio_api.flows); these models only parse what running a flow needs."""
+"""The flow format as the voice agent reads it. The backend validates flows before they are
+published (studio_backend.flows); these models only parse what running a flow needs."""
 
 from typing import Annotated, Any, Literal
 
