@@ -32,3 +32,6 @@ Thumbs.db
 
 # Read-only demo build
 .next-demo/
+
+# Vercel's link to its projects
+.vercel/

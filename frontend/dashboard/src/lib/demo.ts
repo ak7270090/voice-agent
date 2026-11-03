@@ -1,6 +1,6 @@
 /**
  * The read-only demo build (NEXT_PUBLIC_DEMO_MODE=true): every read is answered from JSON
- * exported from real runs (tools/showcase/export_fixtures.py, into public/demo-data/), and
+ * exported from real runs (exported into public/demo-data/), and
  * anything that would change data or place a call is refused with a clear message. No API,
  * runtime or LLM runs behind it, so it can be hosted for free.
  */
@@ -12,7 +12,8 @@ export const READ_ONLY_MESSAGE =
 export const PROJECT_URL = process.env.NEXT_PUBLIC_PROJECT_URL ?? "";
 export const REPOSITORY_URL = process.env.NEXT_PUBLIC_REPOSITORY_URL ?? "";
 
-const DATA_ROOT = "/demo-data";
+export const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+const DATA_ROOT = `${BASE_PATH}/demo-data`;
 // Collections answered by filtering one exported list, as the API's query parameters do.
 const CALL_FILTERS = ["agent_id", "channel", "direction", "outcome"];
 const DEFAULT_CALL_LIMIT = 50;

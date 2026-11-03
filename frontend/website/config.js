@@ -1,5 +1,5 @@
-// Links the page points to; change them when the demo console and repository are deployed.
+// Links the page points to.
 window.SHOWCASE = {
-  consoleUrl: "http://localhost:3100",
-  repositoryUrl: "",
+  consoleUrl: "/demo",
+  repositoryUrl: "https://github.com/ak7270090/voice-agent",
 };

@@ -12,6 +12,8 @@ const DEMOS = [
   },
   {
     id: "phone",
+    // Hidden until its recording is in media/.
+    ready: false,
     tab: "Answer the phone",
     title: "Answers your business line",
     text: "A customer dials your number and the agent picks up straight away, day or night.",
@@ -36,7 +38,7 @@ const DEMOS = [
     video: "media/build-agent.mp4",
     poster: "media/build-agent.jpg",
   },
-];
+].filter((demo) => demo.ready !== false);
 
 // Example conversations for the use-case section.
 const USE_CASES = [
@@ -175,7 +177,7 @@ function setUpLinks() {
     const url = targets[anchor.dataset.link];
     if (url) {
       anchor.href = url;
-      if (!url.startsWith("#")) anchor.target = "_blank";
+      if (url.startsWith("http")) anchor.target = "_blank";
     } else {
       anchor.hidden = true;
     }
