@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-**[Website](https://voice-agent-studio-inky.vercel.app)** · **[Demo workspace](https://voice-agent-studio-inky.vercel.app/demo)** (read-only, sample data from real runs)
+**[Website](https://voice-agent-studio-inky.vercel.app)** · **[Demo workspace](https://voice-agent-studio-inky.vercel.app/dashboard)** (read-only, sample data from real runs)
 
 **Every business wants an AI on its phone line, but each agent still needs an engineer to build.**
 Voice Agent Studio lets a business build its own voice agents in the browser: design the
@@ -102,7 +102,8 @@ Copy-Item .env.example .env.local      # LIVEKIT_*, OPENAI_API_KEY, DEEPGRAM_API
 docker compose up -d --build
 ```
 
-- Dashboard: <http://localhost:3000> (Overview shows every service's health)
+- Website: <http://localhost:3000>
+- Dashboard: <http://localhost:3000/dashboard> (Overview shows every service's health)
 - API docs: <http://localhost:8000/docs>
 
 Then: **Agents → Clinic booking → Open flow builder → Start test call**, and book an appointment,
@@ -117,7 +118,7 @@ booking (Cal.com)**.
 | Backend tests | `cd backend\studio-backend; .\.venv\Scripts\python.exe -m pytest` |
 | Voice agent tests | `cd backend\voice-agent; .\.venv\Scripts\python.exe -m pytest` |
 | Lint and format check (Python) | `.\.venv\Scripts\ruff.exe check . ; .\.venv\Scripts\ruff.exe format --check .` |
-| Dashboard | `cd frontend\dashboard; npm run dev` · `npm run lint` · `npm run build` |
+| Frontend | `cd frontend; npm run dev` · `npm run lint` · `npm run build` |
 
 Each Python app (`backend/studio-backend`, `backend/voice-agent`, `examples/demo-clinic`) has its own virtual environment:
 `python -m venv .venv` then `.\.venv\Scripts\python.exe -m pip install -e ".[dev]"`.
@@ -126,9 +127,7 @@ Each Python app (`backend/studio-backend`, `backend/voice-agent`, `examples/demo
 
 ```text
 voice-agent-studio/
-├── frontend/
-│   ├── dashboard/             Next.js app where agents are built and calls reviewed
-│   └── website/               the product page (static)
+├── frontend/                  one Next.js app: the product page at /, the dashboard at /dashboard
 ├── backend/
 │   ├── studio-backend/        FastAPI API and background worker
 │   │   ├── src/studio_backend/
