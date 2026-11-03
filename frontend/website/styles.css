@@ -584,14 +584,9 @@ h1 {
   font-size: 22px;
 }
 
-.step-copy ul {
+.step-copy p {
   margin: 0;
-  padding-left: 18px;
   color: var(--muted);
-}
-
-.step-copy li {
-  margin: 8px 0;
 }
 
 .step-shot {
@@ -602,10 +597,6 @@ h1 {
 }
 
 .step-shot img,
-.shot img {
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow);
-}
 
 .step-shot img {
   border-radius: 10px 10px 0 0;
@@ -616,42 +607,40 @@ h1 {
 .feature-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-top: 32px;
+  gap: 22px 28px;
+  margin-top: 36px;
 }
 
 .feature {
-  padding: 24px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface);
+  display: flex;
+  gap: 12px;
 }
 
 .feature .icon {
+  flex: none;
   display: inline-grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 11px;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
   background: var(--accent-soft);
   color: var(--accent);
-  font-weight: 700;
 }
 
 .feature .icon svg {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
 }
 
 .feature h3 {
-  margin: 14px 0 6px;
-  font-size: 18px;
+  margin: 0 0 2px;
+  font-size: 15px;
 }
 
 .feature p {
   margin: 0;
   color: var(--muted);
-  font-size: 14.5px;
+  font-size: 13.5px;
 }
 
 /* Integrations */
@@ -663,37 +652,29 @@ h1 {
 }
 
 .app {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 18px;
+  padding: 20px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--surface);
 }
 
 .app-mark {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 11px;
-  background: var(--mark);
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 700;
+  display: flex;
+  align-items: center;
+  height: 32px;
+  margin-bottom: 14px;
+  color: var(--mark);
 }
 
 .app-mark svg {
-  width: 22px;
-  height: 22px;
+  width: 30px;
+  height: 30px;
 }
 
 /* Brands whose mark is their name read better wider. */
 .app-mark svg.wordmark {
-  width: 36px;
-  height: 36px;
+  width: 58px;
+  height: 58px;
 }
 
 .app b {
@@ -704,43 +685,6 @@ h1 {
 .app span:not(.app-mark) {
   color: var(--muted);
   font-size: 13px;
-}
-
-/* Analytics */
-.split {
-  display: grid;
-  grid-template-columns: 420px minmax(0, 1fr);
-  gap: 48px;
-  align-items: center;
-}
-
-.check-list {
-  margin: 24px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.check-list li {
-  position: relative;
-  margin: 0 0 12px;
-  padding-left: 28px;
-  color: var(--muted);
-}
-
-.check-list li::before {
-  content: "✓";
-  position: absolute;
-  left: 0;
-  color: var(--accent);
-  font-weight: 700;
-}
-
-.check-list b {
-  color: var(--ink);
-}
-
-.shot {
-  margin: 0;
 }
 
 .shot img {
@@ -816,7 +760,6 @@ h1 {
   .player-body,
   .step-body,
   .cases,
-  .split,
   .faq-wrap {
     grid-template-columns: 1fr;
   }

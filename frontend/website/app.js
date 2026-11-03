@@ -130,42 +130,25 @@ const STEPS = [
   {
     tab: "Build",
     title: "Design the conversation",
-    points: [
-      "Start from a template: booking, reminders, lead qualification",
-      "Each step collects what it needs before moving on",
-      "Connect a calendar so each doctor's real availability is used",
-      "Publish when it's ready; every version is kept",
-    ],
+    text: "Start from a template and shape each step. Connect a calendar, then publish.",
     image: "media/step-build.png",
   },
   {
     tab: "Test",
     title: "Talk to it before your callers do",
-    points: [
-      "Type or speak to the agent right inside the builder",
-      "Watch the live step light up as the call moves",
-      "Fix a step and try again in seconds",
-    ],
+    text: "Type or speak to it in the builder, and watch each step light up as the call moves.",
     image: "media/step-test.png",
   },
   {
     tab: "Deploy",
     title: "Put it on a number or a list",
-    points: [
-      "Answer on your own numbers, or call out from them",
-      "Run campaigns from a contact list with calling hours and retries",
-      "Voicemail handled, and a person one step away",
-    ],
+    text: "Answer your own number, or call a contact list within your calling hours.",
     image: "media/step-deploy.png",
   },
   {
     tab: "Monitor",
     title: "See what happened on every call",
-    points: [
-      "Transcript, collected details and every action the agent took",
-      "Summary, success and quality score after each call",
-      "Cost per call, and what was sent to your other tools",
-    ],
+    text: "Outcome, summary, success and cost for every call, without listening to it.",
     image: "media/step-monitor.png",
   },
 ];
@@ -256,16 +239,14 @@ function setUpSteps() {
   const root = document.querySelector("[data-steps]");
   const tabs = root.querySelector(".step-tabs");
   const heading = root.querySelector(".step-copy h3");
-  const list = root.querySelector(".step-copy ul");
+  const text = root.querySelector(".step-copy p");
   const image = root.querySelector(".step-shot img");
 
   function show(index) {
     const step = STEPS[index];
     [...tabs.children].forEach((button, n) => button.setAttribute("aria-selected", String(n === index)));
     heading.textContent = step.title;
-    list.replaceChildren(
-      ...step.points.map((point) => Object.assign(document.createElement("li"), { textContent: point })),
-    );
+    text.textContent = step.text;
     image.src = step.image;
     image.alt = `${step.tab}: ${step.title}`;
   }
